@@ -1,0 +1,61 @@
+This directory tree will have code common to all of the stages of the
+analysis pipeline.   Each pipeline element has a relatively common structure:
+Data comes in, fans out to workers which fan it back in to a collector which
+forwards it to an outputter.
+
+Seems like a set of abstract base classes could fit that bill with common
+code to set the whole thing up.
+
+At it's most reduced, there's an application that has abstract methods for
+input, worker, collector, outputter.  The flow control selects, based on size
+and MPI rank which of these methods to call.
+
+We want to also accomodate parameter naming and steering variables.
+These would be treeparameters and treevariables.
+
+This also implies common code to handle processing configuration files that
+define parameters and variables.
+
+The main flow control of the various elements is pretty well locked down:
+
+input - in response to requests from workers gives them a chunk of input.
+workers - request input, process that to outputs sends outputs to collector.
+collector - receives data from workers, processes it (sorts by trigger number
+usually) and sends to output stage.
+output - gets data from the collector and outputs it to whatever the output is.
+
+Note that all of these send ring items around.  Collector has ring items that
+include a trigger number.
+
+There are two types of inputs..that could be unified: inputs for
+raw ring items or inputs for parameterized ring items and, frankly they can be
+the same.
+
+classes:
+CApplication
+   user initialization.
+   input
+   output
+   collector
+   worker
+   operator()  - runs the strategy pattern.
+   
+CRingItemApplication
+    input, output, collector are defined.
+
+RingItemInput
+RingItemOutput
+RingItemCollector
+
+TreeParameter
+TreeParameterArray
+TreeVariable
+TreeVariableArray
+
+convenience method in CRingItemApplication - SendDefsToCollector, SendEventToCollector
+
+EventProcessingPipeline - manage SpecTcl source code compatible event processors to produce an event.
+
+InitScriptProcessor - includes
+TreeParameterCommand TreeVariableCommand TreeVariableArrayCommand TreeParameterArrayCommand
+This is normally processed by the workers and the output stage.
