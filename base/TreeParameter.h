@@ -51,6 +51,8 @@ namespace frib {
                 std::uint64_t s_generation;       // Last generation it was set at.
                 bool          s_changed;          // Definition has changed.
                 _SharedData(double low, double hi, unsigned chans, const char* units);
+                _SharedData(const _SharedData& rhs);
+                _SharedData();
             } SharedData, *pSharedData;
         private:
             static std::uint64_t                     m_generation;          // For O(1) reset.
