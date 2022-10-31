@@ -38,6 +38,10 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(collect_1);
     CPPUNIT_TEST(collect_2);
+    
+    CPPUNIT_TEST(dlimits);
+    CPPUNIT_TEST(dbins);
+    CPPUNIT_TEST(dunits);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -69,6 +73,10 @@ protected:
     
     void collect_1();
     void collect_2();
+    
+    void delimits();
+    void dbins();
+    void dunits();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -144,4 +152,22 @@ void TPTest::collect_2() {
         EQ(result[i].first, sbdata[i]);
         EQ(result[i].second, eventData[sbdata[i]]);
     }
+}
+
+// default limits
+
+void TPTest::dlimits() {
+    CTreeParameter::setDefaultLimits(-1.0, 1.0);
+    
+    EQ(double(-1.0), CTreeParameter::m_defaultSpecification.s_low);
+    EQ(double(1.0), CTreeParameter::m_defaultSpecification.s_high);
+}
+// default bins:
+void TPTest::dbins() {
+    CTreeParameter::setDefaultBins(1024);
+    EQ(unsigned(1024), CTreeParameter::m_defaultSpecification.s_chans);
+}
+void TPTest::dunits() {
+    CTreeParameter::setDefaultUnits("furlong/fortnight");
+    EQ(std::string("furlong/fortnight"), CTreeParameter::m_defaultSpecification.s_units);
 }
