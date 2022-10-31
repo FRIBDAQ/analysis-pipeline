@@ -371,7 +371,8 @@ namespace frib {
         /**
          * Copy construction.
          */
-        CTreeParameter::CTreeParameter(const CTreeParameter& rhs) : CTreeParameter(rhs.getName(), rhs) {
+        CTreeParameter::CTreeParameter(const CTreeParameter& rhs) :
+            m_name(rhs.m_name), m_pDefinition(rhs.m_pDefinition) {
             
         }
         /**
