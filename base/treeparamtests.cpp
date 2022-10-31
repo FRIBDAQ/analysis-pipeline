@@ -74,7 +74,7 @@ protected:
     void collect_1();
     void collect_2();
     
-    void delimits();
+    void dlimits();
     void dbins();
     void dunits();
 };
