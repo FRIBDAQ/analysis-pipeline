@@ -45,6 +45,9 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getEvent);
     CPPUNIT_TEST(getsb);
+    
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -83,6 +86,9 @@ protected:
     
     void getEvent();
     void getsb();
+    
+    void construct_1();
+    void construct_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -201,4 +207,27 @@ void TPTest::getsb() {
     for (int i =0; i < s.size(); i++) {
         EQ(sbdata[i], s.at(i));
     }
+}
+// default constructor is unbound:
+
+void TPTest::construct_1()
+{
+    CTreeParameter param;
+    EQ(std::string(""), param.m_name);
+    EQ(CTreeParameter::pSharedData(0), param.m_pDefinition);
+}
+// construct with name gets bound with default metadata:
+void TPTest::construct_2() {
+    CTreeParameter param("Test");
+    EQ(std::string("Test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    
+    EQ(unsigned(1), param.m_pDefinition->s_parameterNumber);
+    EQ(CTreeParameter::m_defaultSpecification.s_low, param.m_pDefinition->s_low);
+    EQ(CTreeParameter::m_defaultSpecification.s_high, param.m_pDefinition->s_high);
+    EQ(CTreeParameter::m_defaultSpecification.s_chans, param.m_pDefinition->s_chans);
+    EQ(CTreeParameter::m_defaultSpecification.s_units, param.m_pDefinition->s_units);
+    EQ(false, param.m_pDefinition->s_changed);
+    EQ(CTreeParameter::m_generation-1, param.m_pDefinition->s_generation);
+    
 }
