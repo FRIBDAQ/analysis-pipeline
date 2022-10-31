@@ -42,6 +42,9 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(dlimits);
     CPPUNIT_TEST(dbins);
     CPPUNIT_TEST(dunits);
+    
+    CPPUNIT_TEST(getEvent);
+    CPPUNIT_TEST(getsb);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +80,9 @@ protected:
     void dlimits();
     void dbins();
     void dunits();
+    
+    void getEvent();
+    void getsb();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -170,4 +176,29 @@ void TPTest::dbins() {
 void TPTest::dunits() {
     CTreeParameter::setDefaultUnits("furlong/fortnight");
     EQ(std::string("furlong/fortnight"), CTreeParameter::m_defaultSpecification.s_units);
+}
+// Get reference to event:
+
+void TPTest::getEvent() {
+    for (int i =0; i < 100; i++) {
+        CTreeParameter::m_event.push_back(i);
+    }
+    auto& e = CTreeParameter::getEvent();
+    EQ(size_t(100), e.size());
+    
+    for (int i =0;i < 100; i++) {
+        EQ(double(i), e.at(i));
+    }
+}
+// Get scoreboard
+
+void TPTest::getsb() {
+    std::vector<unsigned> sbdata = {2, 3, 5};                        // A prime example.
+    CTreeParameter::m_scoreboard.insert(CTreeParameter::m_scoreboard.begin(), sbdata.begin(), sbdata.end());
+    
+    auto& s = CTreeParameter::getScoreboard();
+    EQ(sbdata.size(), s.size());
+    for (int i =0; i < s.size(); i++) {
+        EQ(sbdata[i], s.at(i));
+    }
 }
