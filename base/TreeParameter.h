@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <string>
 #include <map>
+#include <vector>
 namespace frib {
     namespace analysis {
         /**
@@ -78,7 +79,7 @@ namespace frib {
             static void BindParameters();
             static void setEvent(...);
             
-            static const std::vector<double>   getEvent();
+            static const std::vector<double>&   getEvent();
             static const std::vector<unsigned> getScoreboard();
         private:
             pSharedData lookupParameter(const std::string& name);
