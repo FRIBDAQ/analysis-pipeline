@@ -48,6 +48,13 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
+    CPPUNIT_TEST(construct_4);
+    CPPUNIT_TEST(construct_5);
+    CPPUNIT_TEST(construct_6);
+    CPPUNIT_TEST(construct_7);
+    CPPUNIT_TEST(construct_8);
+    CPPUNIT_TEST(construct_9);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -89,6 +96,13 @@ protected:
     
     void construct_1();
     void construct_2();
+    void construct_3();
+    void construct_4();
+    void construct_5();
+    void construct_6();
+    void construct_7();
+    void construct_8();
+    void construct_9();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -229,5 +243,99 @@ void TPTest::construct_2() {
     EQ(CTreeParameter::m_defaultSpecification.s_units, param.m_pDefinition->s_units);
     EQ(false, param.m_pDefinition->s_changed);
     EQ(CTreeParameter::m_generation-1, param.m_pDefinition->s_generation);
+    
+}
+// construct with name and units:
+void TPTest::construct_3() {
+    CTreeParameter param("Test", "mm");
+    EQ(std::string("Test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    
+    EQ(unsigned(1), param.m_pDefinition->s_parameterNumber);
+    EQ(CTreeParameter::m_defaultSpecification.s_low, param.m_pDefinition->s_low);
+    EQ(CTreeParameter::m_defaultSpecification.s_high, param.m_pDefinition->s_high);
+    EQ(CTreeParameter::m_defaultSpecification.s_chans, param.m_pDefinition->s_chans);
+    EQ(std::string("mm"), param.m_pDefinition->s_units);
+    EQ(false, param.m_pDefinition->s_changed);
+    EQ(CTreeParameter::m_generation-1, param.m_pDefinition->s_generation);
+}
+// Construct with low, high units.
+void TPTest::construct_4() {
+    CTreeParameter param ("Test", -1.0, 1.0, "mm");
+    EQ(std::string("Test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    
+    EQ(unsigned(1), param.m_pDefinition->s_parameterNumber);
+    EQ(double(-1.0), param.m_pDefinition->s_low);
+    EQ(double(1.0), param.m_pDefinition->s_high);
+    EQ(CTreeParameter::m_defaultSpecification.s_chans, param.m_pDefinition->s_chans);
+    EQ(std::string("mm"), param.m_pDefinition->s_units);
+    EQ(false, param.m_pDefinition->s_changed);
+    EQ(CTreeParameter::m_generation-1, param.m_pDefinition->s_generation);
+}
+// construct with low, high channels, units.
+void TPTest::construct_5() {
+    CTreeParameter param ("Test", 1024, -1.0, 1.0, "mm");
+    
+    EQ(std::string("Test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    
+    EQ(unsigned(1), param.m_pDefinition->s_parameterNumber);
+    EQ(double(-1.0), param.m_pDefinition->s_low);
+    EQ(double(1.0), param.m_pDefinition->s_high);
+    EQ(unsigned(1024), param.m_pDefinition->s_chans);
+    EQ(std::string("mm"), param.m_pDefinition->s_units);
+    EQ(false, param.m_pDefinition->s_changed);
+    EQ(CTreeParameter::m_generation-1, param.m_pDefinition->s_generation);
+}
+// construct with reslution
+void TPTest::construct_6() {
+    CTreeParameter param("Test", 10);
+    
+    EQ(std::string("Test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    
+    EQ(unsigned(1), param.m_pDefinition->s_parameterNumber);
+    EQ(double(0.0), param.m_pDefinition->s_low);
+    EQ(double(1024.0), param.m_pDefinition->s_high);
+    EQ(unsigned(1024), param.m_pDefinition->s_chans);
+    EQ(CTreeParameter::m_defaultSpecification.s_units, param.m_pDefinition->s_units);
+    EQ(false, param.m_pDefinition->s_changed);
+    EQ(CTreeParameter::m_generation-1, param.m_pDefinition->s_generation);   
+}
+// old style resolution or width not supported:
+
+void TPTest::construct_7() {
+    CPPUNIT_ASSERT_THROW(CTreeParameter param(
+        "Test", 12, 0.0, 1024.0, "mm", true),
+        std::logic_error
+    );
+                         
+}
+// construct from template:
+void TPTest::construct_8() {
+    CTreeParameter original ("Test", 1024, -1.0, 1.0, "mm");
+    CTreeParameter copy("Test-copy", original);
+    
+    EQ(std::string("Test-copy"), copy.m_name);
+    ASSERT(copy.m_pDefinition);
+    EQ(unsigned(2), copy.m_pDefinition->s_parameterNumber);
+    EQ(original.m_pDefinition->s_low, copy.m_pDefinition->s_low);
+    EQ(original.m_pDefinition->s_high, copy.m_pDefinition->s_high);
+    EQ(original.m_pDefinition->s_chans, copy.m_pDefinition->s_chans);
+    EQ(original.m_pDefinition->s_units, copy.m_pDefinition->s_units);
+    EQ(false, copy.m_pDefinition->s_changed);
+    EQ(CTreeParameter::m_generation-1, copy.m_pDefinition->s_generation);
+}
+// copy construction
+void TPTest::construct_9() {
+    CTreeParameter original ("Test", 1024, -1.0, 1.0, "mm");
+    CTreeParameter copy(original);
+    EQ(original.m_name, copy.m_name);
+    EQ(original.m_pDefinition, copy.m_pDefinition);
+    
+    CTreeParameter unbound;
+    CTreeParameter cunbound(unbound);
+    ASSERT(!cunbound.m_pDefinition);
     
 }
