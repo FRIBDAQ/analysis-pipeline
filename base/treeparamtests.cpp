@@ -35,6 +35,9 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(next_2);
     CPPUNIT_TEST(next_3);
     CPPUNIT_TEST(next_4);
+    
+    CPPUNIT_TEST(collect_1);
+    CPPUNIT_TEST(collect_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -63,6 +66,9 @@ protected:
     void next_2();
     void next_3();
     void next_4();
+    
+    void collect_1();
+    void collect_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -119,4 +125,23 @@ void TPTest::next_4() {
     EQ(size_t(0), CTreeParameter::m_scoreboard.size());
     EQ(size_t(2), CTreeParameter::m_event.size());
 }
+// nothing to collect gives empty vector:
+void TPTest::collect_1() {
+    EQ(size_t(0), CTreeParameter::collectEvent().size());
+}
+// Put some stuff in event and a sparse scoreboard we get the right struff out.
 
+void TPTest::collect_2() {
+    std::vector<double> eventData = {1.0, 2.1, 3.2, 5.3, 7.5, 13.7}; // See the pattern?
+    std::vector<unsigned> sbdata = {2, 3, 5};                        // A prime example.
+    CTreeParameter::m_event.insert(CTreeParameter::m_event.begin(), eventData.begin(), eventData.end());
+    CTreeParameter::m_scoreboard.insert(CTreeParameter::m_scoreboard.begin(), sbdata.begin(), sbdata.end());
+    
+    auto result = CTreeParameter::collectEvent();
+    
+    EQ(sbdata.size(), result.size());
+    for (int i =0;i < result.size(); i++) {
+        EQ(result[i].first, sbdata[i]);
+        EQ(result[i].second, eventData[sbdata[i]]);
+    }
+}
