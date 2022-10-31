@@ -48,13 +48,17 @@ namespace frib {
                 unsigned s_chans;
                 std::string s_units;
                 std::uint64_t s_generation;       // Last generation it was set at.
+                bool          s_changed;          // Definition has changed.
+                _SharedData(double low, double hi, unsigned chans, const char* units);
             } SharedData, *pSharedData;
         private:
             static std::uint64_t                     m_generation;          // For O(1) reset.
             static std::map<std::string, SharedData> m_parameterDictionary; // Registered parameters.
+            static unsigned                          m_nextId;     
             static std::vector<double>               m_event;               // Event data
             static std::vector<unsigned>             m_scoreboard;          // Parameters set this event.
-            static SharedData                        m_defaultSpecifications;
+            static SharedData                        m_defaultSpecification;
+            
             // object data:
         private:
             std::string   m_name;
@@ -62,23 +66,26 @@ namespace frib {
             
             // Static methods:
         public:
-            void nextEvent();               // Called to start a new event.
+            static void nextEvent();               // Called to start a new event.
             static std::vector<std::pair<unsigned, double>> collectEvent();
-            pSharedData lookupParameter(const std::string& name);
-            pSharedData makeSharedData(
-                const std::string& name,
-                double low, double  high, unsigned s_chans
-            );
-            void setDefaultLimits(double low, double high);
-            void setDefaultChans(unsigned bins);
-            void setDefaultUnits(const char* units);
+            static void setDefaultLimits(double low, double high);
+            static void setDefaultBins(unsigned bins);
+            static void setDefaultUnits(const char* units);
             
             // These are for compatibility with ancient code and don't actually
             // do anything:
             
             static void BindParameters();
             static void setEvent(...);
-        
+            
+            static const std::vector<double>   getEvent();
+            static const std::vector<unsigned> getScoreboard();
+        private:
+            pSharedData lookupParameter(const std::string& name);
+            pSharedData makeSharedData(
+                const std::string& name,
+                double low, double  high, unsigned chans, const char* units
+            );
             
             // Object methods:
             //    - construction/destruction and initialization:
@@ -88,10 +95,10 @@ namespace frib {
             CTreeParameter(std::string name, std::string units);
             CTreeParameter(std::string name, double lowLimit, double highLimit, 
                    std::string units);
-            CTreeParameter(std::string name, UInt_t channels, 
+            CTreeParameter(std::string name, unsigned channels, 
                    double lowLimit, double highLimit, std::string units);
-            CTreeParameter(std::string name, UInt_t resolution);
-            CTreeParameter(std::string name, UInt_t resolution, 
+            CTreeParameter(std::string name, unsigned resolution);
+            CTreeParameter(std::string name, unsigned resolution, 
                    double lowLimit, double widthOrHigh, 
                    std::string units, bool widthOrHighGiven);
             CTreeParameter(std::string name, const CTreeParameter& Template);
@@ -99,13 +106,13 @@ namespace frib {
             ~CTreeParameter();
             
             
-            void Initialize(std::string name, UInt_t resolution);
-            void Initialize(std::string name, UInt_t resolution, 
+            void Initialize(std::string name, unsigned resolution);
+            void Initialize(std::string name, unsigned resolution, 
                     double lowLimit, double highOrWidth, std::string units, 
                     bool highOrWidthGiven);
             void Initialize(std::string name);
             void Initialize(std::string name, std::string units);
-            void Initialize(std::string name, UInt_t channels, 
+            void Initialize(std::string name, unsigned channels, 
                     double lowLimit, double highLimit, std::string units);
                       
                  
@@ -114,9 +121,9 @@ namespace frib {
             
             // Support for various arithmetic operations:
             
-            operator double();
+            operator double() const;
             CTreeParameter& operator= (double newValue);
-            CTreeParameter& operator= (CTreeParameter& rhs);
+            CTreeParameter& operator= (const CTreeParameter& rhs);
             CTreeParameter& operator+=(double rhs);
             CTreeParameter& operator-=(double rhs);
             CTreeParameter& operator*=(double rhs);
@@ -128,31 +135,33 @@ namespace frib {
             
             // Getters and setters:
             
-            std::string getName();
-            int    getId();
-            double getValue();
+            std::string getName() const;
+            unsigned    getId() const;
+            double getValue() const;
             void   setValue(double newValue);
-            UInt_t getBins();
-            void   setBins(UInt_t channels);
-            double getStart();
+            unsigned getBins() const;
+            void   setBins(unsigned channels);
+            double getStart() const;
             void   setStart(double low);
-            double getStop();
+            double getStop() const;
             void   setStop(double high);
-            double getInc();
+            double getInc() const;
             void   setInc(double channelWidth);
-            std::string getUnit();
+            std::string getUnit() const;
             void   setUnit(std::string units);
-            bool   isValid();
+            bool   isValid() const;
             void   setInvalid();
             void   Reset();
             void   clear();
-            bool   hasChanged();
-            void   setChanged();
-            void   resetChanged();
+            bool   hasChanged() const;
+            void   setChanged() ;
+            void   resetChanged() ;
             static void ResetAll();
             
             void Bind();             
         };
+        
+        
     }
 }
 
