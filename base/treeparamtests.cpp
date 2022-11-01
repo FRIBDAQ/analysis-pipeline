@@ -114,6 +114,13 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getid_1);
     CPPUNIT_TEST(getid_2);
+    
+    // A bit of white box testing here: getValue, setValue --
+    // those are used by the arithmetic operators so they're implicitly
+    // already tested.
+    
+    CPPUNIT_TEST(getbins_1);
+    CPPUNIT_TEST(getbins_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -226,6 +233,9 @@ protected:
     
     void getid_1();
     void getid_2();
+    
+    void getbins_1();
+    void getbins_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -827,4 +837,17 @@ void TPTest::getid_1() {
 void TPTest::getid_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.getId(), std::logic_error);
+}
+// bound and unbound test for getbins.
+
+void TPTest::getbins_1()
+{
+    CTreeParameter p("Test");
+    unsigned bins;
+    CPPUNIT_ASSERT_NO_THROW(bins = p.getBins());
+    EQ(CTreeParameter::m_defaultSpecification.s_chans, bins);
+}
+void TPTest::getbins_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.getBins(), std::logic_error);
 }
