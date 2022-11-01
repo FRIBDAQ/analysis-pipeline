@@ -153,6 +153,9 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(isvalid_1);
     CPPUNIT_TEST(isvalid_2);
     CPPUNIT_TEST(isvalid_3);
+    
+    CPPUNIT_TEST(setinvalid_1);
+    CPPUNIT_TEST(setinvalid_2);
     CPPUNIT_TEST_SUITE_END();
 
     
@@ -301,6 +304,10 @@ protected:
     void isvalid_1();
     void isvalid_2();
     void isvalid_3();
+    // Note Reset and Clear just call isValid so we don't test them:
+    
+    void setinvalid_1();
+    void setinvalid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -1047,4 +1054,17 @@ void TPTest::isvalid_2() {
 void TPTest::isvalid_3() {
     CTreeParameter p; // not bound.
     CPPUNIT_ASSERT_THROW(p.isValid(), std::logic_error);
+}
+
+// setinvalid:
+
+void TPTest::setinvalid_1() {
+    CTreeParameter p("test");
+    p = 1.23;   // valid.
+    p.setInvalid(); // not any more.
+    ASSERT(!p.isValid());
+}
+void TPTest::setinvalid_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setInvalid(), std::logic_error);
 }
