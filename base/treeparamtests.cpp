@@ -149,7 +149,12 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setunit_1);
     CPPUNIT_TEST(setunit_2);
+    
+    CPPUNIT_TEST(isvalid_1);
+    CPPUNIT_TEST(isvalid_2);
+    CPPUNIT_TEST(isvalid_3);
     CPPUNIT_TEST_SUITE_END();
+
     
 private:
 
@@ -292,6 +297,10 @@ protected:
     
     void setunit_1();
     void setunit_2();
+    
+    void isvalid_1();
+    void isvalid_2();
+    void isvalid_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -1023,4 +1032,19 @@ void TPTest::setunit_1() {
 void TPTest::setunit_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.setUnit("mm"), std::logic_error);
+}
+// validity:
+
+void TPTest::isvalid_1() {
+    CTreeParameter p("test");    // not valid.
+    ASSERT(!p.isValid());
+}
+void TPTest::isvalid_2() {
+    CTreeParameter p("test");
+    p = 1.23;   // valid.
+    ASSERT(p.isValid());
+}
+void TPTest::isvalid_3() {
+    CTreeParameter p; // not bound.
+    CPPUNIT_ASSERT_THROW(p.isValid(), std::logic_error);
 }
