@@ -84,6 +84,14 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(minuseq_1);
     CPPUNIT_TEST(minuseq_2);
     CPPUNIT_TEST(minuseq_3);
+    
+    CPPUNIT_TEST(timeseq_1);
+    CPPUNIT_TEST(timeseq_2);
+    CPPUNIT_TEST(timeseq_3);
+
+    CPPUNIT_TEST(diveq_1);
+    CPPUNIT_TEST(diveq_2);
+    CPPUNIT_TEST(diveq_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -166,6 +174,14 @@ protected:
     void minuseq_1();
     void minuseq_2();
     void minuseq_3();
+    
+    void timeseq_1();
+    void timeseq_2();
+    void timeseq_3();
+    
+    void diveq_1();
+    void diveq_2();
+    void diveq_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -640,4 +656,36 @@ void TPTest::minuseq_2() {
 void TPTest::minuseq_3() {
     CTreeParameter lhs;
     CPPUNIT_ASSERT_THROW(lhs -= 5.0, std::logic_error);
+}
+// the usual 3 tests for *=:
+
+void TPTest::timeseq_1() {
+    CTreeParameter lhs("lhs");
+    lhs = 2.0;
+    CPPUNIT_ASSERT_NO_THROW(lhs *= 2);
+    EQ(double(4.0), double(lhs));
+}
+void TPTest::timeseq_2() {
+    CTreeParameter lhs("lhs");
+    CPPUNIT_ASSERT_THROW(lhs*=2, std::range_error);
+}
+void TPTest::timeseq_3() {
+    CTreeParameter lhs;
+    CPPUNIT_ASSERT_THROW(lhs *= 2, std::logic_error);
+}
+// the usual tests for /=
+
+void TPTest::diveq_1() {
+    CTreeParameter lhs("lhs");
+    lhs = 4.0;
+    CPPUNIT_ASSERT_NO_THROW(lhs /= 2);
+    EQ(double(2.0), double(lhs));
+}
+void TPTest::diveq_2() {
+    CTreeParameter lhs("lhs");
+    CPPUNIT_ASSERT_THROW(lhs /= 2, std::range_error);
+}
+void TPTest::diveq_3() {
+    CTreeParameter lhs;
+    CPPUNIT_ASSERT_THROW(lhs /= 2, std::logic_error);
 }
