@@ -124,6 +124,12 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setbins_1);
     CPPUNIT_TEST(setbins_2);
+    
+    CPPUNIT_TEST(getstart_1);
+    CPPUNIT_TEST(getstart_2);
+    
+    CPPUNIT_TEST(setstart_1);
+    CPPUNIT_TEST(setstart_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -242,6 +248,12 @@ protected:
     
     void setbins_1();
     void setbins_2();
+    
+    void getstart_1();
+    void getstart_2();
+    
+    void setstart_1();
+    void setstart_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -867,4 +879,27 @@ void TPTest::setbins_1() {
 void TPTest::setbins_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.setBins(100), std::logic_error);
+}
+// for getsart:
+
+void TPTest::getstart_1() {
+    CTreeParameter p("test");
+    double start;
+    CPPUNIT_ASSERT_NO_THROW(start = p.getStart());
+    EQ(CTreeParameter::m_defaultSpecification.s_low, start);
+}
+void TPTest::getstart_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.getStart(), std::logic_error);
+}
+// for setstart:
+
+void TPTest::setstart_1() {
+    CTreeParameter p("test");
+    CPPUNIT_ASSERT_NO_THROW(p.setStart(-1.0));
+    EQ(double(-1.0), p.getStart());
+}
+void TPTest::setstart_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setStart(-1.0), std::logic_error);
 }
