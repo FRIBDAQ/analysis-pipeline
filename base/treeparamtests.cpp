@@ -109,6 +109,8 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(predec_2);
     CPPUNIT_TEST(predec_3);
     
+    CPPUNIT_TEST(getname_1);
+    CPPUNIT_TEST(getname_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -215,6 +217,9 @@ protected:
     void predec_1();
     void predec_2();
     void predec_3();
+    
+    void getname_1();
+    void getname_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -793,4 +798,16 @@ void TPTest::predec_2() {
 void TPTest::predec_3() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(--p, std::logic_error);
+}
+// you can get the name of bound or unbound parameters.
+// unbound names are just empty is all:
+
+void TPTest::getname_1() {
+    CTreeParameter p("param");
+    EQ(std::string("param"), p.getName());
+    
+}
+void TPTest::getname_2() {
+    CTreeParameter p;
+    EQ(std::string(""), p.getName());
 }
