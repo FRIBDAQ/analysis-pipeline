@@ -169,6 +169,8 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(resetchanged_1);
     CPPUNIT_TEST(resetchanged_2);
+    
+    CPPUNIT_TEST(resetall);
     CPPUNIT_TEST_SUITE_END();
 
     
@@ -334,6 +336,8 @@ protected:
     
     void resetchanged_1();
     void resetchanged_2();
+    
+    void resetall();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -1148,4 +1152,17 @@ void TPTest::resetchanged_1() {
 void TPTest::resetchanged_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.resetChanged(), std::logic_error);
+}
+// reset all
+void TPTest::resetall() {
+    CTreeParameter p1("p1");
+    CTreeParameter p2("p2");
+    CTreeParameter p3("p3");
+    p1 = 1.0;
+    p3 = 2.0;
+    
+    CTreeParameter::ResetAll();
+    ASSERT(!p1.isValid());
+    ASSERT(!p2.isValid()); /// never was.
+    ASSERT(!p3.isValid());
 }
