@@ -111,6 +111,9 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getname_1);
     CPPUNIT_TEST(getname_2);
+    
+    CPPUNIT_TEST(getid_1);
+    CPPUNIT_TEST(getid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -220,6 +223,9 @@ protected:
     
     void getname_1();
     void getname_2();
+    
+    void getid_1();
+    void getid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -810,4 +816,15 @@ void TPTest::getname_1() {
 void TPTest::getname_2() {
     CTreeParameter p;
     EQ(std::string(""), p.getName());
+}
+// getId requires a bound parameter, however:
+
+void TPTest::getid_1() {
+    CTreeParameter p("param");
+    
+    EQ(p.m_pDefinition->s_parameterNumber, p.getId());
+}
+void TPTest::getid_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.getId(), std::logic_error);
 }
