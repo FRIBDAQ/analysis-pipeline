@@ -61,6 +61,9 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(init_3);
     CPPUNIT_TEST(init_4);
     CPPUNIT_TEST(init_5);
+    
+    CPPUNIT_TEST(dup_1);
+    CPPUNIT_TEST(dup_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -118,6 +121,11 @@ protected:
     void init_3();
     void init_4();
     void init_5();
+    
+    // Dup - test that duplicate names point to the same definition block:
+    
+    void dup_1();
+    void dup_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -411,6 +419,27 @@ void TPTest::init_5() {
     
     EQ(std::string("test"), param.m_name);
     ASSERT(param.m_pDefinition);
+    EQ(double(-1.0), param.m_pDefinition->s_low);
+    EQ(double(1.0), param.m_pDefinition->s_high);
+    EQ(unsigned(100), param.m_pDefinition->s_chans);
+    EQ(std::string("mm/sec"), param.m_pDefinition->s_units);
+}
+// Dup construction with name:
+
+void TPTest::dup_1() {
+    CTreeParameter param("test");
+    CTreeParameter clone("test", "mm/sec");           // overrides existing units.
+    
+    EQ(param.m_pDefinition, clone.m_pDefinition);
+    EQ(std::string("mm/sec"), clone.m_pDefinition->s_units);
+}
+// dup construction full.
+
+void TPTest::dup_2() {
+    CTreeParameter param("test");
+    CTreeParameter clone("test", 100, -1.0, 1.0,  "mm/sec");
+    
+    EQ(param.m_pDefinition, clone.m_pDefinition);
     EQ(double(-1.0), param.m_pDefinition->s_low);
     EQ(double(1.0), param.m_pDefinition->s_high);
     EQ(unsigned(100), param.m_pDefinition->s_chans);
