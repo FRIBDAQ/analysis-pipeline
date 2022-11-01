@@ -55,6 +55,12 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_7);
     CPPUNIT_TEST(construct_8);
     CPPUNIT_TEST(construct_9);
+    
+    CPPUNIT_TEST(init_1);
+    CPPUNIT_TEST(init_2);
+    CPPUNIT_TEST(init_3);
+    CPPUNIT_TEST(init_4);
+    CPPUNIT_TEST(init_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -103,6 +109,15 @@ protected:
     void construct_7();
     void construct_8();
     void construct_9();
+    
+    // Initialize is only tested in cases where the original is  unbound
+    // as constructors checked the other cases.
+    
+    void init_1();
+    void init_2();
+    void init_3();
+    void init_4();
+    void init_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -338,4 +353,66 @@ void TPTest::construct_9() {
     CTreeParameter cunbound(unbound);
     ASSERT(!cunbound.m_pDefinition);
     
+}
+// init with name and resolution only:
+
+void TPTest::init_1() {
+    CTreeParameter param;                 // Unbound:
+    param.Initialize("test", 12);         // Binds it.
+    
+    EQ(std::string("test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    EQ(double(0.0), param.m_pDefinition->s_low);
+    EQ(double(4096),param.m_pDefinition->s_high );
+    EQ(unsigned(4096), param.m_pDefinition->s_chans);
+    EQ(CTreeParameter::m_defaultSpecification.s_units, param.m_pDefinition->s_units);
+    
+}
+// deprecated init with ighorwidth.
+
+void TPTest::init_2() {
+    CTreeParameter param;
+    CPPUNIT_ASSERT_THROW(
+        param.Initialize("test", 12, -1.0, 1.0, "junk", true),
+        std::logic_error
+    );
+}
+// init with just name:
+
+void TPTest::init_3() {
+    CTreeParameter param;
+    param.Initialize("test");
+    
+    EQ(std::string("test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    EQ(CTreeParameter::m_defaultSpecification.s_low, param.m_pDefinition->s_low);
+    EQ(CTreeParameter::m_defaultSpecification.s_high, param.m_pDefinition->s_high);
+    EQ(CTreeParameter::m_defaultSpecification.s_chans, param.m_pDefinition->s_chans);
+    EQ(CTreeParameter::m_defaultSpecification.s_units, param.m_pDefinition->s_units);
+}
+// Init with name and units.
+
+void TPTest::init_4() {
+    CTreeParameter param;
+    param.Initialize("test", "mm/sec");
+    
+    EQ(std::string("test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    EQ(CTreeParameter::m_defaultSpecification.s_low, param.m_pDefinition->s_low);
+    EQ(CTreeParameter::m_defaultSpecification.s_high, param.m_pDefinition->s_high);
+    EQ(CTreeParameter::m_defaultSpecification.s_chans, param.m_pDefinition->s_chans);
+    EQ(std::string("mm/sec"), param.m_pDefinition->s_units);
+}
+// Full init:
+
+void TPTest::init_5() {
+    CTreeParameter param;
+    param.Initialize("test", 100, -1.0, 1.0, "mm/sec");
+    
+    EQ(std::string("test"), param.m_name);
+    ASSERT(param.m_pDefinition);
+    EQ(double(-1.0), param.m_pDefinition->s_low);
+    EQ(double(1.0), param.m_pDefinition->s_high);
+    EQ(unsigned(100), param.m_pDefinition->s_chans);
+    EQ(std::string("mm/sec"), param.m_pDefinition->s_units);
 }
