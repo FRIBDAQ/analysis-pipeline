@@ -80,6 +80,10 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(pluseq_1);
     CPPUNIT_TEST(pluseq_2);
     CPPUNIT_TEST(pluseq_3);
+    
+    CPPUNIT_TEST(minuseq_1);
+    CPPUNIT_TEST(minuseq_2);
+    CPPUNIT_TEST(minuseq_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -158,6 +162,10 @@ protected:
     void pluseq_1();
     void pluseq_2();
     void pluseq_3();
+    
+    void minuseq_1();
+    void minuseq_2();
+    void minuseq_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -612,4 +620,24 @@ void TPTest::pluseq_3() {
     CTreeParameter lhs;
     
     CPPUNIT_ASSERT_THROW(lhs += 10.0, std::logic_error);
+}
+
+// -= to bound/valid lhs works.
+
+void TPTest::minuseq_1() {
+    CTreeParameter lhs("lhs");
+    lhs = 10.0;
+    CPPUNIT_ASSERT_NO_THROW(lhs -= 5.0);
+    EQ(double(5.0), double(lhs));
+}
+// -= to bound invalid throws range error.
+
+void TPTest::minuseq_2() {
+    CTreeParameter lhs("lhs");
+    CPPUNIT_ASSERT_THROW(lhs -= 5.0, std::range_error);
+}
+// -= to unbound throws logic_error.
+void TPTest::minuseq_3() {
+    CTreeParameter lhs;
+    CPPUNIT_ASSERT_THROW(lhs -= 5.0, std::logic_error);
 }
