@@ -121,6 +121,9 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getbins_1);
     CPPUNIT_TEST(getbins_2);
+    
+    CPPUNIT_TEST(setbins_1);
+    CPPUNIT_TEST(setbins_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -236,6 +239,9 @@ protected:
     
     void getbins_1();
     void getbins_2();
+    
+    void setbins_1();
+    void setbins_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -850,4 +856,15 @@ void TPTest::getbins_1()
 void TPTest::getbins_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.getBins(), std::logic_error);
+}
+// and for setbins too:
+
+void TPTest::setbins_1() {
+    CTreeParameter p("Test");
+    CPPUNIT_ASSERT_NO_THROW(p.setBins(100));
+    EQ(unsigned(100), p.getBins());
+}
+void TPTest::setbins_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setBins(100), std::logic_error);
 }
