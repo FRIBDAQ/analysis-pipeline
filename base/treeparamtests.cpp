@@ -72,6 +72,10 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(assign_1);
     CPPUNIT_TEST(assign_2);
     CPPUNIT_TEST(assign_3);
+    CPPUNIT_TEST(assign_4);
+    CPPUNIT_TEST(assign_5);
+    CPPUNIT_TEST(assign_6);
+    CPPUNIT_TEST(assign_7);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -142,6 +146,10 @@ protected:
     void assign_1();
     void assign_2();
     void assign_3();
+    void assign_4();
+    void assign_5();
+    void assign_6();
+    void assign_7();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -534,4 +542,45 @@ void TPTest::assign_3() {
         p = 3.1416,
         std::logic_error
     );
+}
+// Successful assignment from another 'valid' tree parameter:
+
+void TPTest::assign_4() {
+    CTreeParameter p1("test");  // bound
+    p1 = 3.1416;                // valid
+    CTreeParameter p2("other");          // bound
+    p2 = p1;                    // valid.
+    
+    EQ(CTreeParameter::m_generation, p2.m_pDefinition->s_generation);  //check validity.
+    EQ(double(3.1416), double(p2));   //get double representation.
+    
+    // Ensure the validity book keeping was done in the scoreboard:
+    
+    EQ(size_t(2), CTreeParameter::m_scoreboard.size());
+    EQ(p2.m_pDefinition->s_parameterNumber, CTreeParameter::m_scoreboard.at(1));
+    
+    
+}
+// assign from another tree parameter - rhs tp must be valid:
+
+void TPTest::assign_5() {
+    CTreeParameter p1("lhs");
+    CTreeParameter p2("rhs");
+    
+    CPPUNIT_ASSERT_THROW(p1 = p2, std::range_error);
+}
+// assign from another tree parameter lhs must be bound:
+void TPTest::assign_6() {
+    CTreeParameter rhs("rhs");
+    rhs = 3.1416;
+    CTreeParameter lhs;              // not bound.
+    CPPUNIT_ASSERT_THROW(lhs = rhs, std::logic_error);
+}
+
+// assign from another treeparameter rhs must be bound:
+
+void TPTest::assign_7() {
+    CTreeParameter rhs;
+    CTreeParameter lhs("lhs");
+    CPPUNIT_ASSERT_THROW(lhs = rhs, std::logic_error);
 }
