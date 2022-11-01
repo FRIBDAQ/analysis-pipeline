@@ -917,8 +917,9 @@ namespace frib {
                 throw std::logic_error(
                     "Tree parameter must be bound to call resetChanged"
                 );
-            m_pDefinition->s_changed = false;
+            
             }
+            m_pDefinition->s_changed = false;
         }
         /**
          * ResetAll

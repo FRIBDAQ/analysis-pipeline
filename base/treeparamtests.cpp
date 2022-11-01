@@ -163,6 +163,12 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(haschanged_4);
     CPPUNIT_TEST(haschanged_5);
     CPPUNIT_TEST(haschanged_6);
+    
+    CPPUNIT_TEST(setchanged_1);
+    CPPUNIT_TEST(setchanged_2);
+    
+    CPPUNIT_TEST(resetchanged_1);
+    CPPUNIT_TEST(resetchanged_2);
     CPPUNIT_TEST_SUITE_END();
 
     
@@ -322,6 +328,12 @@ protected:
     void haschanged_4();
     void haschanged_5();
     void haschanged_6();
+    
+    void setchanged_1();
+    void setchanged_2();
+    
+    void resetchanged_1();
+    void resetchanged_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -1113,4 +1125,27 @@ void TPTest::haschanged_5() {
 void TPTest::haschanged_6() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.hasChanged(), std::logic_error);
+}
+// setchanged:
+
+void TPTest::setchanged_1() {
+    CTreeParameter p("Test");
+    CPPUNIT_ASSERT_NO_THROW(p.setChanged());
+    ASSERT(p.hasChanged());
+}
+void TPTest::setchanged_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setChanged(), std::logic_error);
+}
+// restchanged
+
+void TPTest::resetchanged_1() {
+    CTreeParameter p("test");
+    p.setUnit("mm");  /// changed
+    CPPUNIT_ASSERT_NO_THROW(p.resetChanged());
+    ASSERT(!p.hasChanged());
+}
+void TPTest::resetchanged_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.resetChanged(), std::logic_error);
 }
