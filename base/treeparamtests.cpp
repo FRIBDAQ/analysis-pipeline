@@ -136,6 +136,14 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setstop_1);
     CPPUNIT_TEST(setstop_2);
+    
+    CPPUNIT_TEST(getinc_1);
+    CPPUNIT_TEST(getinc_2);
+    
+    CPPUNIT_TEST(setinc_1);
+    CPPUNIT_TEST(setinc_2);
+    CPPUNIT_TEST(setinc_3);
+    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -266,6 +274,13 @@ protected:
     
     void setstop_1();
     void setstop_2();
+    
+    void getinc_1();
+    void getinc_2();
+    
+    void setinc_1();
+    void setinc_2();
+    void setinc_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -938,4 +953,41 @@ void TPTest::setstop_1() {
 void TPTest::setstop_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.setStop(1.0), std::logic_error);
+}
+
+// getinc - note that getinc is not precisely computable for all
+//    values of chans, start and stop.  Therefore, we will chose
+//    start, stop, chans values that are precisely computable.
+
+void TPTest::getinc_1() {
+    CTreeParameter p("test");
+    p.setStart(0);
+    p.setStop(4096);
+    p.setBins(1024);
+    
+    double inc;
+    CPPUNIT_ASSERT_NO_THROW(inc = p.getInc());
+    EQ(4.0, inc);
+}
+void TPTest::getinc_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.getInc(), std::logic_error);
+}
+
+// setinc in addition to the normal cases, inc of 0 gives domain_error.
+
+void TPTest::setinc_1() {
+    CTreeParameter p("test");
+    p.setStart(0);
+    p.setStop(4096);
+    CPPUNIT_ASSERT_NO_THROW(p.setInc(4));
+    EQ(unsigned(1024), p.getBins());
+}
+void TPTest::setinc_2() {
+    CTreeParameter p("test");
+    CPPUNIT_ASSERT_THROW(p.setInc(0), std::domain_error);
+}
+void TPTest::setinc_3() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setInc(1), std::logic_error);
 }
