@@ -64,6 +64,10 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(dup_1);
     CPPUNIT_TEST(dup_2);
+    
+    CPPUNIT_TEST(cvtdouble_1);
+    CPPUNIT_TEST(cvtdouble_2);
+    CPPUNIT_TEST(cvtdouble_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -126,6 +130,10 @@ protected:
     
     void dup_1();
     void dup_2();
+    
+    void cvtdouble_1();
+    void cvtdouble_2();
+    void cvtdouble_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -444,4 +452,36 @@ void TPTest::dup_2() {
     EQ(double(1.0), param.m_pDefinition->s_high);
     EQ(unsigned(100), param.m_pDefinition->s_chans);
     EQ(std::string("mm/sec"), param.m_pDefinition->s_units);
+}
+// We can convert a bound valid value for the tree parameter to double:
+
+void TPTest::cvtdouble_1() {
+    CTreeParameter p("test");
+    
+    // Make this valid with a known value artificially:
+    
+    p.m_pDefinition->s_generation = CTreeParameter::m_generation;
+    CTreeParameter::m_event.at(p.m_pDefinition->s_parameterNumber) = 1.2345;
+    
+    EQ(double(1.2345), double(p));
+}
+// invalid value get throws std::range_error:
+
+void TPTest::cvtdouble_2()
+{
+    CTreeParameter p("test");    // bound/invalid
+    
+    CPPUNIT_ASSERT_THROW(
+        double v = p,
+        std::range_error
+    );
+}
+// unbound throws logic_error:
+
+void TPTest::cvtdouble_3() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(
+        double v = p,
+        std::logic_error
+    );
 }
