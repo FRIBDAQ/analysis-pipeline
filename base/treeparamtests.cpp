@@ -68,6 +68,10 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(cvtdouble_1);
     CPPUNIT_TEST(cvtdouble_2);
     CPPUNIT_TEST(cvtdouble_3);
+    
+    CPPUNIT_TEST(assign_1);
+    CPPUNIT_TEST(assign_2);
+    CPPUNIT_TEST(assign_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -134,6 +138,10 @@ protected:
     void cvtdouble_1();
     void cvtdouble_2();
     void cvtdouble_3();
+    
+    void assign_1();
+    void assign_2();
+    void assign_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -482,6 +490,48 @@ void TPTest::cvtdouble_3() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(
         double v = p,
+        std::logic_error
+    );
+}
+// Simple assignment makes valid if bound.
+
+void TPTest::assign_1() {
+    CTreeParameter p("test");
+    CPPUNIT_ASSERT_NO_THROW(p = 1.234);
+    
+    // the value can be gotten and matches:
+    
+    EQ(double(1.234), double(p));
+    
+    // Validity book keeping and dope vector done:
+    
+    EQ(CTreeParameter::m_generation, p.m_pDefinition->s_generation);
+    EQ(size_t(1), CTreeParameter::m_scoreboard.size());
+    EQ(p.m_pDefinition->s_parameterNumber, CTreeParameter::m_scoreboard[0]);
+    
+    // Assigning again does not change the generation or scoreboard;
+    
+    p = 3.1416;
+    EQ(double(3.1416), double(p));
+    EQ(CTreeParameter::m_generation, p.m_pDefinition->s_generation);
+    EQ(size_t(1), CTreeParameter::m_scoreboard.size());
+    EQ(p.m_pDefinition->s_parameterNumber, CTreeParameter::m_scoreboard[0]);
+  
+}
+// Assignments can be chained
+
+void TPTest::assign_2() {
+    CTreeParameter p("test");
+    
+    double result = p = 3.1416;
+    EQ(double(3.1416), result);
+}
+// only bound parameters can be assigned to:
+
+void TPTest::assign_3() {
+    CTreeParameter p;    // not bound.
+    CPPUNIT_ASSERT_THROW(
+        p = 3.1416,
         std::logic_error
     );
 }
