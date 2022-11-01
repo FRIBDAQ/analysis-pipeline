@@ -76,6 +76,10 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(assign_5);
     CPPUNIT_TEST(assign_6);
     CPPUNIT_TEST(assign_7);
+    
+    CPPUNIT_TEST(pluseq_1);
+    CPPUNIT_TEST(pluseq_2);
+    CPPUNIT_TEST(pluseq_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -150,6 +154,10 @@ protected:
     void assign_5();
     void assign_6();
     void assign_7();
+    
+    void pluseq_1();
+    void pluseq_2();
+    void pluseq_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -583,4 +591,25 @@ void TPTest::assign_7() {
     CTreeParameter rhs;
     CTreeParameter lhs("lhs");
     CPPUNIT_ASSERT_THROW(lhs = rhs, std::logic_error);
+}
+// += to bound/valid lhs
+
+void TPTest::pluseq_1() {
+    CTreeParameter lhs("lhs");
+    lhs = 1.0;
+    CPPUNIT_ASSERT_NO_THROW(lhs += 2.0);
+    EQ(double(3.0) , double(lhs));
+}
+// += to bound invalid lhs:
+
+void TPTest::pluseq_2() {
+    CTreeParameter lhs("lhs");
+    CPPUNIT_ASSERT_THROW(lhs += 1.0, std::range_error);
+}
+// += to unbound:
+
+void TPTest::pluseq_3() {
+    CTreeParameter lhs;
+    
+    CPPUNIT_ASSERT_THROW(lhs += 10.0, std::logic_error);
 }
