@@ -143,7 +143,12 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(setinc_1);
     CPPUNIT_TEST(setinc_2);
     CPPUNIT_TEST(setinc_3);
+
+    CPPUNIT_TEST(getunit_1);
+    CPPUNIT_TEST(getunit_2);
     
+    CPPUNIT_TEST(setunit_1);
+    CPPUNIT_TEST(setunit_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -281,6 +286,12 @@ protected:
     void setinc_1();
     void setinc_2();
     void setinc_3();
+    
+    void getunit_1();
+    void getunit_2();
+    
+    void setunit_1();
+    void setunit_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -990,4 +1001,26 @@ void TPTest::setinc_2() {
 void TPTest::setinc_3() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.setInc(1), std::logic_error);
+}
+// getunit:
+
+void TPTest::getunit_1() {
+    CTreeParameter p("test", "mm");
+    std::string units;
+    CPPUNIT_ASSERT_NO_THROW(units = p.getUnit());
+    EQ(std::string("mm"), units);
+}
+void TPTest::getunit_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.getUnit(), std::logic_error);
+}
+// set unit
+void TPTest::setunit_1() {
+    CTreeParameter p("test");
+    CPPUNIT_ASSERT_NO_THROW(p.setUnit("mm"));
+    EQ(std::string("mm"), p.getUnit());
+}
+void TPTest::setunit_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setUnit("mm"), std::logic_error);
 }
