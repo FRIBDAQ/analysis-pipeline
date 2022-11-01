@@ -130,6 +130,12 @@ class TPTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setstart_1);
     CPPUNIT_TEST(setstart_2);
+    
+    CPPUNIT_TEST(getstop_1);
+    CPPUNIT_TEST(getstop_2);
+    
+    CPPUNIT_TEST(setstop_1);
+    CPPUNIT_TEST(setstop_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -254,6 +260,12 @@ protected:
     
     void setstart_1();
     void setstart_2();
+    
+    void getstop_1();
+    void getstop_2();
+    
+    void setstop_1();
+    void setstop_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -902,4 +914,28 @@ void TPTest::setstart_1() {
 void TPTest::setstart_2() {
     CTreeParameter p;
     CPPUNIT_ASSERT_THROW(p.setStart(-1.0), std::logic_error);
+}
+// getstop:
+
+void TPTest::getstop_1() {
+    CTreeParameter p("test");
+    double stop;
+    CPPUNIT_ASSERT_NO_THROW(stop = p.getStop());
+    EQ(CTreeParameter::m_defaultSpecification.s_high, stop);
+}
+void TPTest::getstop_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.getStop(), std::logic_error);
+}
+
+// setstop:
+
+void TPTest::setstop_1() {
+    CTreeParameter p("test");
+    CPPUNIT_ASSERT_NO_THROW(p.setStop(1.0));
+    EQ(double(1.0), p.getStop());
+}
+void TPTest::setstop_2() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p.setStop(1.0), std::logic_error);
 }
