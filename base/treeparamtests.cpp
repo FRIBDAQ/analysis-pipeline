@@ -92,6 +92,23 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(diveq_1);
     CPPUNIT_TEST(diveq_2);
     CPPUNIT_TEST(diveq_3);
+    
+    CPPUNIT_TEST(postinc_1);
+    CPPUNIT_TEST(postinc_2);
+    CPPUNIT_TEST(postinc_3);
+    
+    CPPUNIT_TEST(preinc_1);
+    CPPUNIT_TEST(preinc_2);
+    CPPUNIT_TEST(preinc_3);
+    
+    CPPUNIT_TEST(postdec_1);
+    CPPUNIT_TEST(postdec_2);
+    CPPUNIT_TEST(postdec_3);
+    
+    CPPUNIT_TEST(predec_1);
+    CPPUNIT_TEST(predec_2);
+    CPPUNIT_TEST(predec_3);
+    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -182,6 +199,22 @@ protected:
     void diveq_1();
     void diveq_2();
     void diveq_3();
+    
+    void postinc_1();
+    void postinc_2();
+    void postinc_3();
+    
+    void preinc_1();
+    void preinc_2();
+    void preinc_3();
+    
+    void postdec_1();
+    void postdec_2();
+    void postdec_3();
+    
+    void predec_1();
+    void predec_2();
+    void predec_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -688,4 +721,76 @@ void TPTest::diveq_2() {
 void TPTest::diveq_3() {
     CTreeParameter lhs;
     CPPUNIT_ASSERT_THROW(lhs /= 2, std::logic_error);
+}
+// three tests for x++;
+void TPTest::postinc_1() {
+    CTreeParameter p("P");
+    p = 0.0;
+    double d;
+    CPPUNIT_ASSERT_NO_THROW(d = p++);
+    EQ(double(0.0), d);
+    EQ(double(1.0), double(p));
+}
+void TPTest::postinc_2() {
+    CTreeParameter p("P");
+    CPPUNIT_ASSERT_THROW(p++, std::range_error);
+}
+void TPTest::postinc_3() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p++, std::logic_error);
+}
+// Three tests for ++x
+
+void TPTest::preinc_1() {
+    CTreeParameter p("P");
+    p = 0.0;
+    double d;
+    CPPUNIT_ASSERT_NO_THROW(d = ++p);
+    EQ(double(1.0), d);
+    EQ(double(1.0), double(p));
+}
+void TPTest::preinc_2() {
+    CTreeParameter p("P");
+    CPPUNIT_ASSERT_THROW(++p, std::range_error);
+}
+void TPTest::preinc_3() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(++p, std::logic_error);
+}
+// three tests for x--:
+
+void TPTest::postdec_1() {
+    CTreeParameter p("P");
+    p = 0.0;
+    double d;
+    CPPUNIT_ASSERT_NO_THROW(d = p--);
+    EQ(double(0.0), d);
+    EQ(double(-1.0), double(p));
+    
+}
+void TPTest::postdec_2() {
+    CTreeParameter p("P");
+    CPPUNIT_ASSERT_THROW(p--, std::range_error);
+}
+void TPTest::postdec_3() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(p--, std::logic_error);
+}
+// Three tests for --p
+
+void TPTest::predec_1() {
+    CTreeParameter p("P");
+    p = 0.0;
+    double d;
+    CPPUNIT_ASSERT_NO_THROW(d = --p);
+    EQ(double(-1.0), d);
+    EQ(double(-1.0), double(p));
+}
+void TPTest::predec_2() {
+    CTreeParameter p("P");
+    CPPUNIT_ASSERT_THROW(--p, std::range_error);
+}
+void TPTest::predec_3() {
+    CTreeParameter p;
+    CPPUNIT_ASSERT_THROW(--p, std::logic_error);
 }
