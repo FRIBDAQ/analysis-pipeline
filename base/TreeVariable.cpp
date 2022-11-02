@@ -156,5 +156,71 @@ namespace frib {
             return m_dictionary.size();
         }
         
+        // Object methods:
+        
+        /**
+         * constructor
+         *    Default constructor is unbound from a data block.
+         *    Initialize must be called prior to use:
+         */
+        CTreeVariable::CTreeVariable() :
+            m_name(""), m_pDefinition(nullptr)
+            {}
+        /**
+         * constructor
+         *   
+         * @param name -  name of the variable.
+         * @note if this is a new variable we initialize the value - 0.0
+         *       and units to an empty string, otherwise we don't touch.
+         *       the metadata - on the assumption we're trying to make another
+         *       reference to the original
+         */
+        CTreeVariable::CTreeVariable(std::string name)  :
+            m_name(name), m_pDefinition(nullptr)
+        {
+            m_pDefinition = lookupDefinition(name.c_str());
+            if (!m_pDefinition) {
+                m_pDefinition = createDefinition(name.c_str(), 0.0, "");
+            }
+        }
+        /**
+         * constructor
+         *    @param name - name of the variable.
+         *    @param units  - Units for a new one.
+         *    @note, if the variable exists, we replace the units but leave the
+         *    value alone.
+         */
+        CTreeVariable::CTreeVariable(std::string name, std::string units) :
+            m_name(name), m_pDefinition(nullptr)
+        {
+            m_pDefinition = lookupDefinition(name.c_str());
+            if (m_pDefinition) {
+                m_pDefinition->s_units= units;
+            } else {
+                m_pDefinition = createDefinition(name.c_str(), 0.0, units.c_str());
+            }
+        }
+        /**
+         * constructor
+         *   @param name - variable name.
+         *   @param value -initial variable value.
+         *   @param units - units of measure.
+         */
+        CTreeVariable::CTreeVariable(std::string name, double value, std::string units) :
+            m_pDefinition(nullptr)
+        {
+            Initialize(name, value, units);
+        }
+        /**
+         * copy construction.
+         */
+        CTreeVariable::CTreeVariable(const CTreeVariable& rhs) :
+            m_name(rhs.m_name), m_pDefinition(rhs.m_pDefinition)
+        {}
+        /**
+         * Destructor doesn't actually have to do anything:
+         */
+        CTreeVariable::~CTreeVariable() {}
+        
     }
 }
