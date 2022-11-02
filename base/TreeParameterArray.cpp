@@ -278,13 +278,9 @@ namespace frib {
         {
         
           nIndex -= m_nFirstIndex;	// Remove first index bias.
-          if ((nIndex < 0) || (nIndex >=  m_Parameters.size())) {
-            throw std::out_of_range("Invalid index in operator[]");
-          }
-          return *(m_Parameters[nIndex]);
-          
-          
+          return *m_Parameters.at(nIndex);  // Let at sort out range checking.
         }
+        
         
         
         /**
