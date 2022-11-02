@@ -55,6 +55,8 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(lowindex);
     
     CPPUNIT_TEST(isbound_1);
+    CPPUNIT_TEST(isbound_2);
+    CPPUNIT_TEST(isbound_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -96,6 +98,8 @@ protected:
     void lowindex();
     
     void  isbound_1();
+    void  isbound_2();
+    void isbound_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -299,4 +303,35 @@ void TPATest::isbound_1()
 {
     CTreeParameterArray a;
     ASSERT(!a.isBound());
+}
+// Default construction followed by a good initialize binds:
+
+void TPATest::isbound_2() {
+    CTreeParameterArray a;
+    a.Initialize("test", 12, 16);
+    ASSERT(a.isBound());
+}
+// non default construction binds:
+// CHeck this for all constructor types.
+void TPATest::isbound_3() {
+    {
+        CTreeParameterArray a("test1", 12, 16);
+        ASSERT(a.isBound());
+    }
+    {
+        CTreeParameterArray a("test2", 16);
+        ASSERT(a.isBound());
+    }
+    {
+        CTreeParameterArray a("test3", "mm", 16);
+        ASSERT(a.isBound());
+    }
+    {
+        CTreeParameterArray a("test4", -1.0, 1.0, "mm", 16);
+        ASSERT(a.isBound());
+    }
+    {
+        CTreeParameterArray a("test5", 1024, -1.0, 1.0, "mm", 16);
+        ASSERT(a.isBound());
+    }
 }

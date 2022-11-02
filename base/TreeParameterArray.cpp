@@ -539,6 +539,9 @@ namespace frib {
         bool
         CTreeParameterArray::isBound() const
         {
+          // Not bound if there are no elements yet:
+          
+          if (m_Parameters.size() == 0) return false;
           for (int i=0; i < m_Parameters.size(); i++) {
             if (!m_Parameters[i]->isBound()) return false;
           }
