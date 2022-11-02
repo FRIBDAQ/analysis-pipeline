@@ -49,6 +49,8 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(reset);
     
     CPPUNIT_TEST(iteration);
+    
+    CPPUNIT_TEST(size);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -84,6 +86,8 @@ protected:
     void reset();
     
     void iteration();
+    
+    void size();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -267,4 +271,10 @@ void TPATest::iteration() {
         EQ(sb, is);
         i++;
     }
+}
+// Size is correct.
+
+void TPATest::size() {
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    EQ(a.m_Parameters.size(), a.size());
 }
