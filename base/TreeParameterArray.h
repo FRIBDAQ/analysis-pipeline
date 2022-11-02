@@ -81,16 +81,16 @@ namespace frib {
                       unsigned  resolution, 
                       double lowLimit, double highOrWidth, 
                       std::string units, bool widthOrHighGiven, 
-                      unsigned  elements, int firstIndex);
-          CTreeParameterArray(std::string baseName, unsigned  elements, int baseIndex);
+                      unsigned  elements, int firstIndex = 0);
+          CTreeParameterArray(std::string baseName, unsigned  elements, int baseIndex = 0);
           CTreeParameterArray(std::string baseName, std::string units, 
-                      unsigned  elements, int firstIndex);
+                      unsigned  elements, int firstIndex = 0);
           CTreeParameterArray(std::string baseName, 
                       double low, double high, std::string units, 
-                      unsigned  elements, int firstIndex);
+                      unsigned  elements, int firstIndex = 0);
           CTreeParameterArray(std::string baseName, unsigned  channels, 
                       double low, double high, std::string units, 
-                      unsigned  elements, int firstIndex);
+                      unsigned  elements, int firstIndex = 0);
           ~CTreeParameterArray();
         
           CTreeParameter& operator[](int nIndex);

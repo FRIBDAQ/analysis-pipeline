@@ -36,6 +36,8 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    CPPUNIT_TEST(construct_4);
+    CPPUNIT_TEST(construct_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -61,6 +63,8 @@ protected:
     void construct_1();
     void construct_2();
     void construct_3();
+    void construct_4();
+    void construct_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -109,6 +113,53 @@ void TPATest::construct_3() {
         EQ(CTreeParameter::m_defaultSpecification.s_high, el.getStop());
         EQ(CTreeParameter::m_defaultSpecification.s_chans, el.getBins());
         EQ(CTreeParameter::m_defaultSpecification.s_units, el.getUnit());
+        
+        std::stringstream nameStream;
+        nameStream << "test." ;
+        if (i-1 < 0) {
+            nameStream << "-" << std::setfill('0') << std::setw(2) <<   -(i-1);
+        } else {
+            nameStream << std::setfill('0') << std::setw(2) <<  i-1;
+        }
+        std::string sbname(nameStream.str());
+        EQ(sbname, el.getName());
+    }
+}
+// construct with only units specified:
+
+void TPATest::construct_4() {
+    CTreeParameterArray a("test", "mm", 16, -1);
+    EQ(-1, a.m_nFirstIndex);
+    EQ(size_t(16), a.m_Parameters.size());
+    for (int i =0; i < 16; i++) {
+        CTreeParameter& el(*a.m_Parameters.at(i));
+        EQ(CTreeParameter::m_defaultSpecification.s_low, el.getStart());
+        EQ(CTreeParameter::m_defaultSpecification.s_high, el.getStop());
+        EQ(CTreeParameter::m_defaultSpecification.s_chans, el.getBins());
+        EQ(std::string("mm"), el.getUnit());
+        
+        std::stringstream nameStream;
+        nameStream << "test." ;
+        if (i-1 < 0) {
+            nameStream << "-" << std::setfill('0') << std::setw(2) <<   -(i-1);
+        } else {
+            nameStream << std::setfill('0') << std::setw(2) <<  i-1;
+        }
+        std::string sbname(nameStream.str());
+        EQ(sbname, el.getName());
+    }
+}
+// low/high units for each element.
+void TPATest::construct_5() {
+    CTreeParameterArray a("test", -1.0, 1.0, "mm", 16, -1);
+    EQ(-1, a.m_nFirstIndex);
+    EQ(size_t(16), a.m_Parameters.size());
+    for (int i =0; i < 16; i++) {
+        CTreeParameter& el(*a.m_Parameters.at(i));
+        EQ(double(-1.0), el.getStart());
+        EQ(double(1.0), el.getStop());
+        EQ(CTreeParameter::m_defaultSpecification.s_chans, el.getBins());
+        EQ(std::string("mm"), el.getUnit());
         
         std::stringstream nameStream;
         nameStream << "test." ;
