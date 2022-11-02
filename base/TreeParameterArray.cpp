@@ -374,10 +374,7 @@ namespace frib {
                         unsigned elements, int firstIndex)
         {
           
-          m_nFirstIndex = firstIndex;
-          CTreeParameter Sample(baseName, resolution, lowLimit, widthOrHeight,
-                    units, widthOrHeightGiven);
-          CreateParameters(baseName, elements, Sample);
+          throw std::logic_error("Construction with widthOrHight is no longer supported");
         }
         
         

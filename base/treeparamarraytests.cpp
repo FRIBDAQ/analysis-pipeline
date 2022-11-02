@@ -25,12 +25,16 @@
 #include "TreeParameterArray.h"
 #include "TreeParameter.h"
 #undef private
+#include <sstream>
+#include <iomanip>
+#include <string>
 
 using namespace frib::analysis;
 
 class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(TPATest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -53,11 +57,41 @@ public:
         };
     }
 protected:
-    void test_1();
+    void construct_1();
+    void construct_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
 
-void TPATest::test_1()
+// default construction depends on Initialize:
+void TPATest::construct_1()
 {
+    CTreeParameterArray a;
+    EQ(0, a.m_nFirstIndex);
+    ASSERT(a.m_Parameters.empty());
+}
+// Construct an array ith base, resolution, element count and nonzero base:
+
+void TPATest::construct_2() {
+    CTreeParameterArray a("test", 12, 16, -1);
+    
+    EQ(-1, a.m_nFirstIndex);
+    EQ(size_t(16), a.m_Parameters.size());
+    for (int i =0; i < 16; i++) {
+        CTreeParameter& el(*a.m_Parameters.at(i));
+        EQ(double(0), el.getStart());
+        EQ(double(4096), el.getStop());
+        EQ(unsigned(4096), el.getBins());
+        EQ(CTreeParameter::m_defaultSpecification.s_units, el.getUnit());
+        
+        std::stringstream nameStream;
+        nameStream << "test." ;
+        if (i-1 < 0) {
+            nameStream << "-" << std::setfill('0') << std::setw(2) <<   -(i-1);
+        } else {
+            nameStream << std::setfill('0') << std::setw(2) <<  i-1;
+        }
+        std::string sbname(nameStream.str());
+        EQ(sbname, el.getName());
+    }
 }
