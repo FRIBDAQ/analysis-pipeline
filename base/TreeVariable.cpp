@@ -222,5 +222,23 @@ namespace frib {
          */
         CTreeVariable::~CTreeVariable() {}
         
+        /**
+         * Initialize
+         *    Do full initialization of a tree variable.
+         * @param name -  name of of the variable.
+         * @param value - initial value (replaces existing value).
+         * @param units - units of measure(replaces any existing).
+         */
+        void
+        CTreeVariable::Initialize(std::string name, double value, std::string units) {
+            m_name = name;
+            m_pDefinition = lookupDefinition(name.c_str());
+            if (!m_pDefinition) {
+                m_pDefinition = createDefinition(name.c_str(), value, units.c_str());
+            } else {
+                m_pDefinition->s_units= units;
+                m_pDefinition->s_value = value;
+            }
+        }
     }
 }
