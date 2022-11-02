@@ -28,6 +28,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <stdexcept>
 
 using namespace frib::analysis;
 
@@ -39,6 +40,11 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST(construct_5);
     CPPUNIT_TEST(construct_6);
+    
+    // Note construtors call initialize so there's no need to test that(?).
+    
+    CPPUNIT_TEST(index_1);
+    CPPUNIT_TEST(index_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -67,6 +73,10 @@ protected:
     void construct_4();
     void construct_5();
     void construct_6();
+    
+    void index_1();
+    void index_2();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -196,4 +206,30 @@ void TPATest::construct_6() {
         std::string sbname(nameStream.str());
         EQ(sbname, el.getName());
     }
+}
+// Test valid indexing:
+
+void TPATest::index_1() {
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    
+    for (int i =-1; i < 15; i++) {
+        CTreeParameter& sb(*a.m_Parameters.at(i+1));
+        CTreeParameter& is(a[i]);
+        
+        
+        EQ(sb.getStart(), is.getStart());
+        EQ(sb.getStop(), is.getStop());
+        EQ(sb.getBins(), is.getBins());    // Functionally the same.
+        EQ(sb.getUnit(), is.getUnit());
+        EQ(sb.getName(), is.getName());
+        EQ(&sb, &is);                     // Actually the same.
+    }
+}
+// invalid index tosses std::out_of_range:
+
+void TPATest::index_2()
+{
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    CPPUNIT_ASSERT_THROW(a[-2], std::out_of_range);
+    CPPUNIT_ASSERT_THROW(a[15], std::out_of_range);
 }
