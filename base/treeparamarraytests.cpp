@@ -51,6 +51,8 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(iteration);
     
     CPPUNIT_TEST(size);
+    
+    CPPUNIT_TEST(lowindex);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -88,6 +90,8 @@ protected:
     void iteration();
     
     void size();
+    
+    void lowindex();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -277,4 +281,11 @@ void TPATest::iteration() {
 void TPATest::size() {
     CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
     EQ(a.m_Parameters.size(), a.size());
+}
+// low index is correct:
+
+void TPATest::lowindex()
+{
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    EQ(-1, a.lowIndex());    
 }
