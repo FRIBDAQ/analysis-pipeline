@@ -100,6 +100,8 @@ protected:
     void  isbound_1();
     void  isbound_2();
     void isbound_3();
+    
+    // Bind is a no-op under the hood so we don't test.
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
