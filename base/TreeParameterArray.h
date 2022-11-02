@@ -96,19 +96,19 @@ namespace frib {
           CTreeParameter& operator[](int nIndex);
           void Reset();
           void Initialize(std::string baseName, unsigned  resolution, 
-                  unsigned  elements, int baseIndex);
+                  unsigned  elements, int baseIndex = 0);
           void Initialize(std::string baseName, unsigned  resolution, 
                   double lowLimit, double widthOrHeight,
                   std::string units, bool widthOrHeightGiven, 
-                  unsigned  elements, int firstIndex);
-          void Initialize(std::string baseName, unsigned  elements, int firstIndex);
+                  unsigned  elements, int firstIndex  = 0);
+          void Initialize(std::string baseName, unsigned  elements, int firstIndex = 0);
           void Initialize(std::string baseName, std::string units, unsigned  elements, 
-                  int firstIndex);
+                  int firstIndex = 0);
           void Initialize(std::string baseName, double lowLimit, double highLimit, 
-                  std::string units, unsigned  elements, int firstIndex);
+                  std::string units, unsigned  elements, int firstIndex = 0);
           void Initialize(std::string baseName, unsigned  channels, 
                   double lowLimit, double highLimit, std::string units, 
-                  unsigned  elements, int firstIndex);
+                  unsigned  elements, int firstIndex = 0);
           std::vector<CTreeParameter*>::iterator begin();
           std::vector<CTreeParameter*>::iterator end();
           unsigned  size();
