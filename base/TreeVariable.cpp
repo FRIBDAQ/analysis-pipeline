@@ -339,6 +339,105 @@ namespace frib {
             setValue(getValue() - 1.0);
             return *this;
         }
-    
+        /**
+         * getName
+         *   @return std::string -name given to the variable.
+         */
+        std::string
+        CTreeVariable::getName() const {
+            return m_name;
+        }
+        /**
+         * getValue
+         *    Return the value of the variable if it's bound else
+         *    throw std::Logic_error.
+         * @return double
+         */
+        double
+        CTreeVariable::getValue() const {
+            if (m_pDefinition) {
+                return m_pDefinition->s_value;
+            } else {
+                throw std::logic_error("getValue on unbound treevariable");
+            }
+        }
+        /**
+         * setValue
+         *  set a new value for the variable if bound or throw std::logic_error.
+         *@param newValue
+         */
+        void
+        CTreeVariable::setValue(double newValue) {
+            if (m_pDefinition) {
+                m_pDefinition->s_value = newValue;
+                m_pDefinition->s_valueChanged = true;
+            } else {
+                throw std::logic_error("setValue on unbound treevariable");
+            }
+        }
+        /**
+         * getUnit
+         *    Return units if bound else throw std::Logic_error.
+         *  @return std::string
+         */
+        std::string
+        CTreeVariable::getUnit() const {
+            if (m_pDefinition) {
+                return m_pDefinition->s_units;
+            } else {
+                throw std::logic_error("getUnit on unbound treevariable");
+            }
+        }
+        /**
+         * setUnit
+         *    New units of measure
+         */
+        void
+        CTreeVariable::setUnit(const char* pUnits) {
+            if (m_pDefinition) {
+                m_pDefinition->s_units = pUnits;
+                m_pDefinition->s_definitionChanged = true;
+            } else {
+                throw std::logic_error("setUnit on unbound treevariable");
+            }
+        }
+        /**
+         * hasChanged
+         *   @return bool true if the definition has changed.
+         */
+        bool
+        CTreeVariable::hasChanged() const {
+            if (m_pDefinition) {
+                return m_pDefinition->s_definitionChanged;
+            } else {
+                throw std::logic_error("hasChanged called on unbound treevariable");
+            }
+        }
+        /**
+         * valueChanged
+         * @return bool - if the value changed.
+         */
+        bool
+        CTreeVariable::valueChanged() const {
+            if (m_pDefinition) {
+                return m_pDefinition->s_valueChanged;
+            } else {
+                throw std::logic_error("valueChanged called on unbound treevariable");
+            }
+        }
+        /**
+         * resetChanged
+         *    reset the changed flags to false:
+         *
+         */
+        void
+        CTreeVariable::resetChanged() {
+            if (m_pDefinition) {
+                m_pDefinition->s_valueChanged = false;
+                m_pDefinition->s_definitionChanged = false;
+            } else {
+                throw std::logic_error("resetChange called on unbound treevariable");
+            }
+        }
     }
 }
