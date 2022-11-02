@@ -514,7 +514,7 @@ namespace frib {
         /**
          * Returns number of elements in the array.
          */
-        unsigned 
+        size_t
         CTreeParameterArray::size()
         {
           return m_Parameters.size();

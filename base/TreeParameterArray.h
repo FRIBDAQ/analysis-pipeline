@@ -111,7 +111,7 @@ namespace frib {
                   unsigned  elements, int firstIndex = 0);
           std::vector<CTreeParameter*>::iterator begin();
           std::vector<CTreeParameter*>::iterator end();
-          unsigned  size();
+          size_t size();
           int lowIndex();
           bool isBound() const;
           void Bind();
