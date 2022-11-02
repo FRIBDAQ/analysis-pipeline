@@ -240,5 +240,56 @@ namespace frib {
                 m_pDefinition->s_value = value;
             }
         }
+        /**
+         * Bind
+         *    This is a no-op but preserved for compatibility with old programs.
+         */
+        void
+        CTreeVariable::Bind() {}
+        /**
+         * operator double
+         *    This is a call to getValue which does all the bind checking etc.
+         * @return double - the value associated with this variable.
+         */
+        CTreeVariable::operator double() const {
+            return getValue();
+        }
+        /** operator=
+         *    Assignment from double
+         *    Uses setValue which does bind checking
+         * @return *this
+         */
+        CTreeVariable& CTreeVariable::operator=(double rhs) {
+            setValue(rhs);
+            return *this;
+        }
+        /**
+         * assignment from another tree variable
+         * @param rhs - the other tree variable.
+         * @return *this
+         */
+        CTreeVariable&
+        CTreeVariable::operator=(const CTreeVariable& rhs) {
+            setValue(rhs.getValue());
+            return *this;
+        }
+        /**
+         * +=
+         * @return *this
+         */
+        CTreeVariable&
+        CTreeVariable::operator+=(double rhs) {
+            setValue(getValue() + rhs);
+            return *this;
+        }
+        /**
+         * -=
+         * @return *this
+         */
+        CTreeVariable&
+        CTreeVariable::operator-=(double rhs) {
+            setValue(getValue() - rhs);
+            return *this;
+        }
     }
 }
