@@ -45,6 +45,8 @@ class TPATest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(index_1);
     CPPUNIT_TEST(index_2);
+    
+    CPPUNIT_TEST(reset);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +79,7 @@ protected:
     void index_1();
     void index_2();
     
+    void reset();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -232,4 +235,19 @@ void TPATest::index_2()
     CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
     CPPUNIT_ASSERT_THROW(a[-2], std::out_of_range);
     CPPUNIT_ASSERT_THROW(a[15], std::out_of_range);
+}
+// Reset invalidates all elements.
+
+void TPATest::reset() {
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    for (int i =-1; i < 15; i++) {
+        a[i] = i*3.1416;
+    }
+    // All ar now valid.
+    
+    a.Reset();    // all should now be invalid:
+    
+    for (int i =-1; i< 15; i++) {
+        ASSERT(!a[i].isValid());
+    }
 }
