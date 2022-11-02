@@ -291,5 +291,54 @@ namespace frib {
             setValue(getValue() - rhs);
             return *this;
         }
+        /**
+         * *=
+         */
+        CTreeVariable&
+        CTreeVariable::operator*=(double rhs) {
+            setValue(getValue()*rhs);
+            return *this;
+        }
+        
+        CTreeVariable&
+        CTreeVariable::operator/=(double rhs) {
+            setValue(getValue()/rhs);
+            return *this;
+        }
+        
+        /**
+         * postincrement
+         *   @return double -the value prior to the increment.
+         */
+        double
+        CTreeVariable::operator++(int dummy) {
+            double result = getValue();
+            setValue(getValue() + 1);
+            return result;
+        }
+        /** Pre increment
+        * @return *this - after the increment.
+        */
+        CTreeVariable&
+        CTreeVariable::operator++() {
+            setValue(getValue() + 1);
+            return *this;
+        }
+        /** post decrement
+         */
+        double
+        CTreeVariable::operator--(int dummy) {
+            double result = getValue();
+            setValue(getValue() - 1.0);
+            return result;
+        }
+        /** predecrement
+         */
+        CTreeVariable&
+        CTreeVariable::operator--() {
+            setValue(getValue() - 1.0);
+            return *this;
+        }
+    
     }
 }
