@@ -38,6 +38,7 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST(construct_5);
+    CPPUNIT_TEST(construct_6);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -65,6 +66,7 @@ protected:
     void construct_3();
     void construct_4();
     void construct_5();
+    void construct_6();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -159,6 +161,29 @@ void TPATest::construct_5() {
         EQ(double(-1.0), el.getStart());
         EQ(double(1.0), el.getStop());
         EQ(CTreeParameter::m_defaultSpecification.s_chans, el.getBins());
+        EQ(std::string("mm"), el.getUnit());
+        
+        std::stringstream nameStream;
+        nameStream << "test." ;
+        if (i-1 < 0) {
+            nameStream << "-" << std::setfill('0') << std::setw(2) <<   -(i-1);
+        } else {
+            nameStream << std::setfill('0') << std::setw(2) <<  i-1;
+        }
+        std::string sbname(nameStream.str());
+        EQ(sbname, el.getName());
+    }
+}
+// Full construction of elements:
+void TPATest::construct_6() {
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    EQ(-1, a.m_nFirstIndex);
+    EQ(size_t(16), a.m_Parameters.size());
+    for (int i =0; i < 16; i++) {
+        CTreeParameter& el(*a.m_Parameters.at(i));
+        EQ(double(-1.0), el.getStart());
+        EQ(double(1.0), el.getStop());
+        EQ(unsigned(1024), el.getBins());
         EQ(std::string("mm"), el.getUnit());
         
         std::stringstream nameStream;
