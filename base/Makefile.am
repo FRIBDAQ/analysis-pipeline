@@ -4,12 +4,17 @@ libfribCore_la_SOURCES = TreeParameter.cpp TreeParameterArray.cpp \
 	TreeVariable.cpp
 include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h
 
-noinst_PROGRAMS=treeparamtests
+noinst_PROGRAMS=treeparamtests treevartests
 
 treeparamtests_SOURCES=TestRunner.cpp Asserts.h treeparamtests.cpp \
-	treeparamarraytests.cpp
+	treeparamarraytests.cpp 
 treeparamtests_CPPFLAGS=@CPPUNIT_CFLAGS@
 treeparamtests_LDFLAGS= @CPPUNIT_LIBS@
 treeparamtests_LDADD=libfribCore.la
 
-TESTS=treeparamtests
+treevartests_SOURCES=TestRunner.cpp Asserts.h treevariabletests.cpp
+treevartests_CPPFLAGS=@CPPUNIT_CFLAGS@
+treevartests_LDFLAGS=@CPPUNIT_LIBS@
+treevartests_LDADD=libfribCore.la
+
+TESTS=treeparamtests treevartests
