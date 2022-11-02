@@ -47,6 +47,8 @@ class TPATest : public CppUnit::TestFixture {
     CPPUNIT_TEST(index_2);
     
     CPPUNIT_TEST(reset);
+    
+    CPPUNIT_TEST(iteration);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -80,6 +82,8 @@ protected:
     void index_2();
     
     void reset();
+    
+    void iteration();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPATest);
@@ -249,5 +253,18 @@ void TPATest::reset() {
     
     for (int i =-1; i< 15; i++) {
         ASSERT(!a[i].isValid());
+    }
+}
+/// Use begin/end iteration.
+
+void TPATest::iteration() {
+    CTreeParameterArray a("test", 1024, -1.0, 1.0, "mm", 16, -1);
+    
+    int i = -1;
+    for (auto p = a.begin(); p != a.end(); p++) {
+        CTreeParameter* is = *p;
+        CTreeParameter* sb(&a[i]);
+        EQ(sb, is);
+        i++;
     }
 }
