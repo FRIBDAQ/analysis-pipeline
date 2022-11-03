@@ -100,6 +100,8 @@ class TVTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(unit_3);
     CPPUNIT_TEST(unit_4);
 
+    CPPUNIT_TEST(changed_1);
+    CPPUNIT_TEST(changed_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -181,6 +183,8 @@ protected:
     void unit_3();
     void unit_4();
     
+    void changed_1();
+    void changed_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -650,4 +654,17 @@ void TVTest::unit_4() {
     CTreeVariable v("test");
     CPPUNIT_ASSERT_NO_THROW(v.setUnit("furlongs/fortnight"));
     EQ(std::string("furlongs/fortnight"), v.getUnit());
+}
+// definition chang testing:
+
+void TVTest::changed_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v.hasChanged(), std::logic_error);
+}
+void TVTest::changed_2() {
+    CTreeVariable v("test");
+    
+    ASSERT(!v.hasChanged());
+    v.setUnit("mm");
+    ASSERT(v.hasChanged());
 }
