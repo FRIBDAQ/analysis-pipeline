@@ -81,6 +81,11 @@ class TVTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(postinc_2);
     CPPUNIT_TEST(preinc_1);
     CPPUNIT_TEST(preinc_2);
+    
+    CPPUNIT_TEST(postdec_1);
+    CPPUNIT_TEST(postdec_2);
+    CPPUNIT_TEST(predec_1);
+    CPPUNIT_TEST(predec_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -143,6 +148,11 @@ protected:
     void postinc_2();
     void preinc_1();
     void preinc_2();
+    
+    void postdec_1();
+    void postdec_2();
+    void predec_1();
+    void predec_2();
     
 };
 
@@ -529,6 +539,30 @@ void TVTest::preinc_2() {
     CTreeVariable v("test");
     double post;
     CPPUNIT_ASSERT_NO_THROW(post = ++v);
+    EQ(1.0, post);
+    EQ(1.0, double(v));
+}
+// operator -- tests.
+
+void TVTest::postdec_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v--, std::logic_error);
+}
+void TVTest::postdec_2() {
+    CTreeVariable v("v", 2.0, "mm");
+    double pre;
+    CPPUNIT_ASSERT_NO_THROW(pre = v--);
+    EQ(2.0, pre);
+    EQ(1.0, double(v));
+}
+void TVTest::predec_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(--v, std::logic_error);
+}
+void TVTest::predec_2() {
+    CTreeVariable v("v", 2.0, "mm");
+    double post;
+    CPPUNIT_ASSERT_NO_THROW(post = --v);
     EQ(1.0, post);
     EQ(1.0, double(v));
 }
