@@ -89,6 +89,11 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(name_1);
     CPPUNIT_TEST(name_2);
+    
+    CPPUNIT_TEST(value_1);
+    CPPUNIT_TEST(value_2);
+    CPPUNIT_TEST(value_3);
+    CPPUNIT_TEST(value_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -159,6 +164,11 @@ protected:
     
     void name_1();
     void name_2();
+    
+    void value_1();
+    void value_2();
+    void value_3();
+    void value_4();
     
 };
 
@@ -585,4 +595,24 @@ void TVTest::name_2() {
     std::string name;
     CPPUNIT_ASSERT_NO_THROW(name = v.getName());
     EQ(std::string("name"), name);
+}
+// value method:
+
+void TVTest::value_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v.getValue(), std::logic_error);
+}
+void TVTest::value_2() {
+    CTreeVariable v("v", 1.234, "mm");
+    EQ(1.234, v.getValue());
+}
+void TVTest::value_3() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v.setValue(1.2), std::logic_error);
+}
+void TVTest::value_4() {
+    CTreeVariable v("v");
+    CPPUNIT_ASSERT_NO_THROW(v.setValue(3.14));
+    EQ(3.14, v.getValue());
+                            
 }
