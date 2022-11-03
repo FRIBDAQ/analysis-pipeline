@@ -41,6 +41,9 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getdef_1);
     CPPUNIT_TEST(getdef_2);
+    
+    CPPUNIT_TEST(iter_1);
+    CPPUNIT_TEST(iter_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -65,6 +68,9 @@ protected:
     
     void getdef_1();
     void getdef_2();
+    
+    void iter_1();
+    void iter_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -159,4 +165,30 @@ void TVTest::getdef_2() {
     
     EQ(std::string("test4"), v[3].first);
     EQ(double(4.0), v[3].second->s_value);
+}
+
+// iterate on empty:
+
+void TVTest::iter_1()
+{
+    ASSERT(CTreeVariable::begin() == CTreeVariable::end());
+}
+// Iterate on something:
+
+void TVTest::iter_2() {
+    CTreeVariable::createDefinition("test4", 4.0, "");
+    CTreeVariable::createDefinition("test1", 1.0, "");
+    CTreeVariable::createDefinition("test3", 3.0, "");
+    CTreeVariable::createDefinition("test2", 2.0, "");
+    
+    // Iteration order is lexical:
+    
+    std::vector<std::string> names ={"test1", "test2", "test3", "test4"};
+    std::vector<double> values = {1.0, 2.0, 3.0, 4.0};
+    unsigned i =0;
+    for (auto p = CTreeVariable::begin(); p != CTreeVariable::end(); p++ ) {
+        EQ(names[i], p->first);
+        EQ(values[i], p->second.s_value);
+        i++;
+    }
 }
