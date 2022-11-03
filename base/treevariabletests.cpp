@@ -35,6 +35,9 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(lookupdef_1);
     CPPUNIT_TEST(lookupdef_2);
+    
+    CPPUNIT_TEST(names_1);
+    CPPUNIT_TEST(names_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -53,6 +56,9 @@ protected:
     
     void lookupdef_1();
     void lookupdef_2();
+    
+    void names_1();
+    void names_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -97,4 +103,26 @@ void TVTest::lookupdef_2() {
     auto another = CTreeVariable::createDefinition("junk", 3.1416, "radians");
     
     EQ(pDef, CTreeVariable::lookupDefinition("test"));
+}
+
+// empty names:
+void TVTest::names_1() {
+    auto v = CTreeVariable::getNames();
+    ASSERT(v.empty());
+}
+// Some names:
+void TVTest::names_2() {
+    CTreeVariable::createDefinition("test1", 1.0, "");
+    CTreeVariable::createDefinition("test2", 1.0, "");
+    CTreeVariable::createDefinition("test3", 1.0, "");
+    CTreeVariable::createDefinition("test4", 1.0, "");
+    
+    // We rely on the fact that tree iteration is lexically ordered:
+    
+    auto v = CTreeVariable::getNames();
+    EQ(size_t(4), v.size());
+    EQ(std::string("test1"), v[0]);
+    EQ(std::string("test2"), v[1]);
+    EQ(std::string("test3"), v[2]);
+    EQ(std::string("test4"), v[3]);    
 }
