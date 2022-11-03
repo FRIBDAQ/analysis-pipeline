@@ -32,6 +32,9 @@ class TVTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(crdef_1);
     CPPUNIT_TEST(crdef_2);
     CPPUNIT_TEST(crdef_3);
+    
+    CPPUNIT_TEST(lookupdef_1);
+    CPPUNIT_TEST(lookupdef_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -47,6 +50,9 @@ protected:
     void crdef_1();
     void crdef_2();
     void crdef_3();
+    
+    void lookupdef_1();
+    void lookupdef_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -78,4 +84,17 @@ void TVTest::crdef_3() {
         CTreeVariable::createDefinition("test", 1.234, "furlongs"),
         std::logic_error
     );
+}
+// NOthing to see here:
+
+void TVTest::lookupdef_1() {
+    auto pDef = CTreeVariable::lookupDefinition("Not found");
+    ASSERT(!pDef);
+}
+// Found
+void TVTest::lookupdef_2() {
+    auto pDef = CTreeVariable::createDefinition("test", 1.234,"furlong");
+    auto another = CTreeVariable::createDefinition("junk", 3.1416, "radians");
+    
+    EQ(pDef, CTreeVariable::lookupDefinition("test"));
 }
