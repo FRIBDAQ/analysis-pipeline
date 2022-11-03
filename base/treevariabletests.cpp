@@ -50,10 +50,15 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
-    CPPUNIT_TEST(construct_3);
-    CPPUNIT_TEST(construct_4);
-    CPPUNIT_TEST(construct_5);
+    CPPUNIT_TEST(construct_3);    // Note construction indirectly tests
+    CPPUNIT_TEST(construct_4);    // CTreeVariable::Initialize so we don't need
+    CPPUNIT_TEST(construct_5);    // an additional test for it.
     CPPUNIT_TEST(construct_6);
+    
+    // conversions and operators:
+    
+    CPPUNIT_TEST(double_1);
+    CPPUNIT_TEST(double_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -91,6 +96,9 @@ protected:
     void construct_4();
     void construct_5();
     void construct_6();
+    
+    void double_1();
+    void double_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -322,4 +330,19 @@ void TVTest::construct_6() {
     EQ(v1.m_name, v2.m_name);
     EQ(v1.m_pDefinition, v2.m_pDefinition);
     EQ(size_t(1), CTreeVariable::m_dictionary.size());
+}
+// unbound throws.
+void TVTest::double_1() {
+    CTreeVariable v;
+    double value;
+    CPPUNIT_ASSERT_THROW(value = v, std::logic_error);
+}
+
+// bound gives value
+
+void TVTest::double_2() {
+    CTreeVariable v("test", 1.2345, "mm");
+    double value;
+    CPPUNIT_ASSERT_NO_THROW(value = v);
+    EQ(double(1.2345), value);
 }
