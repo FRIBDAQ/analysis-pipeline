@@ -102,6 +102,9 @@ class TVTest : public CppUnit::TestFixture {
 
     CPPUNIT_TEST(changed_1);
     CPPUNIT_TEST(changed_2);
+    
+    CPPUNIT_TEST(resetchanged_1);
+    CPPUNIT_TEST(resetchanged_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -185,6 +188,9 @@ protected:
     
     void changed_1();
     void changed_2();
+    
+    void resetchanged_1();
+    void resetchanged_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -672,4 +678,25 @@ void TVTest::changed_2() {
     ASSERT(!v.valueChanged());
     v = 1.234;
     ASSERT(v.valueChanged());
+}
+// reset changed flags
+//
+void TVTest::resetchanged_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v.resetChanged(), std::logic_error);
+}
+void TVTest::resetchanged_2() {
+     CTreeVariable v("test");
+    
+    ASSERT(!v.hasChanged());
+    v.setUnit("mm");
+    ASSERT(v.hasChanged());
+    
+    ASSERT(!v.valueChanged());
+    v = 1.234;
+    ASSERT(v.valueChanged());
+    
+    CPPUNIT_ASSERT_NO_THROW(v.resetChanged());
+    ASSERT(!v.hasChanged());
+    ASSERT(!v.valueChanged());
 }
