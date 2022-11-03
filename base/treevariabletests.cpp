@@ -76,6 +76,11 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(diveq_1);
     CPPUNIT_TEST(diveq_2);
+    
+    CPPUNIT_TEST(postinc_1);
+    CPPUNIT_TEST(postinc_2);
+    CPPUNIT_TEST(preinc_1);
+    CPPUNIT_TEST(preinc_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -133,6 +138,11 @@ protected:
     
     void diveq_1();
     void diveq_2();
+    
+    void postinc_1();
+    void postinc_2();
+    void preinc_1();
+    void preinc_2();
     
 };
 
@@ -494,4 +504,31 @@ void TVTest::diveq_2() {
     CPPUNIT_ASSERT_NO_THROW(v3 /= v2 /= 2);
     EQ(2.0, double(v2));
     EQ(8.0, double(v3));
+}
+// post increment unbound throws
+
+void TVTest::postinc_1()
+{
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v++, std::logic_error);
+}
+// Post increment bound.
+
+void TVTest::postinc_2() {
+    CTreeVariable v("v");     // 0.0 value.
+    double pre;
+    CPPUNIT_ASSERT_NO_THROW(pre = v++);
+    EQ(0.0, pre);
+    EQ(1.0, double(v));
+}
+void TVTest::preinc_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(++v, std::logic_error);
+}
+void TVTest::preinc_2() {
+    CTreeVariable v("test");
+    double post;
+    CPPUNIT_ASSERT_NO_THROW(post = ++v);
+    EQ(1.0, post);
+    EQ(1.0, double(v));
 }
