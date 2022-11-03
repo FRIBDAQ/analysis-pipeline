@@ -86,6 +86,9 @@ class TVTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(postdec_2);
     CPPUNIT_TEST(predec_1);
     CPPUNIT_TEST(predec_2);
+    
+    CPPUNIT_TEST(name_1);
+    CPPUNIT_TEST(name_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -153,6 +156,9 @@ protected:
     void postdec_2();
     void predec_1();
     void predec_2();
+    
+    void name_1();
+    void name_2();
     
 };
 
@@ -565,4 +571,18 @@ void TVTest::predec_2() {
     CPPUNIT_ASSERT_NO_THROW(post = --v);
     EQ(1.0, post);
     EQ(1.0, double(v));
+}
+// get name unbound is actually ok.
+void TVTest::name_1()
+{
+    CTreeVariable v;
+    std::string name;
+    CPPUNIT_ASSERT_NO_THROW(name = v.getName());
+    EQ(std::string(""), name);
+}
+void TVTest::name_2() {
+    CTreeVariable v("name");
+    std::string name;
+    CPPUNIT_ASSERT_NO_THROW(name = v.getName());
+    EQ(std::string("name"), name);
 }
