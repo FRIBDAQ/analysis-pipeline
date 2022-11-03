@@ -100,7 +100,7 @@ namespace frib {
             CTreeVariable(std::string name);
             CTreeVariable(std::string name, std::string units);
             CTreeVariable(std::string name, double value, std::string units);
-            CTreeVariable(std::string name, Definition& properties);
+            CTreeVariable(std::string name,const Definition& properties);
             CTreeVariable(const CTreeVariable& rhs);
             
             ~CTreeVariable();

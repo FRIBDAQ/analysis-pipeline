@@ -216,7 +216,7 @@ namespace frib {
          *  @param name -name of parameter.
          *  @param def  - References the definition.
          */
-        CTreeVariable::CTreeVariable(std::string name, Definition& properties) :
+        CTreeVariable::CTreeVariable(std::string name, const Definition& properties) :
             CTreeVariable(name, properties.s_value, properties.s_units)
         {}
         /**

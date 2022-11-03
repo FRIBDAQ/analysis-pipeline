@@ -1,8 +1,9 @@
 lib_LTLIBRARIES = libfribCore.la
 
 libfribCore_la_SOURCES = TreeParameter.cpp TreeParameterArray.cpp \
-	TreeVariable.cpp
-include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h
+	TreeVariable.cpp TreeVariableArray.cpp
+include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
+	TreeVariableArray.h
 
 noinst_PROGRAMS=treeparamtests treevartests
 
