@@ -73,6 +73,9 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(timeseq_1);
     CPPUNIT_TEST(timeseq_2);
+    
+    CPPUNIT_TEST(diveq_1);
+    CPPUNIT_TEST(diveq_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -127,6 +130,9 @@ protected:
     
     void timeseq_1();
     void timeseq_2();
+    
+    void diveq_1();
+    void diveq_2();
     
 };
 
@@ -469,4 +475,23 @@ void TVTest::timeseq_2() {
     CPPUNIT_ASSERT_NO_THROW(v3 *= v2 *= 2);
     EQ(4.0, double(v2));
     EQ(16.0, double(v3));
+}
+// /= unbound throws.,
+
+void TVTest::diveq_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v /= 2.0, std::logic_error);
+}
+// ok and chaining
+void TVTest::diveq_2() {
+    CTreeVariable v1("v1", 2.0, "");
+    CTreeVariable v2("v2", 4.0, "");
+    CTreeVariable v3("v3", 16.0, "");
+    
+    CPPUNIT_ASSERT_NO_THROW(v1 /= 2);
+    EQ(1.0, double(v1));
+    
+    CPPUNIT_ASSERT_NO_THROW(v3 /= v2 /= 2);
+    EQ(2.0, double(v2));
+    EQ(8.0, double(v3));
 }
