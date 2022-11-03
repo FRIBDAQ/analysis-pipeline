@@ -59,6 +59,11 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(double_1);
     CPPUNIT_TEST(double_2);
+    
+    CPPUNIT_TEST(assign_1);
+    CPPUNIT_TEST(assign_2);
+    CPPUNIT_TEST(assign_3);
+    CPPUNIT_TEST(assign_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -99,6 +104,12 @@ protected:
     
     void double_1();
     void double_2();
+    
+    void assign_1();
+    void assign_2();
+    void assign_3();
+    void assign_4();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -345,4 +356,44 @@ void TVTest::double_2() {
     double value;
     CPPUNIT_ASSERT_NO_THROW(value = v);
     EQ(double(1.2345), value);
+}
+// assign double to unbound:
+
+void TVTest::assign_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v = 3.14159, std::logic_error);
+}
+// Assign double to bound
+
+void TVTest::assign_2() {
+    CTreeVariable v("test");
+    CPPUNIT_ASSERT_NO_THROW(v = 3.1416);
+    EQ(double(3.1416), double(v));
+    
+}
+// Assigne Treevariable to unbound:
+
+void TVTest::assign_3() {
+    CTreeVariable v1;
+    CTreeVariable v2("test1", 3.1416, "rad");
+    CPPUNIT_ASSERT_THROW(v1 = v2, std::logic_error);
+    
+    // The other direction is also bad:
+    
+    CPPUNIT_ASSERT_THROW(v2 = v1, std::logic_error);
+}
+// Bound assignments of various types:
+
+void TVTest:assign_4() {
+    CTreeVariable v1("test1");
+    CTreeVariable v2("test2", 3.1416, "rad");
+    CTreeVariable v3("test3");
+    
+    CPPUNIT_ASSERT_NO_THROW(v3 = v1 = v2);   // Chaining too:
+    EQ(double(3.1416), double(v1));
+    EQ(double(3.1416), double(v3));
+    
+    CPPUNIT_ASERT_NO_THROW(v1 = v2 = 1.234);  // Chaining from double.
+    EQ(double(1.234), double(v1));
+    EQ(double(1.234), double(v3));
 }
