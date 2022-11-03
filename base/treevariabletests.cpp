@@ -64,6 +64,9 @@ class TVTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(assign_2);
     CPPUNIT_TEST(assign_3);
     CPPUNIT_TEST(assign_4);
+    
+    CPPUNIT_TEST(pluseq_1);
+    CPPUNIT_TEST(pluseq_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -109,6 +112,9 @@ protected:
     void assign_2();
     void assign_3();
     void assign_4();
+    
+    void pluseq_1();
+    void pluseq_2();
     
 };
 
@@ -384,7 +390,7 @@ void TVTest::assign_3() {
 }
 // Bound assignments of various types:
 
-void TVTest:assign_4() {
+void TVTest::assign_4() {
     CTreeVariable v1("test1");
     CTreeVariable v2("test2", 3.1416, "rad");
     CTreeVariable v3("test3");
@@ -393,7 +399,22 @@ void TVTest:assign_4() {
     EQ(double(3.1416), double(v1));
     EQ(double(3.1416), double(v3));
     
-    CPPUNIT_ASERT_NO_THROW(v1 = v2 = 1.234);  // Chaining from double.
+    CPPUNIT_ASSERT_NO_THROW(v1 = v2 = 1.234);  // Chaining from double.
+    EQ(double(1.234), double(v2));
     EQ(double(1.234), double(v1));
-    EQ(double(1.234), double(v3));
+}
+// unbound += fails
+void TVTest::pluseq_1() {
+    CTreeVariable v1;
+
+    CPPUNIT_ASSERT_THROW(v1 += 12, std::logic_error);
+}
+// ok and chains.
+void TVTest::pluseq_2() {
+    CTreeVariable v1("v1", 1.0, "mm");
+    CTreeVariable v2("v2", 2.0, "Mm");
+    
+    CPPUNIT_ASSERT_NO_THROW(v1 += v2 += 1.234);
+    EQ(3.234, double(v2));
+    EQ(4.234, double(v1));
 }
