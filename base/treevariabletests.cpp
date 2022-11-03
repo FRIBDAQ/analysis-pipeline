@@ -112,10 +112,10 @@ void TVTest::names_1() {
 }
 // Some names:
 void TVTest::names_2() {
-    CTreeVariable::createDefinition("test1", 1.0, "");
-    CTreeVariable::createDefinition("test2", 1.0, "");
-    CTreeVariable::createDefinition("test3", 1.0, "");
     CTreeVariable::createDefinition("test4", 1.0, "");
+    CTreeVariable::createDefinition("test1", 1.0, "");
+    CTreeVariable::createDefinition("test3", 1.0, "");
+    CTreeVariable::createDefinition("test2", 1.0, "");
     
     // We rely on the fact that tree iteration is lexically ordered:
     
