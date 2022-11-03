@@ -94,6 +94,12 @@ class TVTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(value_2);
     CPPUNIT_TEST(value_3);
     CPPUNIT_TEST(value_4);
+    
+    CPPUNIT_TEST(unit_1);
+    CPPUNIT_TEST(unit_2);
+    CPPUNIT_TEST(unit_3);
+    CPPUNIT_TEST(unit_4);
+
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -169,6 +175,11 @@ protected:
     void value_2();
     void value_3();
     void value_4();
+    
+    void unit_1();
+    void unit_2();
+    void unit_3();
+    void unit_4();
     
 };
 
@@ -615,4 +626,28 @@ void TVTest::value_4() {
     CPPUNIT_ASSERT_NO_THROW(v.setValue(3.14));
     EQ(3.14, v.getValue());
                             
+}
+// getunit
+
+void TVTest::unit_1() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v.getUnit(), std::logic_error);
+}
+void TVTest::unit_2() {
+    CTreeVariable v("v", "mm");
+    std::string u;
+    CPPUNIT_ASSERT_NO_THROW(u = v.getUnit());
+    EQ(std::string("mm"), u);
+}
+
+// setunit
+
+void TVTest::unit_3() {
+    CTreeVariable v;
+    CPPUNIT_ASSERT_THROW(v.setUnit("mm"), std::logic_error);
+}
+void TVTest::unit_4() {
+    CTreeVariable v("test");
+    CPPUNIT_ASSERT_NO_THROW(v.setUnit("furlongs/fortnight"));
+    EQ(std::string("furlongs/fortnight"), v.getUnit());
 }
