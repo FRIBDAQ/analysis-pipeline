@@ -47,6 +47,13 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(size_1);
     CPPUNIT_TEST(size_2);
+    
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
+    CPPUNIT_TEST(construct_4);
+    CPPUNIT_TEST(construct_5);
+    CPPUNIT_TEST(construct_6);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +84,13 @@ protected:
     
     void size_1();
     void size_2();
+    
+    void construct_1();
+    void construct_2();
+    void construct_3();
+    void construct_4();
+    void construct_5();
+    void construct_6();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -210,4 +224,102 @@ void TVTest::size_2() {
     CTreeVariable::createDefinition("test2", 2.0, "");
     
     EQ(size_t(4), CTreeVariable::size());
+}
+// Default constructor.
+
+void TVTest::construct_1() {
+    CTreeVariable v;
+    
+    ASSERT(CTreeVariable::m_dictionary.empty());
+    EQ(std::string(""), v.m_name);
+    ASSERT(!v.m_pDefinition);
+}
+// name only construction
+void TVTest::construct_2() {
+    CTreeVariable v("test");
+    EQ(size_t(1), CTreeVariable::m_dictionary.size());  // Entered in the dictionary.
+    ASSERT(CTreeVariable::lookupDefinition("test"));    // With the right key.
+    
+    EQ(std::string("test"), v.m_name);
+    ASSERT(v.m_pDefinition);
+    EQ(CTreeVariable::lookupDefinition("test"), v.m_pDefinition);
+    
+    // Contents of the definition:
+    
+    EQ(double(0.0), v.m_pDefinition->s_value);
+    EQ(std::string(""), v.m_pDefinition->s_units);
+    ASSERT(!v.m_pDefinition->s_valueChanged);
+    ASSERT(!v.m_pDefinition->s_definitionChanged);
+}
+// Construct with name and units:
+
+void TVTest::construct_3()
+{
+    CTreeVariable v("test", "mm");
+    
+    EQ(size_t(1), CTreeVariable::m_dictionary.size());  // Entered in the dictionary.
+    ASSERT(CTreeVariable::lookupDefinition("test"));    // With the right key.
+    
+    EQ(std::string("test"), v.m_name);
+    ASSERT(v.m_pDefinition);
+    EQ(CTreeVariable::lookupDefinition("test"), v.m_pDefinition);
+    
+    // Contents of the definition:
+    
+    EQ(double(0.0), v.m_pDefinition->s_value);
+    EQ(std::string("mm"), v.m_pDefinition->s_units);
+    ASSERT(!v.m_pDefinition->s_valueChanged);
+    ASSERT(!v.m_pDefinition->s_definitionChanged);
+}
+// name units and value:
+void TVTest::construct_4()
+{
+    CTreeVariable v("test", 3.1416, "mm");
+    
+    EQ(size_t(1), CTreeVariable::m_dictionary.size());  // Entered in the dictionary.
+    ASSERT(CTreeVariable::lookupDefinition("test"));    // With the right key.
+    
+    EQ(std::string("test"), v.m_name);
+    ASSERT(v.m_pDefinition);
+    EQ(CTreeVariable::lookupDefinition("test"), v.m_pDefinition);
+    
+    // Contents of the definition:
+    
+    EQ(double(3.1416), v.m_pDefinition->s_value);
+    EQ(std::string("mm"), v.m_pDefinition->s_units);
+    ASSERT(!v.m_pDefinition->s_valueChanged);
+    ASSERT(!v.m_pDefinition->s_definitionChanged);
+}
+
+// construct from a properties thing.
+// Note the flags don't get carried along:
+void TVTest::construct_5() {
+    CTreeVariable::Definition def(3.1416, "mm");
+    def.s_valueChanged = true;                 // Does not propagate.
+    def.s_definitionChanged= true;             //   ""     ""
+    CTreeVariable v("test", def);
+    
+    EQ(size_t(1), CTreeVariable::m_dictionary.size());  // Entered in the dictionary.
+    ASSERT(CTreeVariable::lookupDefinition("test"));    // With the right key.
+    
+    EQ(std::string("test"), v.m_name);
+    ASSERT(v.m_pDefinition);
+    EQ(CTreeVariable::lookupDefinition("test"), v.m_pDefinition);
+    
+    // Contents of the definition:
+    
+    EQ(double(3.1416), v.m_pDefinition->s_value);
+    EQ(std::string("mm"), v.m_pDefinition->s_units);
+    ASSERT(!v.m_pDefinition->s_valueChanged);
+    ASSERT(!v.m_pDefinition->s_definitionChanged);
+}
+// copy construction:
+
+void TVTest::construct_6() {
+    CTreeVariable v1("test", 3.1416, "mm");
+    CTreeVariable v2(v1);
+    
+    EQ(v1.m_name, v2.m_name);
+    EQ(v1.m_pDefinition, v2.m_pDefinition);
+    EQ(size_t(1), CTreeVariable::m_dictionary.size());
 }
