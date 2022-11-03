@@ -660,6 +660,7 @@ void TVTest::unit_4() {
 void TVTest::changed_1() {
     CTreeVariable v;
     CPPUNIT_ASSERT_THROW(v.hasChanged(), std::logic_error);
+    CPPUNIT_ASSERT_THROW(v.valueChanged(), std::logic_error);
 }
 void TVTest::changed_2() {
     CTreeVariable v("test");
@@ -667,4 +668,8 @@ void TVTest::changed_2() {
     ASSERT(!v.hasChanged());
     v.setUnit("mm");
     ASSERT(v.hasChanged());
+    
+    ASSERT(!v.valueChanged());
+    v = 1.234;
+    ASSERT(v.valueChanged());
 }
