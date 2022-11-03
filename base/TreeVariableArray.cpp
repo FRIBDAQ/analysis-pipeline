@@ -257,22 +257,38 @@ namespace frib {
             
             
             }
+            const CTreeVariable&
+            CTreeVariableArray::operator[](int index) const {
+                int vectorIndex = index - m_nFirstIndex;
+              
+              
+              
+              return *(m_TreeVariables.at(vectorIndex)); // at takes care of throwing.
+            }
             
             
             /**
-             * The current array is destroyed and a new one built from the specification of
-             * the rhs.  Note that this is done much like a copy construction.
+             * Values in the rhs are copied to the values of the LHS.
+             * @note precondition is that rhs.size( == this->size())
+             *   Else invalid_argument is thrown.
              * @param rhs
              * 
              */
             CTreeVariableArray&
             CTreeVariableArray::operator=(const CTreeVariableArray& rhs)
             {
+            
+                if (rhs.size() == this->size()) {
+                    for (int i =0; i < rhs.size(); i++) {
+                        (*this)[i] = rhs[i];
+                    }
+                } else {
+                    throw std::invalid_argument(
+                        "Tree Variable arrays are differing sizes in operator="
+                    );
+                }
               
-              DestroyArray();
-              CopyArray(rhs);
-              
-              return *this;
+                return *this;
             
             }
             /**
@@ -280,7 +296,7 @@ namespace frib {
              *
              */
             unsigned 
-            CTreeVariableArray::size()
+            CTreeVariableArray::size() const
             {
               return m_TreeVariables.size();
             }
@@ -288,7 +304,7 @@ namespace frib {
              *  Return the value of the lowest index (could be negative).
              */
             int
-            CTreeVariableArray::firstIndex()
+            CTreeVariableArray::firstIndex() const
             {
               return m_nFirstIndex;
             }

@@ -89,10 +89,11 @@ namespace frib {
               void Initialize(std::string baseName, double initialValue, 
                       std::string units, unsigned size, int firstElement);
               CTreeVariable& operator[](int index);
+              const CTreeVariable& operator[](int index) const;
               CTreeVariableArray& operator=(const CTreeVariableArray& rhs);
               
-              unsigned size();
-              int  firstIndex();
+              unsigned size() const;
+              int  firstIndex() const;
             
             protected:
               void BuildArray(std::string basename, unsigned int size, 
