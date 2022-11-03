@@ -212,6 +212,14 @@ namespace frib {
             Initialize(name, value, units);
         }
         /**
+         * construct from definition
+         *  @param name -name of parameter.
+         *  @param def  - References the definition.
+         */
+        CTreeVariable::CTreeVariable(std::string name, Definition& properties) :
+            CTreeVariable(name, properties.s_value, properties.s_units)
+        {}
+        /**
          * copy construction.
          */
         CTreeVariable::CTreeVariable(const CTreeVariable& rhs) :
