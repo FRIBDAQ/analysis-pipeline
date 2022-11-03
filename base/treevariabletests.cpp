@@ -38,6 +38,9 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(names_1);
     CPPUNIT_TEST(names_2);
+    
+    CPPUNIT_TEST(getdef_1);
+    CPPUNIT_TEST(getdef_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -59,6 +62,9 @@ protected:
     
     void names_1();
     void names_2();
+    
+    void getdef_1();
+    void getdef_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -125,4 +131,32 @@ void TVTest::names_2() {
     EQ(std::string("test2"), v[1]);
     EQ(std::string("test3"), v[2]);
     EQ(std::string("test4"), v[3]);    
+}
+// nothing :
+//
+void TVTest::getdef_1() {
+    auto v = CTreeVariable::getDefinitions();
+    ASSERT(v.empty());
+    
+}
+// something
+void TVTest::getdef_2() {
+    CTreeVariable::createDefinition("test4", 4.0, "");
+    CTreeVariable::createDefinition("test1", 1.0, "");
+    CTreeVariable::createDefinition("test3", 3.0, "");
+    CTreeVariable::createDefinition("test2", 2.0, "");
+    
+    auto v = CTreeVariable::getDefinitions();
+    EQ(size_t(4), v.size());
+    EQ(std::string("test1"), v[0].first);
+    EQ(double(1.0), v[0].second->s_value);
+    
+    EQ(std::string("test2"), v[1].first);
+    EQ(double(2.0), v[1].second->s_value);
+    
+    EQ(std::string("test3"), v[2].first);
+    EQ(double(3.0), v[2].second->s_value);
+    
+    EQ(std::string("test4"), v[3].first);
+    EQ(double(4.0), v[3].second->s_value);
 }
