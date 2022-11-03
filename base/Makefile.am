@@ -13,7 +13,8 @@ treeparamtests_CPPFLAGS=@CPPUNIT_CFLAGS@
 treeparamtests_LDFLAGS= @CPPUNIT_LIBS@
 treeparamtests_LDADD=libfribCore.la
 
-treevartests_SOURCES=TestRunner.cpp Asserts.h treevariabletests.cpp
+treevartests_SOURCES=TestRunner.cpp Asserts.h treevariabletests.cpp \
+	treevararraytests.cpp
 treevartests_CPPFLAGS=@CPPUNIT_CFLAGS@
 treevartests_LDFLAGS=@CPPUNIT_LIBS@
 treevartests_LDADD=libfribCore.la
