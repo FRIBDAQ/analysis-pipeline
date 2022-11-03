@@ -44,6 +44,9 @@ class TVTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(iter_1);
     CPPUNIT_TEST(iter_2);
+    
+    CPPUNIT_TEST(size_1);
+    CPPUNIT_TEST(size_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -71,6 +74,9 @@ protected:
     
     void iter_1();
     void iter_2();
+    
+    void size_1();
+    void size_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TVTest);
@@ -191,4 +197,17 @@ void TVTest::iter_2() {
         EQ(values[i], p->second.s_value);
         i++;
     }
+}
+// empty:
+void TVTest::size_1() {
+    EQ(size_t(0), CTreeVariable::size());
+}
+// Has 4:
+void TVTest::size_2() {
+    CTreeVariable::createDefinition("test4", 4.0, "");
+    CTreeVariable::createDefinition("test1", 1.0, "");
+    CTreeVariable::createDefinition("test3", 3.0, "");
+    CTreeVariable::createDefinition("test2", 2.0, "");
+    
+    EQ(size_t(4), CTreeVariable::size());
 }
