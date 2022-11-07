@@ -76,7 +76,7 @@ namespace frib {
             CTCLParameterReader(const char* pFilename);
             virtual void read();
         private:
-            CTCLInterpreter setupInterpreter();
+            CTCLInterpreter* setupInterpreter();
         };
     }
 }

@@ -33,7 +33,7 @@ namespace frib {
         protected:
             std::string m_filename;
         public:
-            CParameterReader(const char* pFilename);
+            CParameterReader(const char* pFilename) : m_filename(pFilename) {}
             virtual void read() = 0;
         };
     }
