@@ -278,13 +278,13 @@ namespace frib {
             CTreeVariableArray::operator=(const CTreeVariableArray& rhs)
             {
             
-                if (rhs.size() == this->size()) {
-                    for (int i =0; i < rhs.size(); i++) {
+                if ((rhs.size() == this->size() ) && (rhs.firstIndex() == this->firstIndex())) {
+                    for (int i = firstIndex(); i < (int)(size()) + firstIndex(); i++) {
                         (*this)[i] = rhs[i];
                     }
                 } else {
                     throw std::invalid_argument(
-                        "Tree Variable arrays are differing sizes in operator="
+                        "Tree Variable arrays are differing sizes or first indices in operator="
                     );
                 }
               
