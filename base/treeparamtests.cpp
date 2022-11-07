@@ -171,6 +171,9 @@ class TPTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(resetchanged_2);
     
     CPPUNIT_TEST(resetall);
+    
+    CPPUNIT_TEST(getdef_1);
+    CPPUNIT_TEST(getdef_2);
     CPPUNIT_TEST_SUITE_END();
 
     
@@ -338,6 +341,9 @@ protected:
     void resetchanged_2();
     
     void resetall();
+    
+    void getdef_1();
+    void getdef_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TPTest);
@@ -1165,4 +1171,37 @@ void TPTest::resetall() {
     ASSERT(!p1.isValid());
     ASSERT(!p2.isValid()); /// never was.
     ASSERT(!p3.isValid());
+}
+// no definitions:
+
+void TPTest::getdef_1() {
+    ASSERT(CTreeParameter::getDefinitions().empty());
+}
+// some definitions
+
+void TPTest::getdef_2()
+{
+    // we'll keep thinkgs sorted:
+    
+    std::vector<std::pair<std::string, CTreeParameter::SharedData>> values = {
+        {"a", CTreeParameter::SharedData(-1.0,1.0, 100, "mm")},
+        {"b", CTreeParameter::SharedData(0, 360, 360, "degrees")},
+        {"c", CTreeParameter::SharedData(-1.0, 1.0, 100, "radians")}
+    };
+    
+    for (auto& r : values) {
+        CTreeParameter(r.first, r.second.s_chans, r.second.s_low, r.second.s_high,  r.second.s_units);
+    }
+    auto result = CTreeParameter::getDefinitions();
+    
+    EQ(values.size(), result.size());
+    for (int i =0; i < values.size(); i++) {
+        auto& r = result.at(i);
+        
+        EQ(values[i].first, r.first);
+        EQ(values[i].second.s_low, r.second.s_low);
+        EQ(values[i].second.s_high, r.second.s_high);
+        EQ(values[i].second.s_units, r.second.s_units);
+    }
+    
 }

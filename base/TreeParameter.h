@@ -39,7 +39,7 @@ namespace frib {
          * @note Tree parameters are inherently _not_ threadsafe.
          */
         class CTreeParameter {
-        private:
+        public:
             // internal data structs.
             
             typedef struct _SharedData {
@@ -83,6 +83,7 @@ namespace frib {
             
             static const std::vector<double>&   getEvent();
             static const std::vector<unsigned> getScoreboard();
+            static std::vector<std::pair<std::string, SharedData>> getDefinitions();
         private:
             pSharedData lookupParameter(const std::string& name);
             pSharedData makeSharedData(

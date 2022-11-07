@@ -215,6 +215,21 @@ namespace frib {
             return m_scoreboard;
         }
         /**
+         * getDefinitions
+         *   @return std::vector<std::pair<std::string, SharedData>  - the tree
+         *             parameter definitions.
+         *   @note - tree parameter vectors will appear as several entries in this vector.
+         */
+        std::vector<std::pair<std::string, CTreeParameter::SharedData>>
+        CTreeParameter::getDefinitions() {
+            std::vector<std::pair<std::string, SharedData>> result;
+            for(auto& p : m_parameterDictionary) {
+                result.push_back(p);
+            }
+            
+            return result;
+        }
+        /**
          * Private static methods
          */
         
