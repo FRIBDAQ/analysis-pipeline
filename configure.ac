@@ -41,7 +41,7 @@ tclplusdir=`realpath ${srcdir}`/libtclplus
 (cd libtcl-build; make all install)
 
 TCLPLUS_CFLAGS=-I${prefix}/include
-TCLPLUS_LIBS="-L${prefix}/lib -llibTclPlus -lException"
+TCLPLUS_LIBS="-L${prefix}/lib -ltclPlus -lException"
 
 AC_SUBST(TCLPLUS_CFLAGS)
 AC_SUBST(TCLPLUS_LIBS)
