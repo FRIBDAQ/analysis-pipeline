@@ -37,7 +37,7 @@ AC_SUBST(TCL86_LIBS)
 
 tclplusdir=`realpath ${srcdir}`/libtclplus
 
-(mkdir -p  libtcl-build ; cd libtcl-build ;  ${tclplusdir}/configure --prefix=${prefix} )
+(rm -rf libtcl-build; mkdir -p  libtcl-build ; cd libtcl-build ;  ${tclplusdir}/configure --prefix=${prefix} )
 (cd libtcl-build; make all install)
 
 
