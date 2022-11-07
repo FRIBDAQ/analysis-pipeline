@@ -40,11 +40,11 @@ tclplusdir=`realpath ${srcdir}`/libtclplus
 (rm -rf libtcl-build; mkdir -p  libtcl-build ; cd libtcl-build ;  ${tclplusdir}/configure --prefix=${prefix} )
 (cd libtcl-build; make all install)
 
-TCLPLUS_CFLAGS=-I@prefix@/include
-TCLPLUS_LIBS="-L@prefix@/lib -llibTclPlus -lException"
+TCLPLUS_CFLAGS=-I${prefix}/include
+TCLPLUS_LIBS="-L${prefix}/lib -llibTclPlus -lException"
 
 AC_SUBST(TCLPLUS_CFLAGS)
-AC_SUBST(TCL_PLUS_LIBS)
+AC_SUBST(TCLPLUS_LIBS)
 
 
 #  Make the output files:
