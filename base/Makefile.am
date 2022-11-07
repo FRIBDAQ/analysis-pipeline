@@ -24,8 +24,8 @@ treevartests_CPPFLAGS=@CPPUNIT_CFLAGS@
 treevartests_LDFLAGS=@CPPUNIT_LIBS@
 treevartests_LDADD=libfribCore.la
 
-configtests_SOURCES=TestRunner.cpp Asserts.h
-configtests_CPPFLAGFS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
+configtests_SOURCES=TestRunner.cpp Asserts.h tclconfigtests.cpp
+configtests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 configtests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 configtests_LDADD=libfribCore.la
 
