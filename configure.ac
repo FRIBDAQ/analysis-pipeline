@@ -7,6 +7,8 @@ AC_INIT(fribanalysis, 0.1, [scientificsoftware@nscl.msu.edu],[], [http://gitlab.
 
 AM_INIT_AUTOMAKE
 
+PKG_PROG_PKG_CONFIG([0.29])
+
 AC_CONFIG_SRCDIR([/base/TreeParameter.h])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -23,9 +25,28 @@ AM_PATH_CPPUNIT
 
 AX_CXX_COMPILE_STDCXX_11([noext])
 
+#  Tcl compilation
+
+PKG_CHECK_MODULES([TCL86], [tcl8.6],[], [AC_MSG_ERROR[Missing tcl8.6 libraries]])
+AC_SUBST(TCL86_CFLAGS)
+AC_SUBST(TCL86_LIBS)
+
+#  Build/install libtcl++ - I think this works in out of tree builds from the
+#  repo.
+
+
+tclplusdir=`realpath ${srcdir}`/libtclplus
+
+(mkdir -p  libtcl-build ; cd libtcl-build ;  ${tclplusdir}/configure --prefix=${prefix} )
+(cd libtcl-build; make all install)
+
+
+#  Make the output files:
+
 AC_CONFIG_FILES([Makefile
         base/Makefile
     ])
     
+
 
 AC_OUTPUT
