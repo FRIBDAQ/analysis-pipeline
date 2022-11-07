@@ -3,7 +3,12 @@ lib_LTLIBRARIES = libfribCore.la
 libfribCore_la_SOURCES = TreeParameter.cpp TreeParameterArray.cpp \
 	TreeVariable.cpp TreeVariableArray.cpp
 include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
-	TreeVariableArray.h
+	TreeVariableArray.h \
+	ParameterReader.h ParameterOutputter.h AnalysisRingItems.h \
+	TCLParameterReader.h
+
+libfribCore_la_CFLAGS=@TCL86_CFLAGS@
+libfribCore_la_LDFLAGS=@TCL86_LIBS@
 
 noinst_PROGRAMS=treeparamtests treevartests
 
