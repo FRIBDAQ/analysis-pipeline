@@ -50,6 +50,9 @@ class TclConfigtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(treeparamarray_1);
     CPPUNIT_TEST(treeparamarray_2);
+    
+    CPPUNIT_TEST(treevariable_1);
+    CPPUNIT_TEST(treevariable_2);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void empty();
@@ -59,6 +62,9 @@ protected:
     
     void treeparamarray_1();
     void treeparamarray_2();
+    
+    void treevariable_1();
+    void treevariable_2();
     
 private:
     std::string m_filename;
@@ -199,6 +205,35 @@ void TclConfigtest::treeparamarray_2() {
     const char* script =
         "treeparameterarray test -1.0 1.0 100 mm 16 0 extra\n";
         
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_THROW(reader.read(), std::runtime_error);
+}
+// single tree variable:
+
+void TclConfigtest::treevariable_1() {
+    const char* script =
+        "treevariable test 3.1416 radians\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_NO_THROW(reader.read());
+    
+    auto defs = CTreeVariable::getDefinitions();
+    EQ(size_t(1), defs.size());
+    auto& d(*defs[0].second);
+    EQ(std::string("test"), defs[0].first);
+    EQ(3.1416, d.s_value);
+    EQ(std::string("radians"), d.s_units);
+}
+// invalid script:
+
+void TclConfigtest::treevariable_2() {
+     const char* script =
+        "treevariable test 3.1416 radians extra\n";
     write(m_fd, script, strlen(script));
     close(m_fd);
     
