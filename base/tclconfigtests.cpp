@@ -28,6 +28,8 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <sstream>
+#include <iomanip>
 
 #define private public
 #include "TreeParameter.h"
@@ -45,12 +47,16 @@ class TclConfigtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(treeparam_1);
     CPPUNIT_TEST(treeparam_2);
     CPPUNIT_TEST(treeparam_3);
+    
+    CPPUNIT_TEST(treeparamarray_1);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void empty();
     void treeparam_1();
     void treeparam_2();
     void treeparam_3();
+    
+    void treeparamarray_1();
     
 private:
     std::string m_filename;
@@ -158,4 +164,31 @@ void TclConfigtest::treeparam_3() {
         EQ(std::string("mm"), d.s_units);
     }
     
+}
+// single treeeparameterarray definiition
+
+void TclConfigtest::treeparamarray_1()
+{
+    const char* script =
+        "treeparameterarray test -1.0 1.0 100 mm 16 0\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_NO_THROW(reader.read());
+    
+    auto defs = CTreeParameter::getDefinitions();
+    EQ(size_t(16), defs.size());     // 16 element 'array'
+    for (int i =0; i < defs.size(); i++) {
+        auto def = defs[i];
+        auto info = def.second;
+        std::stringstream namestream;
+        namestream <<"test." << std::setw(2) << std::setfill('0') << i;
+        std::string name = namestream.str();
+        EQ(name, def.first);
+        EQ(-1.0, info.s_low);
+        EQ(1.0, info.s_high);
+        EQ(unsigned(100), info.s_chans);
+        EQ(std::string("mm"), info.s_units);
+    }
 }

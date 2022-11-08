@@ -29,8 +29,6 @@
 
 #include <config.h>
 #include "TreeParameterArray.h"
-#include "TreeParameter.h"
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,7 +210,7 @@ namespace frib {
          */
         void 
         CTreeParameterArray::CreateParameters(string baseName, unsigned size, 
-                              CTreeParameter& Template)
+                              CTreeParameter::SharedData& Template)
         {
           
           //// Get rid off any prior array contents.
@@ -239,7 +237,10 @@ namespace frib {
             char name[100];
             snprintf(name, sizeof(name),  format,  index);
           
-            CTreeParameter* pParameter = new CTreeParameter(name,  Template);
+            CTreeParameter* pParameter = new CTreeParameter(
+                name,
+                Template.s_chans, Template.s_low, Template.s_high, Template.s_units
+            );
             m_Parameters.push_back(pParameter);
           }
         }
@@ -328,7 +329,8 @@ namespace frib {
           // Below we create a template parameter that we then hand off to
           // CreateParameters to create the rest:
           
-          CTreeParameter sample(baseName, resolution); // Name is not important.
+          CTreeParameter::SharedData sample(0, 1<< resolution, 1<< resolution, "");
+          
         
           // Create elements of them using sample as a template.
         
@@ -395,7 +397,7 @@ namespace frib {
                         int firstIndex)
         {
           m_nFirstIndex = firstIndex;
-          CTreeParameter Sample(baseName);
+          CTreeParameter::SharedData Sample(CTreeParameter::m_defaultSpecification);
           CreateParameters(baseName, elements, Sample);
         }
         
@@ -418,7 +420,8 @@ namespace frib {
                              unsigned elements, int firstIndex)
         {
           m_nFirstIndex = firstIndex;
-          CTreeParameter Sample(baseName, units);
+          CTreeParameter::SharedData Sample(CTreeParameter::m_defaultSpecification);
+          Sample.s_units = units;
           CreateParameters(baseName, elements, Sample);
         }
         
@@ -452,7 +455,10 @@ namespace frib {
         {
           m_nFirstIndex = firstIndex;
           
-          CTreeParameter Sample(baseName, lowLimit, highLimit, units);
+          CTreeParameter::SharedData Sample(
+                lowLimit, highLimit,
+                CTreeParameter::m_defaultSpecification.s_chans, units.c_str()
+          );
           CreateParameters(baseName, elements, Sample);
         }
         
@@ -486,7 +492,7 @@ namespace frib {
                              int firstIndex)
         {
           m_nFirstIndex = firstIndex;
-          CTreeParameter Sample(baseName, channels, lowLimit, highLimit, units);
+          CTreeParameter::SharedData Sample(lowLimit, highLimit, channels, units.c_str());
           CreateParameters(baseName, elements, Sample);
         }
         

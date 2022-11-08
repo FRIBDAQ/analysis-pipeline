@@ -60,6 +60,7 @@ namespace frib {
             static unsigned                          m_nextId;     
             static std::vector<double>               m_event;               // Event data
             static std::vector<unsigned>             m_scoreboard;          // Parameters set this event.
+        public:
             static SharedData                        m_defaultSpecification;
             
             // object data:

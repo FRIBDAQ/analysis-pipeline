@@ -34,6 +34,7 @@
 
 #include <vector>
 #include <string>
+#include <TreeParameter.h>
 
 namespace frib {
     namespace analysis {
@@ -41,8 +42,7 @@ namespace frib {
 
         // Forward definitions.
         
-        class CTreeParameter;
-        
+       
         /**
          * This class is a container for an array of Tree parameters.  Given a base
          * parameter name, it will create a set of parameters named basename.n  where n is
@@ -117,7 +117,7 @@ namespace frib {
           void Bind();
         protected:
           void CreateParameters(std::string baseName, 
-                    unsigned  size, CTreeParameter& Template);
+                    unsigned  size, CTreeParameter::SharedData& Template);
           void DeleteParameters();
           
           
