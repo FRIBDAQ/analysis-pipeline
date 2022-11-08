@@ -53,6 +53,9 @@ class TclConfigtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(treevariable_1);
     CPPUNIT_TEST(treevariable_2);
+    
+    CPPUNIT_TEST(treevariablearray_1);
+    CPPUNIT_TEST(treevariablearray_2);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void empty();
@@ -65,6 +68,9 @@ protected:
     
     void treevariable_1();
     void treevariable_2();
+    
+    void treevariablearray_1();
+    void treevariablearray_2();
     
 private:
     std::string m_filename;
@@ -239,4 +245,39 @@ void TclConfigtest::treevariable_2() {
     
     CTCLParameterReader reader(m_filename.c_str());
     CPPUNIT_ASSERT_THROW(reader.read(), std::runtime_error);
+}
+
+void TclConfigtest::treevariablearray_1()
+{
+    const char* script =
+        "treevariablearray test 3.1416 radians 16 0\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_NO_THROW(reader.read());
+    
+    auto defs = CTreeVariable::getDefinitions();
+    EQ(size_t(16), defs.size());
+    for (int i = 0; i < defs.size(); i++) {
+        auto& def(defs[i]);
+        auto& d(*def.second);
+        
+        std::stringstream namestream;
+        namestream << "test." << std::setw(2) << std::setfill('0') << i;
+        std::string name = namestream.str();
+        EQ(name, def.first);
+        EQ(3.1416, d.s_value);
+        EQ(std::string("radians"), d.s_units);
+    }
+}
+void TclConfigtest::treevariablearray_2() {
+    const char* script =
+        "treevariablearray test 3.1416 radians 16 0 extra\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_THROW(reader.read(), std::runtime_error);
+    
 }
