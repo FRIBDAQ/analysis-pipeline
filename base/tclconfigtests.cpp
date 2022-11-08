@@ -49,6 +49,7 @@ class TclConfigtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(treeparam_3);
     
     CPPUNIT_TEST(treeparamarray_1);
+    CPPUNIT_TEST(treeparamarray_2);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void empty();
@@ -57,6 +58,7 @@ protected:
     void treeparam_3();
     
     void treeparamarray_1();
+    void treeparamarray_2();
     
 private:
     std::string m_filename;
@@ -191,4 +193,15 @@ void TclConfigtest::treeparamarray_1()
         EQ(unsigned(100), info.s_chans);
         EQ(std::string("mm"), info.s_units);
     }
+}
+/// error
+void TclConfigtest::treeparamarray_2() {
+    const char* script =
+        "treeparameterarray test -1.0 1.0 100 mm 16 0 extra\n";
+        
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_THROW(reader.read(), std::runtime_error);
 }
