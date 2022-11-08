@@ -22,33 +22,140 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "TCLParameterReader.h"
+#include <stdlib.h>
+#include <string>
+#include <stdexcept>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+
 #define private public
 #include "TreeParameter.h"
 #include "TreeVariable.h"
 #undef private
 using namespace frib::analysis;
 
+// script template:
+
+const char* scriptNameTemplate="/tmp/test_scriptXXXXXX.tcl";
+
 class TclConfigtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(TclConfigtest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(empty);
+    CPPUNIT_TEST(treeparam_1);
+    CPPUNIT_TEST(treeparam_2);
+    CPPUNIT_TEST(treeparam_3);
     CPPUNIT_TEST_SUITE_END();
+protected:
+    void empty();
+    void treeparam_1();
+    void treeparam_2();
+    void treeparam_3();
     
 private:
-
+    std::string m_filename;
+    int         m_fd;    
 public:
     void setUp() {
+        // Create a temporary file that will be the script:
         
+        char scriptName[100];
+        strncpy(scriptName, scriptNameTemplate, sizeof(scriptName));
+        m_fd = mkstemps(scriptName, 4);     // .tcl - four chars.
+        if (m_fd == -1) {
+            throw std::runtime_error(strerror(errno));
+        }
+        m_filename = scriptName;
     }
     void tearDown() {
         CTreeParameter::m_parameterDictionary.clear();
         CTreeVariable::m_dictionary.clear();
+        
+        unlink(m_filename.c_str());
     }
-protected:
-    void test_1();
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TclConfigtest);
 
-void TclConfigtest::test_1()
+// Empty file parses ok and leaves empty dictionaries:
+
+void TclConfigtest::empty()
 {
+    close(m_fd);
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_NO_THROW(reader.read());
+    
+    ASSERT(CTreeParameter::m_parameterDictionary.empty());
+    ASSERT(CTreeVariable::m_dictionary.empty());
+}
+// file with single treeparameter command:
+void TclConfigtest::treeparam_1() {
+    const char* script =
+        "treeparameter test 0 1024 512 none\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    // This is not factored so that if it fails we know which test failed.
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_NO_THROW(reader.read());
+    
+    auto defs = CTreeParameter::getDefinitions();
+    EQ(size_t(1), defs.size());
+    EQ(std::string("test"), defs[0].first);
+    CTreeParameter::SharedData& d(defs[0].second);
+    EQ(0.0, d.s_low);
+    EQ(1024.0, d.s_high);
+    EQ(unsigned(512), d.s_chans);
+    EQ(std::string("none"), d.s_units);
+    
+}
+// file with error in treeparam command:
+
+void TclConfigtest::treeparam_2() {
+    const char* script =
+        "treeparameter test 0 1024 512 none extra\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_THROW(reader.read(), std::runtime_error);
+    
+}
+// multiple defs:
+
+void TclConfigtest::treeparam_3() {
+    const char* script =
+        "treeparameter a 0 1024 512 none\n\
+        treeparameter b -1.5 1.5 1024 mm\n";
+    write(m_fd, script, strlen(script));
+    close(m_fd);
+    
+    CTCLParameterReader reader(m_filename.c_str());
+    CPPUNIT_ASSERT_NO_THROW(reader.read());
+    
+    auto defs = CTreeParameter::getDefinitions();
+    EQ(size_t(2), defs.size());
+    
+    // SHould be in lexical order since it comes from iterating over a map:
+    {
+        auto p = defs[0];
+        auto d(p.second);     // Copy construction
+        EQ(std::string("a"), p.first);
+        EQ(0.0, d.s_low);
+        EQ(1024.0, d.s_high);
+        EQ(unsigned(512), d.s_chans);
+        EQ(std::string("none"), d.s_units);
+    }
+    {
+        auto p = defs[1];
+        auto d(p.second);     // Copy construction
+        EQ(std::string("b"), p.first);
+        EQ(-1.5, d.s_low);
+        EQ(1.5,  d.s_high);
+        EQ(unsigned(1024), d.s_chans);
+        EQ(std::string("mm"), d.s_units);
+    }
+    
 }
