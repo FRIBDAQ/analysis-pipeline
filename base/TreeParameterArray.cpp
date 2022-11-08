@@ -329,7 +329,10 @@ namespace frib {
           // Below we create a template parameter that we then hand off to
           // CreateParameters to create the rest:
           
-          CTreeParameter::SharedData sample(0, 1<< resolution, 1<< resolution, "");
+          CTreeParameter::SharedData sample(
+                0, 1<< resolution, 1<< resolution,
+                CTreeParameter::m_defaultSpecification.s_units.c_str()
+            );
           
         
           // Create elements of them using sample as a template.
