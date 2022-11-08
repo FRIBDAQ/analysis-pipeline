@@ -23,7 +23,7 @@
 #include "Asserts.h"
 #define private public
 #include "TreeParameterArray.h"
-#include "TreeParameter.h"
+//#include "TreeParameter.h"
 #undef private
 #include <sstream>
 #include <iomanip>
@@ -63,7 +63,17 @@ private:
 
 public:
     void setUp() {
-        
+        CTreeParameter::m_parameterDictionary.clear();
+        CTreeParameter::m_scoreboard.clear();
+        CTreeParameter::m_generation = 1;
+        CTreeParameter::m_nextId = 0;
+        CTreeParameter::m_event.clear();
+        CTreeParameter::m_defaultSpecification = {
+            .s_low = 0,                 // Will need updating if it
+            .s_high = 100,              // changes in TreeParameter.cpp
+            .s_chans = 100,
+            .s_units = "Chans"
+        };
     }
     void tearDown() {
         CTreeParameter::m_parameterDictionary.clear();
@@ -77,6 +87,7 @@ public:
             .s_chans = 100,
             .s_units = "Chans"
         };
+
     }
 protected:
     void construct_1();
@@ -98,7 +109,7 @@ protected:
     void lowindex();
     
     void  isbound_1();
-    void  isbound_2();
+    void isbound_2();
     void isbound_3();
     
     // Bind is a no-op under the hood so we don't test.
