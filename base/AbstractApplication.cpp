@@ -123,6 +123,14 @@ namespace frib {
         AbstractApplication::messageHeaderType() {
             return m_messageHeaderType;
         }
+        /**
+         * requestDataType
+         *  returns a reference to the MPI type item for a data request record.
+         */
+        MPI_Datatype&
+        AbstractApplication::requestDataType() {
+            return m_requestDataType;
+        }
         /////////////////////////////// Utility methods for the subclasses ////////
         
         /**
@@ -151,6 +159,9 @@ namespace frib {
          */
         void
         AbstractApplication::makeDataTypes() {
+            
+            // Message Header:
+            
             int lengths[2] = {
                 1,1
             };
@@ -173,7 +184,23 @@ namespace frib {
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to commit message header MPI type");
             }
+            // Data Request:
             
+            offsets[0]  = offsetof(FRIB_MPI_Request_Data, s_requestor);
+            offsets[1]  = offsetof(FRIB_MPI_Request_Data, s_maxdata);
+            
+            
+            status = MPI_Type_create_struct(
+                2, lengths, offsets, types, &m_messageHeaderType
+            );
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to create data request  MPI type");
+            }
+            
+            status = MPI_Type_commit(&m_messageHeaderType);
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to commit data request MPI type");
+            }
         }
     }
 

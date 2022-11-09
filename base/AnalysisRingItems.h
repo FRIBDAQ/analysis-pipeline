@@ -106,6 +106,14 @@ namespace frib {
         
         static const int FRIB_MPI_DATA_TAG = 1;
         static const int FRIB_MPI_END_TAG  = 2;
+        static const int FRIB_MPI_REQDATA_TAG = 3;
+    
+        // Request for data message:
+        
+        typedef struct _FRIB_MPI_Request_Data {
+            int s_requestor;                  // Rank of requestor.
+            int s_maxdata;                    // Max data I can get.
+        } FRIB_MPI_Request_Data, *pFRIB_MPI_Request_Data;
     
         // Data are sent with this header followed by a block of char data
         // that must be re-interpreted by the receiver:
