@@ -114,7 +114,7 @@ namespace frib {
             int s_nBytes;                       // Size of subsequent msg.
             int s_nBlockNum;                    // Work Item number.
             
-        } FRIB_MPI_Message_Header, *pFRIB_MPI_MEssageHeader;
+        } FRIB_MPI_Message_Header, *pFRIB_MPI_MessageHeader;
         
         
 #pragma pack(pop)
