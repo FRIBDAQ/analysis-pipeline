@@ -186,9 +186,13 @@ namespace frib {
             p.pBytes = reinterpret_cast<std::uint8_t*>(m_pBuffer);
             
             while (m_nUserBytes <= maxBytes) {
-                m_nUserBytes += *(p.pLong);
+                std::uint32_t size = *(p.pLong);
+                if (size > m_nBytes) {
+                    throw std::logic_error("Internal buffer overflowed by a single ring item");
+                }
+                m_nUserBytes += size;
                 m_nUserItems++;
-                p.pBytes += *(p.pLong);
+                p.pBytes += size;
             }
         }
     }       
