@@ -1,11 +1,12 @@
 lib_LTLIBRARIES = libfribCore.la
 
 libfribCore_la_SOURCES = TreeParameter.cpp TreeParameterArray.cpp \
-	TreeVariable.cpp TreeVariableArray.cpp TCLParameterReader.cpp
+	TreeVariable.cpp TreeVariableArray.cpp TCLParameterReader.cpp \
+	AbstractApplication.cpp
 include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
 	TreeVariableArray.h \
 	ParameterReader.h ParameterOutputter.h AnalysisRingItems.h \
-	TCLParameterReader.h
+	TCLParameterReader.h AbstractApplication.h
 
 libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@
 libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@
