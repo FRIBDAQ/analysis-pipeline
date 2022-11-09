@@ -20,7 +20,7 @@
  */
 #ifndef ABSTRACTAPPLICATION_H
 #define ABSTRACTAPPLICATION_H
-
+#include <mpi.h>
 namespace frib {
     namespace analysis {
         class CParameterReader;
@@ -106,7 +106,8 @@ namespace frib {
             
             int m_argc;
             char** m_argv;
-            
+        private:
+            MPI_Datatype  m_messageHeaderType;
         public:
             AbstractApplication(int argc, char** argv);
             virtual ~AbstractApplication();
@@ -128,11 +129,16 @@ namespace frib {
             virtual void outputter(int argc, char** argv) = 0; // Rank 2
             virtual void worker(int argc, char** argv) = 0;  // Rank 3-n.
             
+            // Get message header data type
+            
+            MPI_Datatype& messageHeaderType();
+            
             // Services for derived classes that might override operator():
         protected:            
             int getArgc() const;
             char** getArgv();
-            
+        private:            
+            void makeDataTypes();
         };
         
          

@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include "ParameterReader.h"
 #include <iostream>
+#include "AnalysisRingItems.h"
 
 static const unsigned MINIMUM_SIZE(4);
 
@@ -36,7 +37,11 @@ namespace frib {
          */
         AbstractApplication::AbstractApplication(int argc, char** argv) :
             m_argc(argc), m_argv(argv) {}
-            
+        
+        /**
+         *  destructor
+         */
+        AbstractApplication::~AbstractApplication() {}
         /**
          * operator()
          *    Entry point to the MPI pattern.
@@ -57,6 +62,7 @@ namespace frib {
             try {
                 int rank;
                 int size;
+                makeDataTypes();
                 status = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
                 if (status != MPI_SUCCESS) {
                     MPI_Error_string(status, msg, &reslen);
@@ -107,7 +113,17 @@ namespace frib {
             // Caller is expected to exit.
             
         }
-                /////////////////////////////// Utility methods for the subclasses ////////
+        ////////////////////////////////  Getters //////////////////////////////
+        
+        /**
+         * messageHeaderType
+         *    Returns a reference to the MPI type item for a message header:
+         */
+        MPI_Datatype&
+        AbstractApplication::messageHeaderType() {
+            return m_messageHeaderType;
+        }
+        /////////////////////////////// Utility methods for the subclasses ////////
         
         /**
          * getArgc
@@ -126,6 +142,38 @@ namespace frib {
         char**
         AbstractApplication::getArgv()  {
             return m_argv;
+        }
+        /**
+         *  makeDataTypes
+         *    Creates any MPI custom data types we need.
+         *    This sets member data datatypes.  Getters exist to fetch references
+         *    to the data types we've created.
+         */
+        void
+        AbstractApplication::makeDataTypes() {
+            int lengths[2] = {
+                1,1
+            };
+            MPI_Datatype types[2] = {
+                MPI_INT, MPI_INT
+            };
+            MPI_Aint offsets[2] = {
+                offsetof(FRIB_MPI_Message_Header, s_nBytes),
+                offsetof(FRIB_MPI_Message_Header, s_nBlockNum)
+            };
+            
+            int status = MPI_Type_create_struct(
+                2, lengths, offsets, types, &m_messageHeaderType
+            );
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to create message header MPI type");
+            }
+            
+            status = MPI_Type_commit(&m_messageHeaderType);
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to commit message header MPI type");
+            }
+            
         }
     }
 

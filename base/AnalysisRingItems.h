@@ -16,9 +16,11 @@
 */
 
 /** @file:  AnalysisRingItems.h
- *  @brief: Defines the analysis specific ring items.
+ *  @brief: Defines the analysis specific ring items
+ *  @note normally a user will also include an appropriate DataFormat.h
+ *    from the version of NSCLDAQ their data used.
  */
-#infdef ANALYSISRINGITEMS_H
+#ifndef ANALYSISRINGITEMS_H
 #define ANALYSISRINGITEMS_H
 #include <cstdint>
 namespace frib {
@@ -47,7 +49,7 @@ namespace frib {
          *  parameter defintion ring item
          *  sizeof  is not useful.
          */
-        typedef _ParameterDefinitions {
+        typedef struct  _ParameterDefinitions {
             RingItemHeader s_header;
             std::uint32_t  s_numParameters;
             ParameterDefinition s_parameters [0];
@@ -56,7 +58,7 @@ namespace frib {
         /**
          *    This contains the value of one parameter.
          */
-        typedef _ParameterValue {
+        typedef struct _ParameterValue {
             std::uint32_t s_number;
             double        s_value;
         } ParameterValue, *pParameterValue;
@@ -65,7 +67,7 @@ namespace frib {
          * Ring item of parameter unpacked data.
          * sizeof is worthless.
          */
-        typedef _ParameterItem {
+        typedef struct _ParameterItem {
             RingItemHeader s_header;
             std::uint64_t  s_triggerCount;
             std::uint32_t  s_parameterCount;
@@ -75,13 +77,13 @@ namespace frib {
         /** Variable data is used to document steering parameters:
          *
          */
-        typedef _Variable {
+        typedef struct _Variable {
             double s_value;
             char   s_variableUnits[MAX_UNITS_LENGTH];     // Fixed length
             char   s_variableName[0];       // variable length
         } Variable, *pVariable;
         
-        typedef VariableItem {
+        typedef struct _VariableItem {
             RingItemHeader s_header;
             std::uint32_t  s_numVars;
             Variable       s_variables[0];
@@ -97,8 +99,23 @@ namespace frib {
         
         static const std::uint32_t LAST_PASSTHROUGH      = 32767;
         static const std::uint32_t PARAMETER_DEFINITIONS = 32768;
-        static const std::uint32_t VARIABLE_VALUES       = 32769
+        static const std::uint32_t VARIABLE_VALUES       = 32769;
         static const std::uint32_t PARAMETER_DATA        = 32770;
+        
+        // MPI tags and messages:
+        
+        static const int FRIB_MPI_DATA_TAG = 1;
+        static const int FRIB_MPI_END_TAG  = 2;
+    
+        // Data are sent with this header followed by a block of char data
+        // that must be re-interpreted by the receiver:
+        
+        typedef struct _FRIB_MPI_Message_Header {
+            int s_nBytes;                       // Size of subsequent msg.
+            int s_nBlockNum;                    // Work Item number.
+            
+        } FRIB_MPI_Message_Header, *pFRIB_MPI_MEssageHeader;
+        
         
 #pragma pack(pop)
     }
