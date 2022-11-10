@@ -48,8 +48,16 @@ class readertest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(get_1);
     CPPUNIT_TEST(get_2);
+    CPPUNIT_TEST(get_3);
     CPPUNIT_TEST_SUITE_END();
+protected:
+    void construct_1();
+    void construct_2();
+    void construct_3();
     
+    void get_1();
+    void get_2();
+    void get_3();
 private:
     int m_fd;
     std::string m_filename;
@@ -75,15 +83,8 @@ public:
         unlink(m_filename.c_str());
         
     }
-protected:
-    void construct_1();
-    void construct_2();
-    void construct_3();
-    
-    void get_1();
-    void get_2();
     // Utilities:
-    
+private:    
     void writeCountPattern(std::uint32_t nBytes, std::uint8_t start, std::uint8_t incr);
 };
 
@@ -186,4 +187,16 @@ void readertest::get_2() {
         EQ(std::uint8_t(i), *p.u_8);
         p.u_8++;
     }
+}
+// Get without done is a logic error:
+
+void readertest::get_3() {
+    writeCountPattern(100, 0, 1);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 1024);
+    EQ(std::size_t(100), d.m_nBytes);                   // That's what we could read.
+    
+    auto r = d.getBlock(1024);    // ok.
+    CPPUNIT_ASSERT_THROW(d.getBlock(1024), std::logic_error);
 }

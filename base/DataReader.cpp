@@ -100,7 +100,7 @@ namespace frib {
                 .s_nItems = m_nUserItems,
                 .s_pData  = m_nUserBytes > 0 ?  m_pBuffer : nullptr
             };
-            m_fReleased = true;
+            m_fReleased = false;
             return res;
         
         }
