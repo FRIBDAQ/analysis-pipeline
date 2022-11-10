@@ -47,6 +47,7 @@ class readertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_3);
     
     CPPUNIT_TEST(get_1);
+    CPPUNIT_TEST(get_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -80,6 +81,7 @@ protected:
     void construct_3();
     
     void get_1();
+    void get_2();
     // Utilities:
     
     void writeCountPattern(std::uint32_t nBytes, std::uint8_t start, std::uint8_t incr);
@@ -155,4 +157,33 @@ void readertest::get_1() {
     EQ(size_t(0), r.s_nbytes);
     EQ(size_t(0), r.s_nItems);
     ASSERT(!r.s_pData);
+}
+// get from file with a single ring item (smaller than block):
+
+void readertest::get_2() {
+    writeCountPattern(100, 0, 1);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 1024);
+    EQ(std::size_t(100), d.m_nBytes);                   // That's what we could read.
+    
+    auto r = d.getBlock(1024);
+    EQ(size_t(100), r.s_nbytes);
+    EQ(size_t(1), r.s_nItems);
+    EQ(const_cast<const void*>(d.m_pBuffer), r.s_pData);
+    
+    // Contents:
+    
+    union {
+        const std::uint32_t* u_32;
+        const std::uint8_t*  u_8;
+    } p;
+    p.u_32 = reinterpret_cast<const std::uint32_t*>(r.s_pData);
+    EQ(std::uint32_t(100), *p.u_32);
+    p.u_32++;
+    
+    for (int i =0; i < r.s_nbytes - sizeof(std::uint32_t); i++) {
+        EQ(std::uint8_t(i), *p.u_8);
+        p.u_8++;
+    }
 }
