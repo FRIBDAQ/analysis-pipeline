@@ -31,7 +31,7 @@ configtests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 configtests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 configtests_LDADD=libfribCore.la
 
-iotests_SOURCES=TestRunner.cpp Asserts.h readertests.cpp
+iotests_SOURCES=TestRunner.cpp Asserts.h readertests.cpp writertests.cpp
 iotests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 iotests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 iotests_LDADD=libfribCore.la
