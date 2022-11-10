@@ -52,7 +52,12 @@ class readertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(get_4);
     CPPUNIT_TEST(get_5);
     CPPUNIT_TEST(get_6);
-    CPPUINIT_TEST(get_7);
+    CPPUNIT_TEST(get_7);
+    CPPUNIT_TEST(get_8);
+    CPPUNIT_TEST(get_9);
+    CPPUNIT_TEST(get_10);
+    
+    CPPUNIT_TEST(baddone);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void construct_1();
@@ -66,6 +71,11 @@ protected:
     void get_5();
     void get_6();
     void get_7();
+    void get_8();
+    void get_9();
+    void get_10();
+    
+    void baddone();
 private:
     int m_fd;
     std::string m_filename;
@@ -289,7 +299,7 @@ void readertest::get_6() {
 
 void readertest::get_7()
 {
-     writeCountPattern(100, 0, 1);
+    writeCountPattern(100, 0, 1);
     writeCountPattern(50, 0, 2);
     lseek(m_fd, 0, SEEK_SET);               // rewind fd.
     
@@ -314,4 +324,63 @@ void readertest::get_7()
         EQ(int(std::uint8_t(i*2)), int(*p.u_8));
         p.u_8++;
     }    
+}
+// First gulp gets a partial:
+
+void readertest::get_8() {
+    writeCountPattern(100, 0, 1);
+    writeCountPattern(50, 0, 2);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 110);             // Partial in the first:
+    
+    auto r = d.getBlock(110);              // NOt big enough for both.
+    EQ(size_t(100), r.s_nbytes);
+    EQ(size_t(1),   r.s_nItems);
+    
+    d.done();
+    r = d.getBlock(110);
+    EQ(size_t(50), r.s_nbytes);
+    EQ(size_t(1),   r.s_nItems);
+    union {
+        const std::uint32_t* u_32;
+        const std::uint8_t*  u_8;
+    } p;
+    p.u_32 = reinterpret_cast<const std::uint32_t*>(r.s_pData);
+    EQ(std::uint32_t(50), *p.u_32);
+    p.u_32++;
+    for (int i =0; i < 50 - sizeof(uint32_t); i++ ) {
+        EQ(int(std::uint8_t(i*2)), int(*p.u_8));
+        p.u_8++;
+    }    
+}
+// item won't fit in user req
+
+void readertest::get_9()
+{
+    writeCountPattern(100, 0, 1);
+    writeCountPattern(50, 0, 2);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 100);             // two gulps
+    
+    CPPUNIT_ASSERT_THROW(auto r = d.getBlock(50), std::logic_error);
+    
+}
+// ring item can't fit in the reader's buffer:
+
+void readertest::get_10()
+{
+    writeCountPattern(100, 0, 1);
+    writeCountPattern(50, 0, 2);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 50);
+    CPPUNIT_ASSERT_THROW(auto r = d.getBlock(50), std::logic_error);
+}
+// done when released is a logic error:
+
+void readertest::baddone() {
+    CDataReader d(m_fd, 100);
+    CPPUNIT_ASSERT_THROW(d.done(), std::logic_error);
 }
