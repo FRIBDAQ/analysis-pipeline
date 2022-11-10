@@ -11,7 +11,7 @@ include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
 libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@
 libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@
 
-noinst_PROGRAMS=treeparamtests treevartests configtests
+noinst_PROGRAMS=treeparamtests treevartests configtests readertests
 
 treeparamtests_SOURCES=TestRunner.cpp Asserts.h treeparamtests.cpp \
 	treeparamarraytests.cpp 
@@ -30,5 +30,10 @@ configtests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 configtests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 configtests_LDADD=libfribCore.la
 
+readertests_SOURCES=TestRunner.cpp Asserts.h 
+readertests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
+readertests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
+readertests_LDADD=libfribCore.la
 
-TESTS=treeparamtests treevartests configtests
+
+TESTS=treeparamtests treevartests configtests readertests
