@@ -45,6 +45,8 @@ class readertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    
+    CPPUNIT_TEST(get_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +79,7 @@ protected:
     void construct_2();
     void construct_3();
     
+    void get_1();
     // Utilities:
     
     void writeCountPattern(std::uint32_t nBytes, std::uint8_t start, std::uint8_t incr);
@@ -143,4 +146,13 @@ void readertest::construct_3() {
         CDataReader d(m_fd, size_t(1024UL*1024UL*1024UL*1024UL)),
         std::bad_alloc
     );
+}
+// Get empty file yeilds an EOF result:
+
+void readertest::get_1() {
+    CDataReader d(m_fd, 1024);
+    auto r = d.getBlock(1024);
+    EQ(size_t(0), r.s_nbytes);
+    EQ(size_t(0), r.s_nItems);
+    ASSERT(!r.s_pData);
 }

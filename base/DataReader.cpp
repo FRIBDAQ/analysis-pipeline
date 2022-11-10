@@ -178,7 +178,9 @@ namespace frib {
             // probe the smaller of maxBytes and m_nBytes;
             
             if (maxBytes > m_nBytes) maxBytes = m_nBytes;
-            
+            if (maxBytes == 0 && m_eof) {
+                return;
+            }
             union {
                 std::uint8_t* pBytes;
                 std::uint32_t* pLong;
