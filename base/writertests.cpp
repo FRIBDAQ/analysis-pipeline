@@ -37,6 +37,8 @@ using namespace frib::analysis;
 #undef private
 #include "DataReader.h"
 #include "AnalysisRingItems.h"
+#include "TreeParameter.h"
+#include "TreeVariable.h"
 
 static const char* templateFilename="testXXXXXX.dat";
 
@@ -46,6 +48,7 @@ class writertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +80,7 @@ protected:
     void construct_1();
     void construct_2();
     void construct_3();
+    void construct_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(writertest);
@@ -121,5 +125,40 @@ void writertest::construct_3() {
     EQ(sizeof(VariableItem), size_t(pVars->s_header.s_size));
     EQ(VARIABLE_VALUES, pVars->s_header.s_type);
     EQ(std::uint32_t(0), pVars->s_numVars);
+    
+}
+// there's a tree parameter:
+
+void writertest::construct_4() {
+    CTreeParameter param("a", "mm");
+    
+    {
+        CDataWriter w(m_filename.c_str());
+    }
+    // There should be an entry in the parameter descriptor:
+    
+    CDataReader r(m_fd, 8192*10);     // nice big buffer.
+    
+    auto rr = r.getBlock(8192*10);     // Slurp it all in.
+    
+    EQ(size_t(2), rr.s_nItems);       // Params and variables.
+    
+    /// Params:
+    
+    const ParameterDefinitions* pParams =
+        reinterpret_cast<const ParameterDefinitions*>(rr.s_pData);
+    ASSERT(pParams);
+    
+    
+    EQ(PARAMETER_DEFINITIONS, pParams->s_header.s_type);
+    EQ(std::uint32_t(1), pParams->s_numParameters);
+    auto defs = CTreeParameter::getDefinitions();
+    EQ(defs[0].second.s_parameterNumber, pParams->s_parameters[0].s_parameterNumber);
+    EQ(0, strcmp(defs[0].first.c_str(), pParams->s_parameters[0].s_parameterName));
+    
+    // I'm not sure why but if optimization is -O2 the following fails to
+    // put name to be "a" but instead leaves it as an empty string:
+    //std::string name = std::string(pParams->s_parameters[0].s_parameterName);
+    //EQ(defs[0].first, name);
     
 }
