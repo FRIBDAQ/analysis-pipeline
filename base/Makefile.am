@@ -30,7 +30,7 @@ configtests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 configtests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 configtests_LDADD=libfribCore.la
 
-readertests_SOURCES=TestRunner.cpp Asserts.h 
+readertests_SOURCES=TestRunner.cpp Asserts.h readertests.cpp
 readertests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 readertests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 readertests_LDADD=libfribCore.la
