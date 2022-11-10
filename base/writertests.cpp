@@ -31,16 +31,21 @@
 #include <stdexcept>
 #include <string>
 #include <string.h>
-
+#define private public
 #include "DataWriter.h"
 using namespace frib::analysis;
+#undef private
+#include "DataReader.h"
+#include "AnalysisRingItems.h"
 
 static const char* templateFilename="testXXXXXX.dat";
 
 
 class writertest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(writertest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -69,11 +74,52 @@ public:
 
     }
 protected:
-    void test_1();
+    void construct_1();
+    void construct_2();
+    void construct_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(writertest);
 
-void writertest::test_1()
+// Construct from filename
+void writertest::construct_1()
 {
+    CPPUNIT_ASSERT_NO_THROW(CDataWriter w(m_filename.c_str()));
+}
+// construct from fd
+
+void writertest::construct_2() {
+    CPPUNIT_ASSERT_NO_THROW(CDataWriter w(m_fd));
+}
+// Be sure the preamble is written -- in this case minimal items.
+
+void writertest::construct_3() {
+    {
+        CDataWriter w(m_filename.c_str());
+    }                                 // Closed file/flush etc.
+    CDataReader r(m_fd, 8192*10);     // nice big buffer.
+    
+    auto rr = r.getBlock(8192*10);     // Slurp it all in.
+    
+    EQ(size_t(2), rr.s_nItems);       // Params and variables.
+    
+    /// Params:
+    
+    const ParameterDefinitions* pParams =
+        reinterpret_cast<const ParameterDefinitions*>(rr.s_pData);
+    ASSERT(pParams);
+    
+    EQ(sizeof(ParameterDefinitions), size_t(pParams->s_header.s_size));
+    EQ(PARAMETER_DEFINITIONS, pParams->s_header.s_type);
+    EQ(std::uint32_t(0), pParams->s_numParameters);
+    
+    /// Variables:
+    
+    const std::uint8_t* p = reinterpret_cast<const uint8_t*>(pParams);
+    p += pParams->s_header.s_size;
+    const VariableItem* pVars = reinterpret_cast<const VariableItem*>(p);
+    EQ(sizeof(VariableItem), size_t(pVars->s_header.s_size));
+    EQ(VARIABLE_VALUES, pVars->s_header.s_type);
+    EQ(std::uint32_t(0), pVars->s_numVars);
+    
 }
