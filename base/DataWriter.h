@@ -59,8 +59,8 @@ namespace frib {
             void writeFrontMatter();
             void writeParameterDefs();
             void writeVariableDefs();
-            size_t sizeParameterDefItem(const std::vector<std::pair<std::string, frib::analysis::CTreeParameter::SharedData>>& defs);
-            size_t sizeVariableDefItem(const std::vector<std::pair<std::string, const frib::analysis::CTreeVariable::Definition*>>& defs);
+            size_t sizeParameterDefItem(const std::vector<std::pair<std::string, CTreeParameter::SharedData>>& defs);
+            size_t sizeVariableDefItem(const std::vector<std::pair<std::string, const CTreeVariable::Definition*>>& defs);
             size_t sizeEvent(const std::vector<std::pair<unsigned, double>>& event);
             void writeHeader(size_t nBytes, unsigned type);
         };
