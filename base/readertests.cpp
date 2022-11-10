@@ -36,11 +36,13 @@
 #include "DataReader.h"
 #undef private
 
+using namespace frib::analysis;
+
 static const char* templateFilename="testXXXXXX.dat";
 
 class readertest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(readertest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -69,11 +71,19 @@ public:
         
     }
 protected:
-    void test_1();
+    void construct_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(readertest);
 
-void readertest::test_1()
+// Construct on empty file by name:
+void readertest::construct_1()
 {
+    CDataReader d(m_filename.c_str(), 100);
+    EQ(size_t(0), d.m_nBytes);
+    ASSERT(d.m_pBuffer);
+    EQ(size_t(100), d.m_nBufferSize);
+    ASSERT(d.m_eof);
+    ASSERT(d.m_fReleased);
+       
 }
