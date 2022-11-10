@@ -189,9 +189,10 @@ namespace frib {
             
             while (m_nUserBytes < maxBytes) {
                 std::uint32_t size = *(p.pLong);
-                if (size > m_nBytes) {
-                    throw std::logic_error("Internal buffer overflowed by a single ring item");
+                if (size > m_nBytes || (size > maxBytes && m_nUserItems == 0)) {
+                    throw std::logic_error("Internal buffer or user request overflowed by a single ring item");
                 }
+                if ((size + m_nUserBytes) > maxBytes) return;
                 m_nUserBytes += size;
                 m_nUserItems++;
                 p.pBytes += size;

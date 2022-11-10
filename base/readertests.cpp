@@ -49,6 +49,9 @@ class readertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(get_1);
     CPPUNIT_TEST(get_2);
     CPPUNIT_TEST(get_3);
+    CPPUNIT_TEST(get_4);
+    CPPUNIT_TEST(get_5);
+    CPPUNIT_TEST(get_6);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void construct_1();
@@ -58,6 +61,9 @@ protected:
     void get_1();
     void get_2();
     void get_3();
+    void get_4();
+    void get_5();
+    void get_6();
 private:
     int m_fd;
     std::string m_filename;
@@ -199,4 +205,79 @@ void readertest::get_3() {
     
     auto r = d.getBlock(1024);    // ok.
     CPPUNIT_ASSERT_THROW(d.getBlock(1024), std::logic_error);
+}
+// get after done gives eof indication in this case:
+
+void readertest::get_4() {
+    writeCountPattern(100, 0, 1);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 1024);
+    EQ(std::size_t(100), d.m_nBytes);                   // That's what we could read.
+    
+    auto r = d.getBlock(1024);    // ok.
+    d.done();
+    CPPUNIT_ASSERT_NO_THROW(r = d.getBlock(1024));     // eof.
+    EQ(size_t(0), r.s_nbytes);
+    EQ(size_t(0), r.s_nItems);
+    ASSERT(!r.s_pData);
+}
+// Can get 2 ring items if my request is big enough:
+
+void readertest::get_5() {
+    writeCountPattern(100, 0, 1);
+    writeCountPattern(50, 0, 2);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 1024);             // one gulp.
+    
+    auto r = d.getBlock(1024);
+    EQ(size_t(150), r.s_nbytes);
+    EQ(size_t(2),   r.s_nItems);
+    
+    // only look at the second item:
+    
+     union {
+        const std::uint32_t* u_32;
+        const std::uint8_t*  u_8;
+    } p;
+    p.u_32 = reinterpret_cast<const std::uint32_t*>(r.s_pData);
+    p.u_8 += *p.u_32;
+    EQ(std::uint32_t(50), *p.u_32);
+    p.u_32++;
+    for (int i =0; i < 50 - sizeof(uint32_t); i++ ) {
+        EQ(int(std::uint8_t(i*2)), int(*p.u_8));
+        p.u_8++;
+    }
+    
+    
+}
+void readertest::get_6() {
+    // neeed 2 gets to get both items:
+    
+    writeCountPattern(100, 0, 1);
+    writeCountPattern(50, 0, 2);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 1024);             // one gulp.
+    
+    auto r = d.getBlock(110);              // NOt big enough for both.
+    EQ(size_t(100), r.s_nbytes);
+    EQ(size_t(1),   r.s_nItems);
+    
+    d.done();
+    r = d.getBlock(110);
+    EQ(size_t(50), r.s_nbytes);
+    EQ(size_t(1),   r.s_nItems);
+    union {
+        const std::uint32_t* u_32;
+        const std::uint8_t*  u_8;
+    } p;
+    p.u_32 = reinterpret_cast<const std::uint32_t*>(r.s_pData);
+    EQ(std::uint32_t(50), *p.u_32);
+    p.u_32++;
+    for (int i =0; i < 50 - sizeof(uint32_t); i++ ) {
+        EQ(int(std::uint8_t(i*2)), int(*p.u_8));
+        p.u_8++;
+    }
 }
