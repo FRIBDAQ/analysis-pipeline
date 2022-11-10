@@ -52,6 +52,7 @@ class readertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(get_4);
     CPPUNIT_TEST(get_5);
     CPPUNIT_TEST(get_6);
+    CPPUINIT_TEST(get_7);
     CPPUNIT_TEST_SUITE_END();
 protected:
     void construct_1();
@@ -64,6 +65,7 @@ protected:
     void get_4();
     void get_5();
     void get_6();
+    void get_7();
 private:
     int m_fd;
     std::string m_filename;
@@ -252,6 +254,8 @@ void readertest::get_5() {
     
     
 }
+// need 2 gets to get both items.
+
 void readertest::get_6() {
     // neeed 2 gets to get both items:
     
@@ -280,4 +284,34 @@ void readertest::get_6() {
         EQ(int(std::uint8_t(i*2)), int(*p.u_8));
         p.u_8++;
     }
+}
+// reader needs two reads:
+
+void readertest::get_7()
+{
+     writeCountPattern(100, 0, 1);
+    writeCountPattern(50, 0, 2);
+    lseek(m_fd, 0, SEEK_SET);               // rewind fd.
+    
+    CDataReader d(m_fd, 100);             // two gulps
+    
+    auto r = d.getBlock(110);              // NOt big enough for both.
+    EQ(size_t(100), r.s_nbytes);
+    EQ(size_t(1),   r.s_nItems);
+    
+    d.done();
+    r = d.getBlock(110);
+    EQ(size_t(50), r.s_nbytes);
+    EQ(size_t(1),   r.s_nItems);
+    union {
+        const std::uint32_t* u_32;
+        const std::uint8_t*  u_8;
+    } p;
+    p.u_32 = reinterpret_cast<const std::uint32_t*>(r.s_pData);
+    EQ(std::uint32_t(50), *p.u_32);
+    p.u_32++;
+    for (int i =0; i < 50 - sizeof(uint32_t); i++ ) {
+        EQ(int(std::uint8_t(i*2)), int(*p.u_8));
+        p.u_8++;
+    }    
 }
