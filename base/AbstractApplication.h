@@ -109,6 +109,8 @@ namespace frib {
         private:
             MPI_Datatype  m_messageHeaderType;
             MPI_Datatype  m_requestDataType;
+            MPI_Datatype  m_parameterHeaderDataType;
+            MPI_Datatype  m_parameterValueDataType;
         public:
             AbstractApplication(int argc, char** argv);
             virtual ~AbstractApplication();
@@ -134,6 +136,8 @@ namespace frib {
             
             MPI_Datatype& messageHeaderType();
             MPI_Datatype& requestDataType();
+            MPI_Datatype& parameterHeaderDataType();
+            MPI_Datatype& parameterValueDataType();
             
             // Services for derived classes that might override operator():
         protected:            

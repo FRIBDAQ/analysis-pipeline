@@ -131,6 +131,26 @@ namespace frib {
         AbstractApplication::requestDataType() {
             return m_requestDataType;
         }
+        /**
+         * parameterHeaderDataType
+         * @return MPI_DataType& reference to the header data type for
+         *    a parameter message.
+         */
+        MPI_Datatype&
+        AbstractApplication::parameterHeaderDataType() {
+            return m_parameterHeaderDataType;
+        }
+        /**
+         * parameterValueDataType
+         *   @return MPI_DataType& - reference to the data type for
+         *        parameter values.
+         */
+        MPI_Datatype&
+        AbstractApplication::parameterValueDataType() {
+            return m_parameterValueDataType;
+        }
+        
+        /**
         /////////////////////////////// Utility methods for the subclasses ////////
         
         /**
@@ -201,6 +221,44 @@ namespace frib {
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to commit data request MPI type");
             }
+            // Parameters are preceeded by a header that has
+            // the number of parameters and the trigger number:
+            
+            types[0] = MPI_INT64_T;
+            types[1] = MPI_INT32_T;
+            offsets[0] = offsetof(FRIB_MPI_Parameter_MessageHeader, s_triggerNumber);
+            offsets[1] = offsetof(FRIB_MPI_Parameter_MessageHeader, s_numParameters);
+            status = MPI_Type_create_struct(
+                2, lengths, offsets, types, &m_parameterHeaderDataType
+            );
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to create parameter message header  MPI type");
+            }
+            
+            status = MPI_Type_commit(&m_parameterHeaderDataType);
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to commit parameter message header request MPI type");
+            }
+            
+            // Parameters themselves are number/value pairs:
+            
+            types[0] = MPI_INTEGER;
+            types[1] = MPI_DOUBLE;
+            offsets[0] = offsetof(FRIB_MPI_Parameter_Value, s_number);
+            offsets[1] = offsetof(FRIB_MPI_Parameter_Value, s_value);
+            
+            status = MPI_Type_create_struct(
+                2, lengths, offsets, types, &m_parameterValueDataType
+            );
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to create parameter message header  MPI type");
+            }
+            
+            status = MPI_Type_commit(&m_parameterValueDataType);
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to commit parameter message header request MPI type");
+            }
+            
         }
     }
 
