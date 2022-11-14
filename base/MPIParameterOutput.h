@@ -46,7 +46,8 @@ namespace frib {
         CDataWriter*         m_pWriter;
     public:
         CMPIParameterOutput();
-        virtual int operator()(int argc, char** argv, AbstractApplication* app);
+        virtual ~CMPIParameterOutput();
+        virtual void operator()(int argc, char** argv, AbstractApplication* app);
     protected:
         virtual std::string getOutputFile(int argc, char** argv);
         

@@ -125,6 +125,11 @@ namespace frib {
         
         // These typedefs are message structs that send parameters around:
         
+        
+        static const int  MPI_HEADER_TAG = 1;
+        static const int  MPI_END_TAG  = 2;
+        static const int  MPI_DATA_TAG = 3;
+        
         typedef struct _FRIB_MPI_Parameter_MessageHeader {
             std::uint64_t s_triggerNumber;
             std::uint32_t s_numParameters;
