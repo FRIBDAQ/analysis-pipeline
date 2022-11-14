@@ -28,7 +28,7 @@ namespace frib {
     class AbstractApplication;               // Has defined data types.
     class CDataWriter;
     /**
-     *   CMPIOutput
+     *   CMPIParameterOutput
      *      This object can be used as is as an MPI Output process.
      *      It accepts data as pairs of messages:
      *
@@ -40,12 +40,12 @@ namespace frib {
      *  and the data writer will write those and the variable definitions to file.
      *  
      */
-    class CMPIOutput {
+    class CMPIParameterOutput {
     private:
         AbstractApplication* m_pApp;
         CDataWriter*         m_pWriter;
     public:
-        CMPIOutput();
+        CMPIParameterOutput();
         virtual int operator()(int argc, char** argv, AbstractApplication* app);
     protected:
         virtual std::string getOutputFile(int argc, char** argv);
