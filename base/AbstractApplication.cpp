@@ -182,19 +182,20 @@ namespace frib {
             
             // Message Header:
             
-            int lengths[2] = {
+            int lengths[3] = {
                 1,1
             };
-            MPI_Datatype types[2] = {
-                MPI_INT, MPI_INT
+            MPI_Datatype types[3] = {
+                MPI_INT, MPI_INT, MPI_CXX_BOOL
             };
-            MPI_Aint offsets[2] = {
+            MPI_Aint offsets[3] = {
                 offsetof(FRIB_MPI_Message_Header, s_nBytes),
-                offsetof(FRIB_MPI_Message_Header, s_nBlockNum)
+                offsetof(FRIB_MPI_Message_Header, s_nBlockNum),
+                offsetof(FRIB_MPI_Message_Header, s_end)
             };
             
             int status = MPI_Type_create_struct(
-                2, lengths, offsets, types, &m_messageHeaderType
+                3, lengths, offsets, types, &m_messageHeaderType
             );
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to create message header MPI type");
@@ -228,8 +229,10 @@ namespace frib {
             types[1] = MPI_INT32_T;
             offsets[0] = offsetof(FRIB_MPI_Parameter_MessageHeader, s_triggerNumber);
             offsets[1] = offsetof(FRIB_MPI_Parameter_MessageHeader, s_numParameters);
+            offsets[2] = offsetof(FRIB_MPI_Parameter_MessageHeader, s_end);
+            
             status = MPI_Type_create_struct(
-                2, lengths, offsets, types, &m_parameterHeaderDataType
+                3, lengths, offsets, types, &m_parameterHeaderDataType
             );
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to create parameter message header  MPI type");

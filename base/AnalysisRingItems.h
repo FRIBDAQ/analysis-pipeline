@@ -103,12 +103,9 @@ namespace frib {
         static const std::uint32_t PARAMETER_DATA        = 32770;
         static const std::uint32_t TEST_DATA             = 32771;
         
-        // MPI tags and messages:
+        // MPI Messages structures:
         
-        static const int FRIB_MPI_DATA_TAG = 1;
-        static const int FRIB_MPI_END_TAG  = 2;
-        static const int FRIB_MPI_REQDATA_TAG = 3;
-    
+
         // Request for data message:
         
         typedef struct _FRIB_MPI_Request_Data {
@@ -122,6 +119,7 @@ namespace frib {
         typedef struct _FRIB_MPI_Message_Header {
             int s_nBytes;                       // Size of subsequent msg.
             int s_nBlockNum;                    // Work Item number.
+            bool s_end;                         // End data marker.
             
         } FRIB_MPI_Message_Header, *pFRIB_MPI_MessageHeader;
         
@@ -130,6 +128,7 @@ namespace frib {
         typedef struct _FRIB_MPI_Parameter_MessageHeader {
             std::uint64_t s_triggerNumber;
             std::uint32_t s_numParameters;
+            bool          s_end;
         } FRIB_MPI_Parameter_MessageHeader, *pFRIB_MPI_Parameter_MessageHeader;
         typedef struct _FRIB_MPI_Parameter_Value {
             unsigned s_number;
