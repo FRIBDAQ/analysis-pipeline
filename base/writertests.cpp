@@ -55,6 +55,8 @@ class writertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST(construct_5);
+    CPPUNIT_TEST(construct_6);
+    CPPUNIT_TEST(construct_7);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -89,6 +91,8 @@ protected:
     void construct_3();
     void construct_4();
     void construct_5();
+    void construct_6();
+    void construct_7();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(writertest);
@@ -202,4 +206,93 @@ void writertest::construct_5() {
             pp.p8 += sizeof(ParameterDefinition) + strlen(pp.pv->s_parameterName) + 1;
         }
         
+}
+// Single tree variable:
+void writertest::construct_6() {
+    CTreeVariable a("a", "mm");
+    a = 3.1416;                          // Give it a value.
+    
+    {
+        CDataWriter w(m_filename.c_str());
+    }                                    // CLosed.
+    CDataReader reader(m_fd, 8192*10);
+    auto r = reader.getBlock(8192*10);   // Slurp it all in.
+    
+    EQ(size_t(2), r.s_nItems);  // got both
+    
+    // Skip the first one:
+    
+    union {
+        const std::uint8_t* p8;
+        const RingItemHeader* ph;
+    } pItem;
+    pItem.ph = reinterpret_cast<const RingItemHeader*>(r.s_pData);
+    pItem.p8 += pItem.ph->s_size;
+    
+    //  Item should be a variable def item with 1 variable:
+    
+    EQ(VARIABLE_VALUES, pItem.ph->s_type);
+    union {
+        const std::uint8_t* p8;
+        const VariableItem* pv;
+    } pv;
+    pv.p8 = pItem.p8;
+    EQ(std::uint32_t(1), pv.pv->s_numVars);
+    
+    
+    union {
+        const std::uint8_t* p8;
+        const Variable*     pv;
+    } p;
+    p.pv = pv.pv->s_variables;
+    
+    EQ(double(a), p.pv->s_value);
+    EQ(0, strcmp(a.getUnit().c_str(), p.pv->s_variableUnits));
+    EQ(0, strcmp(a.getName().c_str(), p.pv->s_variableName));
+    
+}
+// multiple tree variables:
+
+void writertest::construct_7()
+{
+    CTreeVariableArray a("a", 1.2345, "mm", 16, 0);
+    {
+        CDataWriter w(m_filename.c_str());
+    }                                    // CLosed.
+    CDataReader reader(m_fd, 8192*10);
+    auto r = reader.getBlock(8192*10);   // Slurp it all in.
+    
+    EQ(size_t(2), r.s_nItems);  // got both
+    
+    // Skip the first one:
+    
+    union {
+        const std::uint8_t* p8;
+        const RingItemHeader* ph;
+    } pItem;
+    pItem.ph = reinterpret_cast<const RingItemHeader*>(r.s_pData);
+    pItem.p8 += pItem.ph->s_size;
+    
+    //  Item should be a variable def item with 1 variable:
+    
+    EQ(VARIABLE_VALUES, pItem.ph->s_type);
+    union {
+        const std::uint8_t* p8;
+        const VariableItem* pv;
+    } pv;
+    pv.p8 = pItem.p8;
+    EQ(std::uint32_t(16), pv.pv->s_numVars);
+    
+    union {
+        const std::uint8_t* p8;
+        const Variable*     pv;
+    } p;
+    p.pv = pv.pv->s_variables;
+    
+    for (int i =0; i < 16; i++) {
+        EQ(double(a[i]), p.pv->s_value);
+        EQ(0, strcmp(a[i].getUnit().c_str(), p.pv->s_variableUnits));
+        EQ(0, strcmp(a[i].getName().c_str(), p.pv->s_variableName));
+        p.p8 += sizeof(Variable) + strlen(p.pv->s_variableName) +1;
+    }
 }
