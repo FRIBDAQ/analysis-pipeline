@@ -61,6 +61,8 @@ class writertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(write_1);
     CPPUNIT_TEST(write_2);
     CPPUNIT_TEST(write_3);
+    
+    CPPUNIT_TEST(writepars_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -101,6 +103,8 @@ protected:
     void write_1();
     void write_2();
     void write_3();
+    
+    void writepars(1);
 private:
         void* makeCountingRingItem(
             void* pBuffer,

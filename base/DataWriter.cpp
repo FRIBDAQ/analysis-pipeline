@@ -83,7 +83,13 @@ namespace frib {
             write(m_fd, &trigger, sizeof(trigger));
             std::uint32_t nParams = event.size();
             write(m_fd, &nParams, sizeof(nParams));
-                  
+            
+            // You might think you could just point to the data using
+            // event.data and write event.size()*sizeof(std::pari<unsigned, double)
+            // and that would write the data _but:
+            // - unsigned may not be std::uint32_t.
+            // - There's no assurance the pair is packed as required by the
+            //   spec.
             for (auto& item : event) {
                 ParameterValue v = {item.first, item.second};
                 write(m_fd, &v, sizeof(v));
