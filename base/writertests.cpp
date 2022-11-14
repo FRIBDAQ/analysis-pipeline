@@ -104,7 +104,7 @@ protected:
     void write_2();
     void write_3();
     
-    void writepars(1);
+    void writepars_1();
 private:
         void* makeCountingRingItem(
             void* pBuffer,
@@ -453,4 +453,25 @@ void writertest::write_3() {
     EQ(TEST_DATA, pHeader->s_type);
     EQ(sizeof(std::uint32_t), size_t(pHeader->s_unused));
     EQ(0, memcmp(item2, pReadItem, 100));
+}
+// write empty parameters record:
+
+void writertest::writepars_1()
+{
+    std::vector<std::pair<unsigned, double>> event;
+    {
+        CDataWriter w(m_filename.c_str());
+        w.writeEvent(event, 123);
+    }
+    CDataReader reader(m_fd, 8192*10);
+    auto r = reader.getBlock(8192*10);
+    EQ(size_t(3), r.s_nItems);
+    
+    const void* pReadItem = skipItems(r.s_pData, 2);
+    const ParameterItem* pItem = reinterpret_cast<const ParameterItem*>(pReadItem);
+    EQ(PARAMETER_DATA, pItem->s_header.s_type);
+    EQ(std::uint32_t(sizeof(ParameterItem)), pItem->s_header.s_size);
+    EQ(std::uint32_t(sizeof(std::uint32_t)), pItem->s_header.s_unused);
+    EQ(std::uint64_t(123), pItem->s_triggerCount);
+    EQ(std::uint32_t(0), pItem->s_parameterCount);  
 }
