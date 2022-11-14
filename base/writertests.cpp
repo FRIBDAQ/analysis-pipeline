@@ -31,15 +31,20 @@
 #include <stdexcept>
 #include <string>
 #include <string.h>
+
 #define private public
 #include "DataWriter.h"
-using namespace frib::analysis;
+#include "TreeParameter.h"
+#include "TreeParameterArray.h"
+#include "TreeVariable.h"
+#include "TreeVariableArray.h"
 #undef private
+
 #include "DataReader.h"
 #include "AnalysisRingItems.h"
-#include "TreeParameter.h"
-#include "TreeVariable.h"
 
+
+using namespace frib::analysis;
 static const char* templateFilename="testXXXXXX.dat";
 
 
@@ -49,6 +54,7 @@ class writertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST(construct_4);
+    CPPUNIT_TEST(construct_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -74,13 +80,15 @@ public:
 
         close(m_fd);      // Might have been closed in test so don't check status
         unlink(m_filename.c_str());
-
+        CTreeParameter::m_parameterDictionary.clear();
+        CTreeVariable::m_dictionary.clear();
     }
 protected:
     void construct_1();
     void construct_2();
     void construct_3();
     void construct_4();
+    void construct_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(writertest);
@@ -161,4 +169,37 @@ void writertest::construct_4() {
     //std::string name = std::string(pParams->s_parameters[0].s_parameterName);
     //EQ(defs[0].first, name);
     
+    
+    
+}
+// A few tree parameter defs - using an array:
+
+void writertest::construct_5() {
+        CTreeParameterArray a("a", "mm", 16, 0);
+        {
+            CDataWriter w(m_filename.c_str());
+        }                                    // CLosed.
+        CDataReader reader(m_fd, 8192*10);
+        auto r = reader.getBlock(8192*10);   // Slurp it all in.
+        
+        EQ(size_t(2), r.s_nItems);  // got boht.
+        
+        const ParameterDefinitions* pParams =
+            reinterpret_cast<const ParameterDefinitions*>(r.s_pData);
+        EQ(PARAMETER_DEFINITIONS, pParams->s_header.s_type);
+        EQ(std::uint32_t(16), pParams->s_numParameters);
+        
+        const ParameterDefinition* p = pParams->s_parameters;
+        union {
+            const std::uint8_t* p8;
+            const ParameterDefinition* pv;
+        } pp;
+        pp.pv = p;
+        for (int i = 0; i <16; i++) {
+            
+            EQ(a[i].getId(), pp.pv->s_parameterNumber);
+            EQ(0, strcmp(a[i].getName().c_str(), pp.pv->s_parameterName));
+            pp.p8 += sizeof(ParameterDefinition) + strlen(pp.pv->s_parameterName) + 1;
+        }
+        
 }
