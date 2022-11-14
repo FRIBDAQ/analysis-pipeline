@@ -91,15 +91,15 @@ namespace frib {
                 
                                 switch (rank) {
                     case 0:
-                        dealer(m_argc, m_argv);
+                        dealer(m_argc, m_argv, this);
                         break;
                     case 1:
-                        farmer(m_argc, m_argv);
+                        farmer(m_argc, m_argv, this);
                         break;
                     case 2:
-                        outputter(m_argc, m_argv);
+                        outputter(m_argc, m_argv, this);
                     default:
-                        worker(m_argc, m_argv);
+                        worker(m_argc, m_argv, this);
                 }
                 // Finalize the application:
                 

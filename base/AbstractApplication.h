@@ -127,10 +127,10 @@ namespace frib {
             
             // Roles in the program (Strategy methods).
             
-            virtual void dealer(int argc, char** argv) = 0;  // Rank 0
-            virtual void farmer(int argc, char** argv) = 0;  // Rank 1
-            virtual void outputter(int argc, char** argv) = 0; // Rank 2
-            virtual void worker(int argc, char** argv) = 0;  // Rank 3-n.
+            virtual void dealer(int argc, char** argv, AbstractApplication* pApp) = 0;  // Rank 0
+            virtual void farmer(int argc, char** argv, AbstractApplication* pApp) = 0;  // Rank 1
+            virtual void outputter(int argc, char** argv, AbstractApplication* pApp) = 0; // Rank 2
+            virtual void worker(int argc, char** argv, AbstractApplication* pApp) = 0;  // Rank 3-n.
             
             // Get message header data type
             
@@ -142,8 +142,7 @@ namespace frib {
             // Services for derived classes that might override operator():
         protected:            
             int getArgc() const;
-            char** getArgv();
-        private:            
+            char** getArgv();            
             void makeDataTypes();
         };
         
