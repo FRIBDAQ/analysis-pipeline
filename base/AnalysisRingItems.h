@@ -101,6 +101,7 @@ namespace frib {
         static const std::uint32_t PARAMETER_DEFINITIONS = 32768;
         static const std::uint32_t VARIABLE_VALUES       = 32769;
         static const std::uint32_t PARAMETER_DATA        = 32770;
+        static const std::uint32_t TEST_DATA             = 32771;
         
         // MPI tags and messages:
         
