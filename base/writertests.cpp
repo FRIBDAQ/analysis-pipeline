@@ -63,6 +63,7 @@ class writertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(write_3);
     
     CPPUNIT_TEST(writepars_1);
+    CPPUNIT_TEST(writepars_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -105,6 +106,7 @@ protected:
     void write_3();
     
     void writepars_1();
+    void writepars_2();
 private:
         void* makeCountingRingItem(
             void* pBuffer,
@@ -474,4 +476,37 @@ void writertest::writepars_1()
     EQ(std::uint32_t(sizeof(std::uint32_t)), pItem->s_header.s_unused);
     EQ(std::uint64_t(123), pItem->s_triggerCount);
     EQ(std::uint32_t(0), pItem->s_parameterCount);  
+}
+// write a non-empty parameters record:
+
+void writertest::writepars_2()
+{
+    std::vector<std::pair<unsigned, double>> event;
+    for (int i = 0; i < 10; i++) {
+        event.push_back({i*2, 3.1416*2});
+    }
+    {
+        CDataWriter w(m_filename.c_str());
+        w.writeEvent(event, 123);
+    }
+    CDataReader reader(m_fd, 8192*10);
+    auto r = reader.getBlock(8192*10);
+    EQ(size_t(3), r.s_nItems);
+    
+    const void* pReadItem = skipItems(r.s_pData, 2);
+    const ParameterItem* pItem = reinterpret_cast<const ParameterItem*>(pReadItem);
+    EQ(PARAMETER_DATA, pItem->s_header.s_type);
+    EQ(
+       std::uint32_t(sizeof(ParameterItem)+ 10*(sizeof(std::uint32_t) + sizeof(double))),
+        pItem->s_header.s_size
+    );
+    EQ(std::uint32_t(sizeof(std::uint32_t)), pItem->s_header.s_unused);
+    EQ(std::uint64_t(123), pItem->s_triggerCount);
+    EQ(std::uint32_t(10), pItem->s_parameterCount);
+    const ParameterValue* p = pItem->s_parameters;
+    for (int i =0; i < 10; i++) {
+        EQ(std::uint32_t(i*2), p->s_number);
+        EQ(double(3.1416*2), p->s_value);
+        p++;
+    }
 }
