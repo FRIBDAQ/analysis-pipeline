@@ -211,7 +211,8 @@ namespace frib {
         CDataWriter::sizeEvent(
             const std::vector<std::pair<unsigned, double>>& event
         ) {
-            size_t result = sizeof(RingItemHeader) + sizeof(std::uint32_t);
+            size_t result = sizeof(RingItemHeader)
+                + sizeof(std::uint64_t) + sizeof(std::uint32_t); // trigger/count
             result += event.size() * (sizeof(double) + sizeof(std::uint32_t));
             return result;
         }
