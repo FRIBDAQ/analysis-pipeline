@@ -86,8 +86,8 @@ namespace frib {
             static const std::vector<unsigned> getScoreboard();
             static std::vector<std::pair<std::string, SharedData>> getDefinitions();
         private:
-            pSharedData lookupParameter(const std::string& name);
-            pSharedData makeSharedData(
+            static pSharedData lookupParameter(const std::string& name);
+            static pSharedData makeSharedData(
                 const std::string& name,
                 double low, double  high, unsigned chans, const char* units
             );
