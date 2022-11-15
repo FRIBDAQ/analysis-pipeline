@@ -185,7 +185,7 @@ namespace frib {
             // Message Header:
             
             int lengths[3] = {
-                1,1
+                1,1, 1
             };
             MPI_Datatype types[3] = {
                 MPI_INT, MPI_INT, MPI_CXX_BOOL
@@ -247,7 +247,7 @@ namespace frib {
             
             // Parameters themselves are number/value pairs:
             
-            types[0] = MPI_INTEGER;
+            types[0] = MPI_INT32_T;
             types[1] = MPI_DOUBLE;
             offsets[0] = offsetof(FRIB_MPI_Parameter_Value, s_number);
             offsets[1] = offsetof(FRIB_MPI_Parameter_Value, s_value);
