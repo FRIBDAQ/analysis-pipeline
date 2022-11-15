@@ -130,18 +130,19 @@ namespace frib {
         static const int  MPI_END_TAG  = 2;
         static const int  MPI_DATA_TAG = 3;
         
+        
+        
+#pragma pack(pop)
         typedef struct _FRIB_MPI_Parameter_MessageHeader {
             std::uint64_t s_triggerNumber;
             std::uint32_t s_numParameters;
             bool          s_end;
         } FRIB_MPI_Parameter_MessageHeader, *pFRIB_MPI_Parameter_MessageHeader;
         typedef struct _FRIB_MPI_Parameter_Value {
-            unsigned s_number;
+            std::uint32_t s_number;
             double   s_value;
         } FRIB_MPI_Parameter_Value, *pFRIB_MPI_Parameter_Value;
         
-        
-#pragma pack(pop)
     }
 }
 
