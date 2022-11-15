@@ -98,8 +98,10 @@ namespace frib {
                         break;
                     case 2:
                         outputter(m_argc, m_argv, this);
+                        break;
                     default:
                         worker(m_argc, m_argv, this);
+                        break;
                 }
                 // Finalize the application:
                 
