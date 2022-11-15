@@ -26,6 +26,7 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
+
 namespace frib {
     namespace analysis {
         /**
@@ -91,6 +92,7 @@ namespace frib {
                         nParamsAllocated = header.s_numParameters;
                         pData.reset(new FRIB_MPI_Parameter_Value[nParamsAllocated]);
                     }
+                    
                     status = MPI_Recv(
                         pData.get(), header.s_numParameters, app->parameterValueDataType(),
                         mpistat.MPI_SOURCE, MPI_DATA_TAG, MPI_COMM_WORLD, &mpistat
@@ -119,6 +121,8 @@ namespace frib {
                      // Do nothing - s_end will be true.
                      header.s_end = true;             // Just in case.
                      
+                } else {
+                    throw std::logic_error("Invalid tag type in message");
                 }
                 
                 

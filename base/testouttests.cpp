@@ -24,9 +24,19 @@
 #include "TreeParameter.h"
 #include "TreeVariable.h"
 #include "AnalysisRingItems.h"
+#include "DataReader.h"
 
+#include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
 
+using namespace frib::analysis;
 
+extern std::string testFile;
 
 class outputtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(outputtest);
@@ -34,13 +44,22 @@ class outputtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
     
 private:
-
+    int m_fd;               // File open on the test output file.
+    CDataReader* m_pReader;
 public:
     void setUp() {
-        
+        m_fd = open(testFile.c_str(), O_RDONLY);
+        if (m_fd < 0) {
+            const char* reason = strerror(errno);
+            std::string msg = "Test file open failed: ";
+            msg += reason;
+            CPPUNIT_FAIL(msg);
+        }
+        m_pReader = new CDataReader(m_fd, 10*1024*1024);   // Sufficient to read all.
     }
     void tearDown() {
-        
+        close(m_fd);
+        delete m_pReader;
     }
 protected:
     void test_1();
@@ -48,7 +67,10 @@ protected:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(outputtest);
 
+// Should have 102 items:
 void outputtest::test_1()
 {
-    ASSERT(false);
+    auto r = m_pReader->getBlock(10*1024*1024);
+    m_pReader->done();
+    EQ(std::size_t(102), r.s_nItems);
 }

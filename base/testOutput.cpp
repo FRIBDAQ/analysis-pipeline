@@ -30,6 +30,8 @@
 #include <vector>
 #include <memory>
 #include <mpi.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #include "TreeParameter.h"
 #include "TreeParameterArray.h"
@@ -81,10 +83,14 @@ DummyConfigReader::read() {
 class Application : public AbstractApplication  {
 public:
     Application(int argc, char** argv) : AbstractApplication(argc, argv) {}
-    virtual void dealer(  int argc, char** argv, AbstractApplication* pApp) {}
+    virtual void dealer(  int argc, char** argv, AbstractApplication* pApp) {
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
     virtual void farmer(int argc, char** argv, AbstractApplication* pApp);
     virtual void outputter(int argc, char** argv, AbstractApplication* pApp);
-    virtual void worker(int argc, char** argv, AbstractApplication* pApp) {}
+    virtual void worker(int argc, char** argv, AbstractApplication* pApp) {
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 private:
     std::vector<std::pair<unsigned, double>> makeEvent();
     void sendEvent(std::uint64_t trigger, const std::vector<std::pair<unsigned, double>>& event);
@@ -100,6 +106,7 @@ Application::outputter(int argc, char** argv, AbstractApplication* pApp) {
     outputter(argc, argv, pApp);
     
     // done.
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 // farmer
@@ -116,10 +123,10 @@ Application::farmer(int argc, char** argv, AbstractApplication* pApp) {
     }
     sendEnd();
     
-    // We're going to cheat a bit and run the tests from here.
-    // Since sends are syncrhonous and the write takes very little time,
-    // the belief is that by the time we actually start running tests,
-    // the output file (argv[2]) will already have been written.
+    // This ensures everybody is done before running the tests
+    //
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     
     tests(argv[2]);
 }
@@ -221,6 +228,8 @@ static void tests(const char* fname) {
 
     runner.addTest(registry.makeTest());
     bool wasSuccessful = runner.run("", false);
+    
+    unlink(testFile.c_str());         // Full teardown - kill off the file.
     
     if (!wasSuccessful) {
         throw std::runtime_error("Unit tests failed");
