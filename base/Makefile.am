@@ -38,7 +38,7 @@ iotests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 iotests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 iotests_LDADD=libfribCore.la
 
-testOutput_SOURCES=testOutput.cpp
+testOutput_SOURCES=testOutput.cpp testouttests.cpp
 testOutput_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testOutput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testOutput_LDADD=libfribCore.la
@@ -46,5 +46,5 @@ testOutput_LDADD=libfribCore.la
 
 TESTS=treeparamtests treevartests configtests iotests
 
-PARTESTS: install
+PARTESTS: install testOutput
 	mpirun -np 4 testOutput /dev/null test.dat
