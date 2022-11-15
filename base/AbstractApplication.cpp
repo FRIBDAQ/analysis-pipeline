@@ -89,7 +89,7 @@ namespace frib {
                 }
                 // Run in the appropriate role:
                 
-                                switch (rank) {
+                 switch (rank) {
                     case 0:
                         dealer(m_argc, m_argv, this);
                         break;

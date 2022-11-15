@@ -26,7 +26,6 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
-
 namespace frib {
     namespace analysis {
         /**
@@ -118,6 +117,8 @@ namespace frib {
                     );
                 } else if (mpistat.MPI_TAG == MPI_END_TAG) {
                      // Do nothing - s_end will be true.
+                     header.s_end = true;             // Just in case.
+                     
                 }
                 
                 

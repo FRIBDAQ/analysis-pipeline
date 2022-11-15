@@ -10,10 +10,11 @@ include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
 	TCLParameterReader.h AbstractApplication.h DataReader.h \
 	DataWriter.h MPIParameterOutput.h
 
-libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@
-libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@
+libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@ -std=c++11
+libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@ 
 
-noinst_PROGRAMS=treeparamtests treevartests configtests iotests
+noinst_PROGRAMS=treeparamtests treevartests configtests iotests \
+	testOutput
 
 treeparamtests_SOURCES=TestRunner.cpp Asserts.h treeparamtests.cpp \
 	treeparamarraytests.cpp 
@@ -37,5 +38,13 @@ iotests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 iotests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 iotests_LDADD=libfribCore.la
 
+testOutput_SOURCES=testOutput.cpp
+testOutput_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
+testOutput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
+testOutput_LDADD=libfribCore.la
+
 
 TESTS=treeparamtests treevartests configtests iotests
+
+PARTESTS: install
+	mpirun -np 4 testOutput /dev/null test.dat
