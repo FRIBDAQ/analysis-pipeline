@@ -26,6 +26,7 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
+#include <iostream>
 
 namespace frib {
     namespace analysis {
@@ -85,9 +86,11 @@ namespace frib {
                     msg += errorWhy;
                     throw std::runtime_error(msg);
                 }
-                // If it's a header we have actual data:
+                
                 
                 if (mpistat.MPI_TAG == MPI_HEADER_TAG) {
+                    // If it's a header we have actual data:
+                    
                     if (header.s_numParameters > nParamsAllocated) {
                         nParamsAllocated = header.s_numParameters;
                         pData.reset(new FRIB_MPI_Parameter_Value[nParamsAllocated]);
@@ -97,6 +100,7 @@ namespace frib {
                         pData.get(), header.s_numParameters, app->parameterValueDataType(),
                         mpistat.MPI_SOURCE, MPI_DATA_TAG, MPI_COMM_WORLD, &mpistat
                     );
+                    
                     if (status != MPI_SUCCESS) {
                         std::string msg = "Failed MPI_Recv for parameter data in parameter output: ";
                         MPI_Error_string(status, errorWhy, &len);
@@ -105,6 +109,7 @@ namespace frib {
                     }
                     // New we have the data, we can send it to the output
                     
+                    event.clear();
                     event.reserve(header.s_numParameters);
                     for (size_t i =0; i < header.s_numParameters; i++) {
                         event.emplace_back(
