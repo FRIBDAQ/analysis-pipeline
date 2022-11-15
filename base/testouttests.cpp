@@ -47,6 +47,9 @@ class outputtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(front_1);
     CPPUNIT_TEST(front_2);
     CPPUNIT_TEST(front_3);
+    CPPUNIT_TEST(front_4);
+    
+    CPPUNIT_TEST(data_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -72,9 +75,13 @@ protected:
     void front_1();
     void front_2();
     void front_3();
+    void front_4();
+    
+    void data_1();
 private:
     void reconstructParameters(const ParameterDefinitions* pParams);
     const void* skipItems(const void* pData, size_t nItems = 1);
+    void reconstructVariables(const VariableItem* pVars);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(outputtest);
@@ -107,6 +114,20 @@ outputtest::reconstructParameters(const ParameterDefinitions* pParams) {
         const char* pName = p->s_parameterName;
         pName += strlen(pName) + 1;     // Next def.
         p = reinterpret_cast<const ParameterDefinition*>(pName);
+    }
+}
+// reconstruct tree variables from the data in the variable item
+// ring item.
+
+void
+outputtest::reconstructVariables(const VariableItem* pVars) {
+    const Variable* p = pVars->s_variables;
+    for (int i = 0; i < pVars->s_numVars; i++) {
+        std::string name = p->s_variableName;
+        CTreeVariable v(name, p->s_value, p->s_variableUnits);
+        const char* pName = p->s_variableName;
+        pName += strlen(pName) +1;    // Next variable def/value.
+        p = reinterpret_cast<const Variable*>(pName);
     }
 }
 
@@ -152,7 +173,7 @@ void outputtest::front_2() {
         ASSERT(CTreeParameter::lookupParameter(names[i]));
     }
 }
-// There should be 17 variable definitions:
+// There should be 33 variable definitions:
 
 void outputtest::front_3() {
     auto r = m_pReader->getBlock(1024*1024);
@@ -164,4 +185,103 @@ void outputtest::front_3() {
         reinterpret_cast<const VariableItem*>(skipItems(r.s_pData));
     EQ(VARIABLE_VALUES, pItem->s_header.s_type);
     EQ(std::uint32_t(33), pItem->s_numVars);
+}
+// check names and values:
+
+void outputtest::front_4() {
+    auto r = m_pReader->getBlock(1024*1024);
+    ASSERT(r.s_pData);     // Not an eof.
+    
+    // Skip the first item:
+    
+    const VariableItem* pItem =
+        reinterpret_cast<const VariableItem*>(skipItems(r.s_pData));
+    reconstructVariables(pItem);
+    
+    struct  Info {
+        const char* s_name;
+        const char* s_units;
+        double      s_value;
+    };
+    const Info varInfo[33] = {
+        {"simple-inc", "mm", 0.1},
+        {"multipliers.00", "unitless", 0.0},
+        {"multipliers.01", "unitless", 1.0},
+        {"multipliers.02", "unitless", 2.0},
+        {"multipliers.03", "unitless", 3.0},
+        {"multipliers.04", "unitless", 4.0},
+        {"multipliers.05", "unitless", 5.0},
+        {"multipliers.06", "unitless", 6.0},
+        {"multipliers.07", "unitless", 7.0},
+        {"multipliers.08", "unitless", 8.0},
+        {"multipliers.09", "unitless", 9.0},
+        {"multipliers.10", "unitless", 10.0},
+        {"multipliers.11", "unitless", 11.0},
+        {"multipliers.12", "unitless", 12.0},
+        {"multipliers.13", "unitless", 13.0},
+        {"multipliers.14", "unitless", 14.0},
+        {"multipliers.15", "unitless", 15.0},
+        {"additions.00", "degrees", 0.0},
+        {"additions.01", "degrees", 1.5},
+        {"additions.02", "degrees", 3.0},
+        {"additions.03", "degrees", 4.5},
+        {"additions.04", "degrees", 6.0},
+        {"additions.05", "degrees", 7.5},
+        {"additions.06", "degrees", 9.0},
+        {"additions.07", "degrees", 10.5},
+        {"additions.08", "degrees", 12.0},
+        {"additions.09", "degrees", 13.5},
+        {"additions.10", "degrees", 15.0},
+        {"additions.11", "degrees", 16.5},
+        {"additions.12", "degrees", 18.0},
+        {"additions.13", "degrees", 19.5},
+        {"additions.14", "degrees", 21.0},
+        {"additions.15", "degrees", 22.5},
+        
+    };
+    for (int i = 0; i < pItem->s_numVars; i++) {
+        auto def = CTreeVariable::lookupDefinition(varInfo[i].s_name);
+        ASSERT(def);
+        EQ(0, strcmp(varInfo[i].s_units, def->s_units.c_str()));
+        EQ(varInfo[i].s_value, def->s_value);
+    }
+}
+// after the first two items, we have a sequence of 100 data items
+// followed by an EOF with 9 parameters per event...and sequential
+// triggers numberd from 0.
+
+void
+outputtest::data_1()
+{
+    auto r = m_pReader->getBlock(1024*1024);
+    ASSERT(r.s_pData);     // Not an eof.
+    
+    const ParameterItem* pItem =
+        reinterpret_cast<const ParameterItem*>(skipItems(r.s_pData, 2));
+    
+    for (std::uint64_t i =0; i < 100; i++) {
+
+        EQ(PARAMETER_DATA, pItem->s_header.s_type);
+        EQ(i, pItem->s_triggerCount);
+        EQ(std::uint32_t(9), pItem->s_parameterCount);
+        
+        // The following assumes parameters are sequentially assigned from
+        // 0.
+        
+        auto pParam = pItem->s_parameters;
+        EQ(std::uint32_t(1), pParam->s_number);
+        EQ(-0.5, pParam->s_value);   // Simple.
+        pParam++;
+    
+        for (int i =0; i < 8; i++) {
+            EQ(std::uint32_t((2 + i*2)), pParam->s_number);
+            EQ(double(i*10), pParam->s_value);
+            pParam++;
+        }
+        
+        pItem = reinterpret_cast<const ParameterItem*>(skipItems(pItem));   // next one
+    }
+    m_pReader->done();
+    r = m_pReader->getBlock(1024*1024);
+    ASSERT(!r.s_pData);                      // eof.
 }

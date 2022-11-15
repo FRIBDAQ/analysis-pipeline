@@ -172,10 +172,13 @@ Application::sendEvent(
         throw std::runtime_error(reason);
     }
     std::unique_ptr<FRIB_MPI_Parameter_Value> params(new FRIB_MPI_Parameter_Value[event.size()]);
+    
     for (int i =0; i < event.size(); i++) {
         params.get()[i].s_number = event[i].first;
         params.get()[i].s_value  = event[i].second;
+    
     }
+    
     status = MPI_Send(params.get(), event.size(), bodyType, 2, MPI_DATA_TAG, MPI_COMM_WORLD);
     if (status != MPI_SUCCESS) {
         char reason[MPI_MAX_ERROR_STRING];
