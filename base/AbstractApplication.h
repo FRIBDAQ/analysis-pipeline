@@ -106,6 +106,7 @@ namespace frib {
             
             int m_argc;
             char** m_argv;
+            unsigned m_nWorkers;
         private:
             MPI_Datatype  m_messageHeaderType;
             MPI_Datatype  m_requestDataType;
@@ -138,6 +139,8 @@ namespace frib {
             MPI_Datatype& requestDataType();
             MPI_Datatype& parameterHeaderDataType();
             MPI_Datatype& parameterValueDataType();
+            
+            unsigned numWorkers();
             
             // Services for derived classes that might override operator():
         protected:            

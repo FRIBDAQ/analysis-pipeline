@@ -87,6 +87,7 @@ namespace frib {
                 
 
                 }
+                m_nWorkers = size - 3;
                 // Run in the appropriate role:
                 
                  switch (rank) {
@@ -151,6 +152,14 @@ namespace frib {
         AbstractApplication::parameterValueDataType() {
             return m_parameterValueDataType;
         }
+        /**
+         * return the number of worker processes in the application.
+         * This is just size-3 (dealer, farmer, outputer).
+         */
+        unsigned AbstractApplication::numWorkers() {
+            return m_nWorkers;    
+        }
+        
         
         /**
         /////////////////////////////// Utility methods for the subclasses ////////
