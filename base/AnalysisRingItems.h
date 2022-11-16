@@ -103,7 +103,20 @@ namespace frib {
         static const std::uint32_t PARAMETER_DATA        = 32770;
         static const std::uint32_t TEST_DATA             = 32771;
         
-        // MPI Messages structures:
+        // MPI Message tags
+        
+        
+        static const int  MPI_HEADER_TAG = 1;
+        static const int  MPI_END_TAG  = 2;
+        static const int  MPI_DATA_TAG = 3;
+        static const int  MPI_REQUEST_TAG = 4;
+        
+        
+        
+#pragma pack(pop)
+        // MPI Messages structures: must not be packed or MPI will pad them out
+        // in messages which causes all sorts of consternation on the
+        // receiving end.
         
 
         // Request for data message:
@@ -118,21 +131,12 @@ namespace frib {
         
         typedef struct _FRIB_MPI_Message_Header {
             int s_nBytes;                       // Size of subsequent msg.
-            int s_nBlockNum;                    // Work Item number.
+            unsigned s_nBlockNum;                    // Work Item number.
             bool s_end;                         // End data marker.
             
         } FRIB_MPI_Message_Header, *pFRIB_MPI_MessageHeader;
         
         // These typedefs are message structs that send parameters around:
-        
-        
-        static const int  MPI_HEADER_TAG = 1;
-        static const int  MPI_END_TAG  = 2;
-        static const int  MPI_DATA_TAG = 3;
-        
-        
-        
-#pragma pack(pop)
         typedef struct _FRIB_MPI_Parameter_MessageHeader {
             std::uint64_t s_triggerNumber;
             std::uint32_t s_numParameters;
