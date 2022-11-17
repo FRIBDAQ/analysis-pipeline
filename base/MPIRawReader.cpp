@@ -24,6 +24,7 @@
 #include "AnalysisRingItems.h"
 #include <mpi.h>
 #include <stdexcept>
+#include <iostream>
 
 using namespace frib::analysis;
 
@@ -113,14 +114,13 @@ namespace frib {
             unsigned firstTrigger(0);
             
             while(1) {
-                
                 auto descrip = m_pReader->getBlock(m_nBlockSize);
                 if (descrip.s_pData)  {
                     // not eof
-                    
                     unsigned triggers = countTriggers(descrip.s_pData, descrip.s_nItems);
                     sendWorkItem(descrip.s_pData, descrip.s_nbytes, firstTrigger);
                     firstTrigger += triggers;
+                    m_pReader->done();
                 } else {
                     break;                 // EOF so done sending data.
                 }
@@ -198,6 +198,7 @@ namespace frib {
         void
         CMPIRawReader::sendWorkItem(const void* pData, size_t nBytes, unsigned blockNum)
         {
+        
             // fill in the reply header so its ready for the request:
             
             FRIB_MPI_Message_Header header;
@@ -211,13 +212,14 @@ namespace frib {
             // get the request:
             
             int dest = getRequest();
-            
+        
             // Send the header and send the data:
             
             int status = MPI_Send(
                 &header, 1, m_pApp->messageHeaderType(), dest,
                 MPI_HEADER_TAG, MPI_COMM_WORLD
             );
+
             if (status != MPI_SUCCESS) {
                 std::string msg = "Failed to send data header to worker: ";
                 MPI_Error_string(status, errorWhy, &len);
@@ -228,6 +230,7 @@ namespace frib {
                 pData, nBytes, MPI_UINT8_T, dest,
                 MPI_DATA_TAG, MPI_COMM_WORLD
             );
+    
             if (status != MPI_SUCCESS) {
                 std::string msg = "Failed to send data block to worker: ";
                 MPI_Error_string(status, errorWhy, &len);
@@ -257,6 +260,7 @@ namespace frib {
                 &header, 1, m_pApp->messageHeaderType(),
                 dest, MPI_HEADER_TAG, MPI_COMM_WORLD
             );
+            
             if (status != MPI_SUCCESS) {
                 std::string msg = "Failed to send end of data message to worker: ";
                 MPI_Error_string(status, errorWhy, &len);
@@ -272,6 +276,7 @@ namespace frib {
         int
         CMPIRawReader::getRequest()
         {
+            
             char errorWhy[MPI_MAX_ERROR_STRING];
             int len;
 
@@ -287,6 +292,7 @@ namespace frib {
                 msg += errorWhy;
                 throw std::runtime_error(msg);
             }
+
             // Consistency check the rank in the request must be the same as
             // the one that sent us the request - note in the future,
             // this could be lifted if there's an agent that determines who
