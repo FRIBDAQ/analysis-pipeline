@@ -41,6 +41,7 @@
 #include <string.h>
 #include <memory>
 #include <cstdint>
+#include <iostream>
 
 // Item types:
 
