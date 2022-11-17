@@ -223,13 +223,13 @@ namespace frib {
             
             
             status = MPI_Type_create_struct(
-                2, lengths, offsets, types, &m_messageHeaderType
+                2, lengths, offsets, types, &m_requestDataType
             );
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to create data request  MPI type");
             }
             
-            status = MPI_Type_commit(&m_messageHeaderType);
+            status = MPI_Type_commit(&m_requestDataType);
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to commit data request MPI type");
             }
