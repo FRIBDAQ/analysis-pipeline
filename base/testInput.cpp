@@ -43,6 +43,9 @@
 #include <cstdint>
 #include <iostream>
 
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+
 // Item types:
 
 static const std::uint32_t BEGIN_RUN = 1;
@@ -50,6 +53,8 @@ static const std::uint32_t END_RUN   = 2;
 static const std::uint32_t PHYSICS_EVENT= 30;
 
 using namespace frib::analysis;
+
+static void runTests(const std::string& file);
 
 // We have a null parameterReader:
 
@@ -250,6 +255,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp)  {
     
     
     MPI_Barrier(MPI_COMM_WORLD);   // Finish the app before going on to tests.
+    runTests(outfile);
 }
 /**
  * nextItem
@@ -347,3 +353,32 @@ int main(int argc, char** argv) {
     
     app(parReader);
 }
+// run unit tests:
+
+std::string testFilename;
+using namespace std;
+
+static void runTests(const std::string& file) {
+    testFilename = file;
+      CppUnit::TextUi::TestRunner   
+               runner; // Control tests.
+    CppUnit::TestFactoryRegistry& 
+                 registry(CppUnit::TestFactoryRegistry::getRegistry());
+  
+    runner.addTest(registry.makeTest());
+  
+    bool wasSucessful;
+    try {
+      wasSucessful = runner.run("",false);
+    } 
+    catch(string& rFailure) {
+      cerr << "Caught a string exception from test suites.: \n";
+      cerr << rFailure << endl;
+      wasSucessful = false;
+    }
+    if (!wasSucessful) {
+        throw std::runtime_error("Tests failed!");
+    }
+   
+}
+
