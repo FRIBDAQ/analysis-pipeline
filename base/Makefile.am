@@ -54,3 +54,4 @@ TESTS=treeparamtests treevartests configtests iotests
 
 PARTESTS: install testOutput
 	mpirun -np 4 testOutput /dev/null test.dat
+	mpirun -np 4 testInput raw.evt
