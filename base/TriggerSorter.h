@@ -50,6 +50,7 @@ namespace frib {
             virtual ~CTriggerSorter();
             
             void addItem(pParameterItem item);
+            void flush();
             virtual void emitItem(pParameterItem item) = 0;
         };
     }
