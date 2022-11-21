@@ -16,7 +16,7 @@ libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@ -std=c++11
 libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@ 
 
 noinst_PROGRAMS=treeparamtests treevartests configtests iotests \
-	testOutput testInput
+	testOutput testInput sorttests
 
 treeparamtests_SOURCES=TestRunner.cpp Asserts.h treeparamtests.cpp \
 	treeparamarraytests.cpp 
@@ -40,6 +40,12 @@ iotests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 iotests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 iotests_LDADD=libfribCore.la
 
+sorttests_SOURCES=TestRunner.cpp Asserts.h sorttests.cpp
+sorttests_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
+sorttests_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
+sorttests_LDADD=libfribCore.la
+
+
 testOutput_SOURCES=testOutput.cpp testouttests.cpp
 testOutput_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testOutput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
@@ -52,7 +58,7 @@ testInput_LDADD=libfribCore.la
 
 
 
-TESTS=treeparamtests treevartests configtests iotests
+TESTS=treeparamtests treevartests configtests iotests sorttests
 
 PARTESTS: install testOutput
 	mpirun -np 4 testOutput /dev/null test.dat
