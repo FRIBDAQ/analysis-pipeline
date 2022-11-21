@@ -130,7 +130,7 @@ namespace frib {
         // that must be re-interpreted by the receiver:
         
         typedef struct _FRIB_MPI_Message_Header {
-            int s_nBytes;                       // Size of subsequent msg.
+            unsigned s_nBytes;                       // Size of subsequent msg.
             unsigned s_nBlockNum;                    // Work Item number.
             bool s_end;                         // End data marker.
             

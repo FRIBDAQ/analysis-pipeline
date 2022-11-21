@@ -26,6 +26,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <memory>
+#include <cstdint>
 
 
 #include "AnalysisRingItems.h"
@@ -40,6 +42,7 @@ static const std::uint32_t PHYSICS_EVENT= 30;
 class inputtest  : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(inputtest);
     CPPUNIT_TEST(header_1);
+    CPPUNIT_TEST(header_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -53,6 +56,7 @@ public:
     }
 protected:
     void header_1();
+    void header_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(inputtest);
@@ -64,4 +68,21 @@ void inputtest::header_1()
     EQ(sizeof(header), size_t(nRead));
     ASSERT(header.s_nBytes > 0);
     ASSERT(!header.s_end);
+}
+// 1. should be able to read the bytes specified in the header.
+// 2. There's only one work item so that should also hit the EOF
+
+void inputtest::header_2() {
+    FRIB_MPI_Message_Header header;
+    auto nRead = read(m_fd, &header, sizeof(header));
+ 
+    std::auto_ptr<char> block(new char[header.s_nBytes]);
+    nRead = read(m_fd, block.get(), header.s_nBytes);
+    EQ(header.s_nBytes , unsigned(nRead));    // Slurped in the whole thing.
+    
+    // Reading even one more byte gives an End:
+    
+    std::uint8_t byte;
+    nRead = read(m_fd, &byte, sizeof(byte));
+    EQ(ssize_t(0), nRead);
 }
