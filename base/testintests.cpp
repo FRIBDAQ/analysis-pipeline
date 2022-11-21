@@ -39,7 +39,7 @@ static const std::uint32_t PHYSICS_EVENT= 30;
 
 class inputtest  : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(inputtest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(header_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -52,11 +52,16 @@ public:
         close(m_fd);
     }
 protected:
-    void test_1();
+    void header_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(inputtest);
-
-void inputtest::test_1()
+// First should be a header:
+void inputtest::header_1()
 {
+    FRIB_MPI_Message_Header header;
+    auto nRead = read(m_fd, &header, sizeof(header));
+    EQ(sizeof(header), size_t(nRead));
+    ASSERT(header.s_nBytes > 0);
+    ASSERT(!header.s_end);
 }
