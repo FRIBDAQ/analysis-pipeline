@@ -54,6 +54,7 @@ static const std::uint32_t PHYSICS_EVENT= 30;
 
 using namespace frib::analysis;
 
+unsigned NUM_DATAITEMS=1000;
 
 static void runTests(const std::string& file);
 
@@ -106,7 +107,7 @@ private:
 void
 MyApp::dealer(int argc, char** argv, AbstractApplication* pApp)  {
     CMPIRawReader reader(argc, argv, pApp);
-    makeInputFile(getFilename(argc, argv), 1000);  // modest input file.
+    makeInputFile(getFilename(argc, argv), NUM_DATAITEMS);  // modest input file.
     
     
     reader();

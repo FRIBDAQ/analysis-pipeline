@@ -34,6 +34,7 @@
 
 using namespace frib::analysis;
 extern std::string testFilename;
+extern unsigned NUM_DATAITEMS;
 
 static const std::uint32_t BEGIN_RUN = 1;
 static const std::uint32_t END_RUN   = 2;
@@ -46,6 +47,7 @@ class inputtest  : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(contents_1);
     CPPUNIT_TEST(contents_2);
+    CPPUNIT_TEST(contents_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -63,6 +65,7 @@ protected:
     
     void contents_1();
     void contents_2();
+    void contents_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(inputtest);
@@ -121,3 +124,44 @@ void inputtest::contents_2() {
     EQ(END_RUN, pHeader->s_type);
     EQ(std::uint32_t(sizeof(std::uint32_t)), pHeader->s_unused);
 }        
+// There are NUM_DATAITEMS in between the begin andend:
+
+void inputtest::contents_3() {
+    FRIB_MPI_Message_Header header;
+    auto nRead = read(m_fd, &header, sizeof(header));
+ 
+    std::unique_ptr<char> block(new char[header.s_nBytes]);
+    nRead = read(m_fd, block.get(), header.s_nBytes);
+    
+    // multishaped pointer to reduce the number of casts:
+    union {
+        const char* p8;
+        const RingItemHeader* phdr;
+        const std::uint32_t*  p32;
+    } p;
+    p.p8 = block.get();
+    p.p8 += sizeof(RingItemHeader);      // we know there's a BEGIN from contents_1.
+    
+    for (int i =0; i < NUM_DATAITEMS; i++) {
+        // check the header -- 300 uint32_t's in the body.
+        EQ(300*sizeof(uint32_t) + sizeof(RingItemHeader), size_t(p.phdr->s_size));
+        EQ(PHYSICS_EVENT, p.phdr->s_type);
+        EQ(std::uint32_t(sizeof(std::uint32_t)), p.phdr->s_unused);
+        
+        // data items are a counting pattern:
+        
+        p.phdr++;                           // body.
+        for (std::uint32_t  i = 0; i < 300; i++) {
+            EQ(i, *p.p32);
+            p.p32++;
+        }
+        
+    }
+    // Where I am now + sizeof header should get me to the end of the block.
+    
+    p.phdr++;                          // Should be header.s_nBytes past the original
+    
+    EQ(ptrdiff_t(header.s_nBytes), (p.p8 - block.get()));
+    
+    
+}
