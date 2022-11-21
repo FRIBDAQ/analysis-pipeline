@@ -43,6 +43,7 @@ namespace frib {
          *    actually do with items that are sorted.
          */
         class CTriggerSorter {
+        private:            
             std::map<std::uint64_t, pParameterItem> m_items;
             std::uint64_t                           m_lastEmittedTrigger;
         public:
