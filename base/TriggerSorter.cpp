@@ -31,15 +31,20 @@ namespace frib {
         CTriggerSorter::CTriggerSorter() :
             m_lastEmittedTrigger(0-1)
         {
+            // we can't use flush because destructors don't honor polymorphism
+            // since they run outside in.
             
+            for (auto& p : m_items) {
+                delete p.second;
+            }
         }
         /**
          * destructor
          * 
-         *   Flush the items in case the client has not done that
+         *  Delete any remaining items.
          */
         CTriggerSorter::~CTriggerSorter() {
-            flush();
+            
         }
         /**
          * addItem

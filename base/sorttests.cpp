@@ -50,6 +50,7 @@ class sorttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(add_4);
     
     CPPUNIT_TEST(flush_1);
+    CPPUNIT_TEST(flush_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -71,6 +72,7 @@ protected:
     void add_4();
     
     void flush_1();
+    void flush_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(sorttest);
@@ -194,4 +196,22 @@ void sorttest::flush_1()
     for (int i =1; i <= 5; i++) {
         EQ(std::uint64_t(i), m_pSorter->m_triggers.at(i-1));
     }
+}
+// Destruction without flush won't call pure virts:
+
+void sorttest::flush_2()
+{
+     for (int i = 5; i > 0; i--) {   // 6 items:
+        
+        pParameterItem pItem = new ParameterItem;
+        pItem->s_header.s_size = sizeof(ParameterItem);
+        pItem->s_header.s_type = PARAMETER_DATA;
+        pItem->s_header.s_unused = sizeof(std::uint32_t);
+        pItem->s_triggerCount = i;
+        pItem->s_parameterCount = 0;
+        m_pSorter->addItem(pItem);
+    }
+    delete m_pSorter;
+    
+    m_pSorter = nullptr;
 }
