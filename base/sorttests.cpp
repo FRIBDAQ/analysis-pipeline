@@ -46,6 +46,7 @@ class sorttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(add_1);
     CPPUNIT_TEST(add_2);
+    CPPUNIT_TEST(add_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -63,6 +64,7 @@ protected:
     
     void add_1();
     void add_2();
+    void add_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(sorttest);
@@ -122,4 +124,23 @@ void sorttest::add_2()
     EQ(size_t(2), m_pSorter->m_triggers.size());
     EQ(std::uint64_t(0), m_pSorter->m_triggers.at(0));
     EQ(std::uint64_t(1), m_pSorter->m_triggers.at(1));
+}
+// Add a bunch in reverse order -- worst case.
+void sorttest::add_3() {
+    for (int i = 5; i >= 0; i--) {   // 6 items:
+        
+        pParameterItem pItem = new ParameterItem;
+        pItem->s_header.s_size = sizeof(ParameterItem);
+        pItem->s_header.s_type = PARAMETER_DATA;
+        pItem->s_header.s_unused = sizeof(std::uint32_t);
+        pItem->s_triggerCount = i;
+        pItem->s_parameterCount = 0;
+        m_pSorter->addItem(pItem);
+    }
+    // All should have been emitted
+    
+    EQ(size_t(6), m_pSorter->m_triggers.size());
+    for (int i =0; i < 5; i++) {
+        EQ(std::uint64_t(i), m_pSorter->m_triggers.at(i));
+    }
 }
