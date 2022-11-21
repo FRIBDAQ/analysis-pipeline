@@ -41,6 +41,7 @@ struct CMyTriggerSorter : public CTriggerSorter {
 class sorttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(sorttest);
     CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -54,13 +55,21 @@ public:
     }
 protected:
     void construct_1();
+    void construct_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(sorttest);
-
+// initial state
 void sorttest::construct_1()
 {
     EQ(std::uint64_t(0-1), m_pSorter->m_lastEmittedTrigger);
     ASSERT(m_pSorter->m_items.empty());
     ASSERT(m_pSorter->m_triggers.empty());
+}
+// flush  after construction does nothing.
+
+void sorttest::construct_2() {
+    m_pSorter->flush();
+    ASSERT(m_pSorter->m_triggers.empty());
+    
 }
