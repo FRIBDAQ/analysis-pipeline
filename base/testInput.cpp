@@ -54,6 +54,7 @@ static const std::uint32_t PHYSICS_EVENT= 30;
 
 using namespace frib::analysis;
 
+
 static void runTests(const std::string& file);
 
 // We have a null parameterReader:
@@ -106,6 +107,7 @@ void
 MyApp::dealer(int argc, char** argv, AbstractApplication* pApp)  {
     CMPIRawReader reader(argc, argv, pApp);
     makeInputFile(getFilename(argc, argv), 1000);  // modest input file.
+    
     
     reader();
     
@@ -376,6 +378,8 @@ static void runTests(const std::string& file) {
       cerr << rFailure << endl;
       wasSucessful = false;
     }
+    unlink(testFilename.c_str());     // Remove the test output file.
+    unlink("raw.evt");    // and input file. - dirty -depends on Makefile.
     if (!wasSucessful) {
         throw std::runtime_error("Tests failed!");
     }

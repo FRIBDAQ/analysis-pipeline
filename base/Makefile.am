@@ -43,7 +43,7 @@ testOutput_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testOutput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testOutput_LDADD=libfribCore.la
 
-testInput_SOURCES=testInput.cpp
+testInput_SOURCES=testInput.cpp testintests.cpp
 testInput_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testInput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testInput_LDADD=libfribCore.la
