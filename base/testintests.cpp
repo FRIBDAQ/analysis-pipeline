@@ -43,6 +43,8 @@ class inputtest  : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(inputtest);
     CPPUNIT_TEST(header_1);
     CPPUNIT_TEST(header_2);
+    
+    CPPUNIT_TEST(contents_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -57,6 +59,8 @@ public:
 protected:
     void header_1();
     void header_2();
+    
+    void contents_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(inputtest);
@@ -76,7 +80,7 @@ void inputtest::header_2() {
     FRIB_MPI_Message_Header header;
     auto nRead = read(m_fd, &header, sizeof(header));
  
-    std::auto_ptr<char> block(new char[header.s_nBytes]);
+    std::unique_ptr<char> block(new char[header.s_nBytes]);
     nRead = read(m_fd, block.get(), header.s_nBytes);
     EQ(header.s_nBytes , unsigned(nRead));    // Slurped in the whole thing.
     
@@ -85,4 +89,18 @@ void inputtest::header_2() {
     std::uint8_t byte;
     nRead = read(m_fd, &byte, sizeof(byte));
     EQ(ssize_t(0), nRead);
+}
+// First item in contents is a BEGIN_RUN stub record:
+
+void inputtest::contents_1() {
+    FRIB_MPI_Message_Header header;
+    auto nRead = read(m_fd, &header, sizeof(header));
+ 
+    std::unique_ptr<char> block(new char[header.s_nBytes]);
+    nRead = read(m_fd, block.get(), header.s_nBytes);
+    
+    RingItemHeader* pHeader = reinterpret_cast<RingItemHeader*>(block.get());
+    EQ(std::uint32_t(sizeof(RingItemHeader)), pHeader->s_size);
+    EQ(BEGIN_RUN, pHeader->s_type);
+    EQ(std::uint32_t(sizeof(std::uint32_t)), pHeader->s_unused);
 }
