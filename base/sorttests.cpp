@@ -48,6 +48,8 @@ class sorttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(add_2);
     CPPUNIT_TEST(add_3);
     CPPUNIT_TEST(add_4);
+    
+    CPPUNIT_TEST(flush_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -67,6 +69,8 @@ protected:
     void add_2();
     void add_3();
     void add_4();
+    
+    void flush_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(sorttest);
@@ -142,7 +146,7 @@ void sorttest::add_3() {
     // All should have been emitted
     
     EQ(size_t(6), m_pSorter->m_triggers.size());
-    for (int i =0; i < 5; i++) {
+    for (int i =0; i <= 5; i++) {
         EQ(std::uint64_t(i), m_pSorter->m_triggers.at(i));
     }
 }
@@ -164,8 +168,30 @@ void sorttest::add_4()
     // All should have been emitted
     
     EQ(size_t(6), m_pSorter->m_triggers.size());
-    for (int i =0; i < 5; i++) {
+    for (int i =0; i <= 5; i++) {
         EQ(std::uint64_t(i), m_pSorter->m_triggers.at(i));
     }
     
+}
+// put a bunch of items in that can't be emitted...flush will:
+
+void sorttest::flush_1()
+{
+    for (int i = 5; i > 0; i--) {   // 6 items:
+        
+        pParameterItem pItem = new ParameterItem;
+        pItem->s_header.s_size = sizeof(ParameterItem);
+        pItem->s_header.s_type = PARAMETER_DATA;
+        pItem->s_header.s_unused = sizeof(std::uint32_t);
+        pItem->s_triggerCount = i;
+        pItem->s_parameterCount = 0;
+        m_pSorter->addItem(pItem);
+    }
+    m_pSorter->flush();
+    // All should have been emitted
+    
+    EQ(size_t(5), m_pSorter->m_triggers.size());
+    for (int i =1; i <= 5; i++) {
+        EQ(std::uint64_t(i), m_pSorter->m_triggers.at(i-1));
+    }
 }
