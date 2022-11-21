@@ -45,6 +45,7 @@ class inputtest  : public CppUnit::TestFixture {
     CPPUNIT_TEST(header_2);
     
     CPPUNIT_TEST(contents_1);
+    CPPUNIT_TEST(contents_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -61,6 +62,7 @@ protected:
     void header_2();
     
     void contents_1();
+    void contents_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(inputtest);
@@ -99,8 +101,23 @@ void inputtest::contents_1() {
     std::unique_ptr<char> block(new char[header.s_nBytes]);
     nRead = read(m_fd, block.get(), header.s_nBytes);
     
-    RingItemHeader* pHeader = reinterpret_cast<RingItemHeader*>(block.get());
+    pRingItemHeader pHeader = reinterpret_cast<pRingItemHeader>(block.get());
     EQ(std::uint32_t(sizeof(RingItemHeader)), pHeader->s_size);
     EQ(BEGIN_RUN, pHeader->s_type);
     EQ(std::uint32_t(sizeof(std::uint32_t)), pHeader->s_unused);
 }
+// The block finishes with an end of run stub:
+
+void inputtest::contents_2() {
+    FRIB_MPI_Message_Header header;
+    auto nRead = read(m_fd, &header, sizeof(header));
+ 
+    std::unique_ptr<char> block(new char[header.s_nBytes]);
+    nRead = read(m_fd, block.get(), header.s_nBytes);
+    char* pend = block.get() + header.s_nBytes;
+    pRingItemHeader pHeader =
+        reinterpret_cast<pRingItemHeader>(pend - sizeof(RingItemHeader));
+    EQ(std::uint32_t(sizeof(RingItemHeader)), pHeader->s_size);
+    EQ(END_RUN, pHeader->s_type);
+    EQ(std::uint32_t(sizeof(std::uint32_t)), pHeader->s_unused);
+}        
