@@ -33,9 +33,10 @@ using namespace frib::analysis;
 
 extern std::string testFile;
 static const std::size_t BUFFER_SIZE(100*1024*1024);   // 100Mbyte buffer should do fine.
-class aTestSuite : public CppUnit::TestFixture {
-    CPPUNIT_TEST_SUITE(aTestSuite);
+class sortouttest : public CppUnit::TestFixture {
+    CPPUNIT_TEST_SUITE(sortouttest);
     CPPUNIT_TEST(contents_1);
+    CPPUNIT_TEST(contents_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -50,16 +51,45 @@ public:
     }
 protected:
     void contents_1();
+    void contents_2();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(aTestSuite);
+CPPUNIT_TEST_SUITE_REGISTRATION(sortouttest);
 
 // There should be 2002 items:
 // The tree variable and treeparameter entries, then 1000 data items
 // per worker - 2 workers.
-void aTestSuite::contents_1()
+void sortouttest::contents_1()
 {
     CDataReader reader(testFile.c_str(), BUFFER_SIZE);
     auto info = reader.getBlock(BUFFER_SIZE);
     EQ(std::size_t(2002), info.s_nItems);
+}
+// Should be a PARAMETER_DEFINITIOSN, VARIABLE_VALUES and 2000 PARAMETER_DATA items:
+
+void sortouttest::contents_2() {
+    CDataReader reader(testFile.c_str(), BUFFER_SIZE);
+    auto info = reader.getBlock(BUFFER_SIZE);
+    ASSERT(info.s_pData);
+    
+    union {
+        const std::uint8_t* p8;
+        const RingItemHeader* ph;
+    } p;
+    p.p8 = reinterpret_cast<const std::uint8_t*>(info.s_pData);
+    
+    // parameter defs:
+    
+    EQ(PARAMETER_DEFINITIONS, p.ph->s_type);
+    p.p8 += p.ph->s_size;
+    
+    // Variable defs:
+    
+    EQ(VARIABLE_VALUES, p.ph->s_type);
+    
+    for (int i =0; i < 2000; i++) {
+        p.p8 += p.ph->s_size;
+        EQ(PARAMETER_DATA, p.ph->s_type);
+    }
+    
 }
