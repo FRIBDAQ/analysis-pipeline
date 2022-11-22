@@ -19,7 +19,7 @@
  *  @brief:  Implements the CMPIParameterFarmer class.
  */
 #include "MPIParameterFarmer.h"
-#inclkude "AbstractApplication.h"
+#include "AbstractApplication.h"
 #include "MPITriggerSorter.h"
 #include <mpi.h>
 
@@ -39,7 +39,7 @@ namespace frib {
         CMPIParameterFarmer::CMPIParameterFarmer(
             int argc, char** argv, AbstractApplication& app
         ) : m_argc(argc), m_argv(argv), m_App(app),
-        m_nMaxParams(100), m_parameterBuffer(new FRIB_MPI_PARAMETER_VALUE[100])
+        m_nMaxParams(100), m_parameterBuffer(new FRIB_MPI_Parameter_Value[100])
         {}
         
         /**
@@ -59,10 +59,10 @@ namespace frib {
          */
         void
         CMPIParameterFarmer::operator()() {
-            m_nEndsLeft = m_App->numWorkers();
+            m_nEndsLeft = m_App.numWorkers();
             CMPITriggerSorter sorter(
-                2, m_App->parameterHeaderDataType(),
-                m_App->parameterValueDataType()
+                2, m_App.parameterHeaderDataType(),
+                m_App.parameterValueDataType()
             );
             while (m_nEndsLeft) {
                 pParameterItem pItem = getItem();
@@ -91,7 +91,7 @@ namespace frib {
             char error[MPI_MAX_ERROR_STRING];
             int len;
             int status = MPI_Send(
-                &header, 1, m_App->parameterHeaderDataType(),
+                &header, 1, m_App.parameterHeaderDataType(),
                 2, MPI_HEADER_TAG, MPI_COMM_WORLD
             );
             if (status != MPI_SUCCESS) {
@@ -127,7 +127,7 @@ namespace frib {
             
             FRIB_MPI_Parameter_MessageHeader header;
             int status = MPI_Recv(
-                &header, 1, m_App->parameterHeaderDataType(),
+                &header, 1, m_App.parameterHeaderDataType(),
                 MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD,
                 &mpistat
             );
@@ -149,22 +149,22 @@ namespace frib {
  
             // If needed, enlarge m_parameterBuffer:
             
-            if (header.s_numParameters > m_nMaxParameters) {
+            if (header.s_numParameters > m_nMaxParams) {
                 delete []m_parameterBuffer;
                 m_parameterBuffer = new FRIB_MPI_Parameter_Value[header.s_numParameters];
-                m_nMaxParameters = header.s_numParameters;
+                m_nMaxParams = header.s_numParameters;
             }
             // Receive the parameter record itself:
             
             status = MPI_Recv(
-                m_parameterBuffer, header.s_numParameters, App->parameterValueDataType,
+                m_parameterBuffer, header.s_numParameters, m_App.parameterValueDataType(),
                 from, MPI_ANY_TAG, MPI_COMM_WORLD,
                 &mpistat
             );
             // Status must be ok and tag must be MPI_DATA_TAG.
             
             if (status != MPI_SUCCESS) {
-                MPI_Errorstring(status, error, &len);
+                MPI_Error_string(status, error, &len);
                 std::string message ="Unable to receive parameters from worker: " ;
                 message += error;
                 throw std::runtime_error(message);
@@ -175,7 +175,7 @@ namespace frib {
             // Now we can allocate the ring item and marshall the data into it:
             
             std::uint32_t totalSize = sizeof(ParameterItem) + header.s_numParameters*sizeof(ParameterValue);
-            char* pDummy = new std::uint8_t[totalSize];
+            std::uint8_t* pDummy = new std::uint8_t[totalSize];
             result = reinterpret_cast<pParameterItem>(pDummy);
             
             // Marshall the data:
@@ -186,7 +186,7 @@ namespace frib {
             // each event.
             
             result->s_header.s_size = totalSize;
-            result->s_header.s_type = PARAMETER_DATA
+            result->s_header.s_type = PARAMETER_DATA;
             result->s_header.s_unused = sizeof(std::uint32_t);
             
             result->s_triggerCount = header.s_triggerNumber;

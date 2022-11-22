@@ -47,11 +47,11 @@ namespace frib {
         class CMPIParameterFarmer {
         private:
             int m_argc;
-            char** argv;
+            char** m_argv;
             AbstractApplication& m_App;
             int m_nEndsLeft;
             unsigned m_nMaxParams;
-            pFRIB_MPI_Parameter_Value;  m_parameterBuffer;
+            pFRIB_MPI_Parameter_Value  m_parameterBuffer;
         public:
             CMPIParameterFarmer(int argc, char** argv, AbstractApplication& app);
             virtual ~CMPIParameterFarmer();
