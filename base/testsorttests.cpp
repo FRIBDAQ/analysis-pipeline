@@ -27,12 +27,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "DataReader.h"
+
+using namespace frib::analysis;
 
 extern std::string testFile;
-
+static const std::size_t BUFFER_SIZE(100*1024*1024);   // 100Mbyte buffer should do fine.
 class aTestSuite : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(aTestSuite);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(contents_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -46,11 +49,17 @@ public:
         close(m_fd);
     }
 protected:
-    void test_1();
+    void contents_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(aTestSuite);
 
-void aTestSuite::test_1()
+// There should be 2002 items:
+// The tree variable and treeparameter entries, then 1000 data items
+// per worker - 2 workers.
+void aTestSuite::contents_1()
 {
+    CDataReader reader(testFile.c_str(), BUFFER_SIZE);
+    auto info = reader.getBlock(BUFFER_SIZE);
+    EQ(std::size_t(2002), info.s_nItems);
 }
