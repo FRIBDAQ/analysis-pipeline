@@ -92,7 +92,7 @@ namespace frib {
             int len;
             int status = MPI_Send(
                 &header, 1, m_App.parameterHeaderDataType(),
-                2, MPI_HEADER_TAG, MPI_COMM_WORLD
+                2, MPI_END_TAG, MPI_COMM_WORLD
             );
             if (status != MPI_SUCCESS) {
                 MPI_Error_string(status, error, &len);
@@ -146,57 +146,61 @@ namespace frib {
                 throw std::logic_error("Farmer expected header or end tag");
             }
             int from = mpistat.MPI_SOURCE;
- 
-            // If needed, enlarge m_parameterBuffer:
             
-            if (header.s_numParameters > m_nMaxParams) {
-                delete []m_parameterBuffer;
-                m_parameterBuffer = new FRIB_MPI_Parameter_Value[header.s_numParameters];
-                m_nMaxParams = header.s_numParameters;
-            }
-            // Receive the parameter record itself:
+            // If this is an end, return null:
             
-            status = MPI_Recv(
-                m_parameterBuffer, header.s_numParameters, m_App.parameterValueDataType(),
-                from, MPI_ANY_TAG, MPI_COMM_WORLD,
-                &mpistat
-            );
-            // Status must be ok and tag must be MPI_DATA_TAG.
-            
-            if (status != MPI_SUCCESS) {
-                MPI_Error_string(status, error, &len);
-                std::string message ="Unable to receive parameters from worker: " ;
-                message += error;
-                throw std::runtime_error(message);
-            }
-            if (mpistat.MPI_TAG != MPI_DATA_TAG) {
-                throw std::logic_error("Expected data tag but got something else in farmer");
-            }
-            // Now we can allocate the ring item and marshall the data into it:
-            
-            std::uint32_t totalSize = sizeof(ParameterItem) + header.s_numParameters*sizeof(ParameterValue);
-            std::uint8_t* pDummy = new std::uint8_t[totalSize];
-            result = reinterpret_cast<pParameterItem>(pDummy);
-            
-            // Marshall the data:
-            // Note/TODO:  This may well become the bottleneck for dataflow.  IF
-            // that's the case we need, instead, to pass the FRIB parameter data
-            // we got to the sorter directly so that we can get rid of one of the
-            // data movements.  In that case, we'll be allocating m_parameterBuffer
-            // each event.
-            
-            result->s_header.s_size = totalSize;
-            result->s_header.s_type = PARAMETER_DATA;
-            result->s_header.s_unused = sizeof(std::uint32_t);
-            
-            result->s_triggerCount = header.s_triggerNumber;
-            result->s_parameterCount = header.s_numParameters;
-            
-            for (int i =0; i < header.s_numParameters; i++) {
-                result->s_parameters[i].s_number = m_parameterBuffer[i].s_number;
-                result->s_parameters[i].s_value  = m_parameterBuffer[i].s_number;
-            }
-            
+            if (!header.s_end) {
+    
+               // If needed, enlarge m_parameterBuffer:
+               
+               if (header.s_numParameters > m_nMaxParams) {
+                   delete []m_parameterBuffer;
+                   m_parameterBuffer = new FRIB_MPI_Parameter_Value[header.s_numParameters];
+                   m_nMaxParams = header.s_numParameters;
+               }
+               // Receive the parameter record itself:
+               
+               status = MPI_Recv(
+                   m_parameterBuffer, header.s_numParameters, m_App.parameterValueDataType(),
+                   from, MPI_ANY_TAG, MPI_COMM_WORLD,
+                   &mpistat
+               );
+               // Status must be ok and tag must be MPI_DATA_TAG.
+               
+               if (status != MPI_SUCCESS) {
+                   MPI_Error_string(status, error, &len);
+                   std::string message ="Unable to receive parameters from worker: " ;
+                   message += error;
+                   throw std::runtime_error(message);
+               }
+               if (mpistat.MPI_TAG != MPI_DATA_TAG) {
+                   throw std::logic_error("Expected data tag but got something else in farmer");
+               }
+               // Now we can allocate the ring item and marshall the data into it:
+               
+               std::uint32_t totalSize = sizeof(ParameterItem) + header.s_numParameters*sizeof(ParameterValue);
+               std::uint8_t* pDummy = new std::uint8_t[totalSize];
+               result = reinterpret_cast<pParameterItem>(pDummy);
+               
+               // Marshall the data:
+               // Note/TODO:  This may well become the bottleneck for dataflow.  IF
+               // that's the case we need, instead, to pass the FRIB parameter data
+               // we got to the sorter directly so that we can get rid of one of the
+               // data movements.  In that case, we'll be allocating m_parameterBuffer
+               // each event.
+               
+               result->s_header.s_size = totalSize;
+               result->s_header.s_type = PARAMETER_DATA;
+               result->s_header.s_unused = sizeof(std::uint32_t);
+               
+               result->s_triggerCount = header.s_triggerNumber;
+               result->s_parameterCount = header.s_numParameters;
+               
+               for (int i =0; i < header.s_numParameters; i++) {
+                   result->s_parameters[i].s_number = m_parameterBuffer[i].s_number;
+                   result->s_parameters[i].s_value  = m_parameterBuffer[i].s_number;
+               }
+            }            
             return result;
         }
         
