@@ -37,6 +37,7 @@ class sortouttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(sortouttest);
     CPPUNIT_TEST(contents_1);
     CPPUNIT_TEST(contents_2);
+    CPPUNIT_TEST(contents_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -52,6 +53,7 @@ public:
 protected:
     void contents_1();
     void contents_2();
+    void contents_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(sortouttest);
@@ -92,4 +94,27 @@ void sortouttest::contents_2() {
         EQ(PARAMETER_DATA, p.ph->s_type);
     }
     
+}
+// trigger and counts are right:
+
+void sortouttest::contents_3() {
+    CDataReader reader(testFile.c_str(), BUFFER_SIZE);
+    auto info = reader.getBlock(BUFFER_SIZE);
+    
+    union {
+        const std::uint8_t* p8;
+        const RingItemHeader* ph;
+        const ParameterItem*  pp;
+    } p;
+    p.p8 = reinterpret_cast<const std::uint8_t*>(info.s_pData);
+    
+    
+    // Skip the two doc items:
+    
+    p.p8 += p.ph->s_size;
+    for (int i =0; i < 2000; i++) {
+        p.p8 += p.ph->s_size;
+        EQ(std::uint64_t(i), p.pp->s_triggerCount);
+        EQ(std::uint32_t(10), p.pp->s_parameterCount);
+    }
 }
