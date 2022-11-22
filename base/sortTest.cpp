@@ -26,7 +26,16 @@
 #include <mpi.h>
 #include <stdexcept>
 
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include <string>
+#include <iostream>
+#include <Asserts.h>
+#include <unistd.h>
+
 using namespace frib::analysis;
+
+static void runTests(int argc, char** argv);
 
 
 // This is made to run as mpirun -np 5 so that we have a pair of workers.
@@ -64,6 +73,10 @@ SortTest::outputter(int argc, char** argv, AbstractApplication* pApp) {
     out(argc, argv, pApp);
     
     MPI_Barrier(MPI_COMM_WORLD);
+    
+    // After this barrier completes we can analyze the output file:
+    
+    runTests(argc, argv);   
 }
 
 /** worker
@@ -197,4 +210,30 @@ int main(int argc, char** argv) {
     SortTest app(argc, argv);
     CDummyReader reader;
     app(reader);
+}
+
+std::string testFile;
+/// Test runner for the output file structure.
+static void runTests(int argc, char** argv) {
+    testFile = argv[2];
+    
+    CppUnit::TextUi::TestRunner
+               runner; // Control tests.
+    CppUnit::TestFactoryRegistry&
+                 registry(CppUnit::TestFactoryRegistry::getRegistry());
+  
+    runner.addTest(registry.makeTest());
+  
+    bool wasSucessful;
+    try {
+      wasSucessful = runner.run("",false);
+    }
+    catch(...) {
+      
+      wasSucessful = false;
+    }
+    if (!wasSucessful) {
+        throw std::runtime_error("test failure");
+    }
+
 }
