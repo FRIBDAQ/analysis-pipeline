@@ -4,13 +4,13 @@ libfribCore_la_SOURCES = TreeParameter.cpp TreeParameterArray.cpp \
 	TreeVariable.cpp TreeVariableArray.cpp TCLParameterReader.cpp \
 	AbstractApplication.cpp DataReader.cpp DataWriter.cpp \
 	MPIParameterOutput.cpp MPIRawReader.cpp TriggerSorter.cpp \
-	MPITriggerSorter.cpp
+	MPITriggerSorter.cpp MPIParameterFarmer.cpp
 include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
 	TreeVariableArray.h \
 	ParameterReader.h  AnalysisRingItems.h \
 	TCLParameterReader.h AbstractApplication.h DataReader.h \
 	DataWriter.h MPIParameterOutput.h MPIRawReader.h \
-	TriggerSorter.h MPITriggerSorter.h
+	TriggerSorter.h MPITriggerSorter.h MPIParameterFarmer.h
 
 libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@ -std=c++11
 libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@ 
