@@ -232,6 +232,7 @@ static void runTests(int argc, char** argv) {
       
       wasSucessful = false;
     }
+    unlink(testFile.c_str());
     if (!wasSucessful) {
         throw std::runtime_error("test failure");
     }
