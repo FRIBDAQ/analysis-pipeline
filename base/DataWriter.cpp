@@ -91,9 +91,11 @@ namespace frib {
             // - unsigned may not be std::uint32_t.
             // - There's no assurance the pair is packed as required by the
             //   spec.
-
+            
             for (auto& item : event) {
-                ParameterValue v = {item.first, item.second};
+                ParameterValue v;
+                v.s_number = item.first;
+                v.s_value  = item.second;
                 write(m_fd, &v, sizeof(v));
             }
         }

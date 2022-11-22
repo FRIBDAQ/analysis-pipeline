@@ -68,5 +68,5 @@ TESTS=treeparamtests treevartests configtests iotests sorttests
 
 PARTESTS: install testOutput
 	mpirun -np 4 testOutput /dev/null test.dat
-	mpirun -np 4 testInput raw.evt
+	mpirun -np 4 testInput raw.evt 
 	mpirun -np 5 testSort  null sorted.evt

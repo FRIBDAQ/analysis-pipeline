@@ -22,6 +22,7 @@
 
 #include "MPITriggerSorter.h"
 #include <stdexcept>
+#include <iostream>
 const unsigned INITIAL_MAX_ITEMS(100);
 
 namespace frib {
@@ -71,10 +72,12 @@ namespace frib {
                 m_items.reset(new FRIB_MPI_Parameter_Value[header.s_numParameters]);
                 m_maxItems = header.s_numParameters;
             }
+            
             auto pItems = m_items.get();
             for (int i =0; i < header.s_numParameters; i++) {
                 pItems->s_number = item->s_parameters[i].s_number;
                 pItems->s_value  = item->s_parameters[i].s_value;
+        
                 pItems++;
             }
             

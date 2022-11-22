@@ -152,7 +152,7 @@ SortTest::sendEvent(int trigger, AbstractApplication& app) {
     FRIB_MPI_Parameter_Value values[10];
     for (int i =0; i < 10; i++) {
         values[i].s_number = trigger+i;
-        values[i].s_value  = values[i].s_number*2;
+        values[i].s_value  = double(trigger+i)*2.0;
     }
     
     status = MPI_Send(

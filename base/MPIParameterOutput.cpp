@@ -90,7 +90,7 @@ namespace frib {
                 
                 if (mpistat.MPI_TAG == MPI_HEADER_TAG) {
                     // If it's a header we have actual data:
-                    
+            
                     if (header.s_numParameters > nParamsAllocated) {
                         nParamsAllocated = header.s_numParameters;
                         pData.reset(new FRIB_MPI_Parameter_Value[nParamsAllocated]);
@@ -111,10 +111,12 @@ namespace frib {
                     
                     event.clear();
                     event.reserve(header.s_numParameters);
+                    
                     for (size_t i =0; i < header.s_numParameters; i++) {
                         event.emplace_back(
                             pData.get()[i].s_number, pData.get()[i].s_value
                         );
+                
                     }
                     m_pWriter->writeEvent(event, header.s_triggerNumber);
                     

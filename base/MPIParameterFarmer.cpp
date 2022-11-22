@@ -198,7 +198,7 @@ namespace frib {
                
                for (int i =0; i < header.s_numParameters; i++) {
                    result->s_parameters[i].s_number = m_parameterBuffer[i].s_number;
-                   result->s_parameters[i].s_value  = m_parameterBuffer[i].s_number;
+                   result->s_parameters[i].s_value  = m_parameterBuffer[i].s_value;
                }
             }            
             return result;

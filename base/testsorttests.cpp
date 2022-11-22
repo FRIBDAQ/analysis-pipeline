@@ -38,6 +38,7 @@ class sortouttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(contents_1);
     CPPUNIT_TEST(contents_2);
     CPPUNIT_TEST(contents_3);
+    CPPUNIT_TEST(contents_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -54,6 +55,7 @@ protected:
     void contents_1();
     void contents_2();
     void contents_3();
+    void contents_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(sortouttest);
@@ -116,5 +118,31 @@ void sortouttest::contents_3() {
         p.p8 += p.ph->s_size;
         EQ(std::uint64_t(i), p.pp->s_triggerCount);
         EQ(std::uint32_t(10), p.pp->s_parameterCount);
+    }
+}
+// Check parameter contents:
+void sortouttest::contents_4() {
+    CDataReader reader(testFile.c_str(), BUFFER_SIZE);
+    auto info = reader.getBlock(BUFFER_SIZE);
+    
+    union {
+        const std::uint8_t* p8;
+        const RingItemHeader* ph;
+        const ParameterItem*  pp;
+    } p;
+    p.p8 = reinterpret_cast<const std::uint8_t*>(info.s_pData);
+    
+    
+    // Skip the two doc items:
+    
+    p.p8 += p.ph->s_size;
+    for (int i =0; i < 2000; i++) {
+        p.p8 += p.ph->s_size;
+        auto startingNum = p.pp->s_triggerCount;
+        auto n           = p.pp->s_parameterCount;
+        for (int j = 0; j < n; j++) {
+            EQ(std::uint32_t(startingNum+j), p.pp->s_parameters[j].s_number);
+            EQ(p.pp->s_parameters[j].s_number*2.0, p.pp->s_parameters[j].s_value);
+        }
     }
 }
