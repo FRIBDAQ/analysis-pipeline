@@ -57,7 +57,7 @@ testInput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testInput_LDADD=libfribCore.la
 
 
-testSort_SOURCES=sortTest.cpp
+testSort_SOURCES=sortTest.cpp testsorttests.cpp
 testSort_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testSort_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testSort_LDADD=libfribCore.la
