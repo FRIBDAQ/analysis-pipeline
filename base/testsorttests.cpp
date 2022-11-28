@@ -136,6 +136,9 @@ void sortouttest::contents_4() {
     // Skip the two doc items:
     
     p.p8 += p.ph->s_size;
+    
+    // Check the contents of the physics items.
+    
     for (int i =0; i < 2000; i++) {
         p.p8 += p.ph->s_size;
         auto startingNum = p.pp->s_triggerCount;

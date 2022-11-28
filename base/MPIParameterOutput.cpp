@@ -119,7 +119,25 @@ namespace frib {
                 
                     }
                     m_pWriter->writeEvent(event, header.s_triggerNumber);
+                } else if (mpistat.MPI_TAG == MPI_PASSTHROUGH_TAG) {
+                    // Passthrough item- m_numParameters is the # bytes.
+                    // These are rare so we can allocate each time.
+                    // Get the data item and pass it to writeItem...as the
+                    // payload is assumed to be just a raw ring item.
+                    //
+                    std::unique_ptr<char> pPassThroughData(new char[header.s_numParameters]);
+                    status = MPI_Recv(pPassThroughData.get(), header.s_numParameters, MPI_UINT8_T,
+                        mpistat.MPI_SOURCE, MPI_DATA_TAG, MPI_COMM_WORLD, &mpistat       
+                    );
+                    if (status != MPI_SUCCESS) {
+                        std::string msg = "Failed MPI_Recv for passthrough data block output: ";
+                        MPI_Error_string(status, errorWhy, &len);
+                        msg += errorWhy;
+                        throw std::runtime_error(msg);
+                    }
+                    m_pWriter->writeItem(pPassThroughData.get());
                     
+    
                 } else if (mpistat.MPI_TAG == MPI_DATA_TAG) {
                     throw std::logic_error(
                         "CMPIParameterOutput - expected MPI Header got data"
