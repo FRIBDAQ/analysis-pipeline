@@ -30,12 +30,15 @@
 #include <stdlib.h>
 #include <cstdint>
 #include <stdexcept>
+
 #include "AnalysisRingItems.h"
 #include "TCLParameterReader.h"
 #include "MPIParameterOutput.h"
 
 
 using namespace frib::analysis;
+
+static void tests(const std::string& filename);
 
 /**
  * Application
@@ -150,6 +153,11 @@ Application::outputter(int argc, char** argv, AbstractApplication* app) {
     outputTask(argc, argv, app);
     
     MPI_Barrier(MPI_COMM_WORLD);
+    
+    // Now run the tests:
+    
+    std::string filename = argv[2];
+    tests(filename);
 }
 
 // main just instantioates and run our application.  Actual tests will be added
@@ -160,4 +168,25 @@ int main(int argc, char**argv) {
     Application app(argc, argv);
     CTCLParameterReader reader("/dev/null");
     app(reader);
+}
+// Test driver for CPPUNIT tests run in the outputter's rank:
+
+std::string outfile;
+static void tests(const std::string& filename) {
+    outfile = filename;
+    
+    
+    
+    CppUnit::TextUi::TestRunner   
+               runner; // Control tests.
+    CppUnit::TestFactoryRegistry& 
+               registry(CppUnit::TestFactoryRegistry::getRegistry());
+
+    runner.addTest(registry.makeTest());
+    bool wasSuccessful = runner.run("", false);
+    
+    unlink(outfile.c_str());    // Kill off the file to cleanup.
+    if (!wasSuccessful) {
+        throw std::runtime_error("Unit tests failed");
+    }
 }
