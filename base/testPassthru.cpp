@@ -32,9 +32,10 @@
 
 using namespace frib::analysis;
 extern std::string outfile;
-class aTestSuite : public CppUnit::TestFixture {
-    CPPUNIT_TEST_SUITE(aTestSuite);
+class passthrutest : public CppUnit::TestFixture {
+    CPPUNIT_TEST_SUITE(passthrutest);
     CPPUNIT_TEST(header_1);
+    CPPUNIT_TEST(contents_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -49,12 +50,13 @@ public:
     }
 protected:
     void header_1();
+    void contents_1();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(aTestSuite);
+CPPUNIT_TEST_SUITE_REGISTRATION(passthrutest);
 
 // First should be two headers for the parameter/variable defs:
-void aTestSuite::header_1()
+void passthrutest::header_1()
 {
     const ParameterDefinitions* record1;
     const VariableItem*         record2;
@@ -77,4 +79,41 @@ void aTestSuite::header_1()
     EQ(sizeof(VariableItem), size_t(record2->s_header.s_size));
     EQ(sizeof(std::uint32_t), size_t(record2->s_header.s_unused));
     
+}
+// check that the post doc records are all correct
+
+void passthrutest::contents_1() {
+#pragma pack(push, 1)
+    struct Item {
+        RingItemHeader s_header;
+        std::uint8_t   s_body[100];
+    } ;
+#pragma pack(pop)
+    union {
+        const RingItemHeader* pH;
+        const std::uint8_t*   pB;
+        const Item*           pItem;
+    } p;
+    
+    CDataReader reader(m_fd, 1024*1024*8);   // Should be big enough to suck it all in.
+    auto info = reader.getBlock(1024*1024*8);
+    
+    // Skip the headers:
+    
+    p.pB = reinterpret_cast<const std::uint8_t*>(info.s_pData);
+    p.pB += p.pH->s_size;
+    
+    for (int item = 0; item < 100; item++) {
+        p.pB += p.pH->s_size;
+        
+        EQ(std::uint32_t(6), p.pItem->s_header.s_type );    // Invented type:
+        EQ(sizeof(std::uint32_t), size_t(p.pItem->s_header.s_unused));
+        EQ(sizeof(Item), size_t(p.pItem->s_header.s_size));
+        
+        // payload contents:
+        
+        for (int i = 0; i < 100; i++) {
+            EQ(std::uint8_t(i + item), p.pItem->s_body[i]);
+        }
+    }
 }
