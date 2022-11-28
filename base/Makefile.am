@@ -63,7 +63,7 @@ testSort_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testSort_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testSort_LDADD=libfribCore.la
 
-passthruTest_SOURCES=passthruTest.cpp
+passthruTest_SOURCES=passthruTest.cpp testPassthru.cpp
 passthruTest_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 passthruTest_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 passthruTest_LDADD=libfribCore.la
