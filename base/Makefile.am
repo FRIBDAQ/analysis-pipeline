@@ -16,7 +16,8 @@ libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@ -std=c++11
 libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@ 
 
 noinst_PROGRAMS=treeparamtests treevartests configtests iotests \
-	testOutput testInput sorttests testSort
+	testOutput testInput sorttests testSort \
+	passthruTest
 
 treeparamtests_SOURCES=TestRunner.cpp Asserts.h treeparamtests.cpp \
 	treeparamarraytests.cpp 
@@ -62,6 +63,11 @@ testSort_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testSort_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testSort_LDADD=libfribCore.la
 
+passthruTest_SOURCES=passthruTest.cpp
+passthruTest_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
+passthruTest_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
+passthruTest_LDADD=libfribCore.la
+
 
 
 TESTS=treeparamtests treevartests configtests iotests sorttests
@@ -70,3 +76,4 @@ PARTESTS: install testOutput
 	mpirun -np 4 testOutput /dev/null test.dat
 	mpirun -np 4 testInput raw.evt 
 	mpirun -np 5 testSort  null sorted.evt
+	mpirun -np 4 passthruTest null passed.evt
