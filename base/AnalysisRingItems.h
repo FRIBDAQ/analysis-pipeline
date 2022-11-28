@@ -138,11 +138,13 @@ namespace frib {
         } FRIB_MPI_Message_Header, *pFRIB_MPI_MessageHeader;
         
         // These typedefs are message structs that send parameters around:
+        
         typedef struct _FRIB_MPI_Parameter_MessageHeader {
             std::uint64_t s_triggerNumber;
             std::uint32_t s_numParameters;
             bool          s_end;
         } FRIB_MPI_Parameter_MessageHeader, *pFRIB_MPI_Parameter_MessageHeader;
+        
         typedef struct _FRIB_MPI_Parameter_Value {
             std::uint32_t s_number;
             double   s_value;
