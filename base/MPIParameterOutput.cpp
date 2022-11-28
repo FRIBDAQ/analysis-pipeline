@@ -125,7 +125,7 @@ namespace frib {
                     // Get the data item and pass it to writeItem...as the
                     // payload is assumed to be just a raw ring item.
                     //
-                    std::unique_ptr<char> pPassThroughData(new char[header.s_numParameters]);
+                    std::unique_ptr<std::uint8_t> pPassThroughData(new std::uint8_t[header.s_numParameters]);
                     status = MPI_Recv(pPassThroughData.get(), header.s_numParameters, MPI_UINT8_T,
                         mpistat.MPI_SOURCE, MPI_DATA_TAG, MPI_COMM_WORLD, &mpistat       
                     );
