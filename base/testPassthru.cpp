@@ -23,6 +23,7 @@
 #include "Asserts.h"
 
 #include "AnalysisRingItems.h"
+#include "DataReader.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,7 +34,7 @@ using namespace frib::analysis;
 extern std::string outfile;
 class aTestSuite : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(aTestSuite);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(header_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -47,11 +48,33 @@ public:
         close(m_fd);
     }
 protected:
-    void test_1();
+    void header_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(aTestSuite);
 
-void aTestSuite::test_1()
+// First should be two headers for the parameter/variable defs:
+void aTestSuite::header_1()
 {
+    const ParameterDefinitions* record1;
+    const VariableItem*         record2;
+    
+    CDataReader reader(m_fd, 1024*1024*8);   // Should be big enough to suck it all in.
+    auto info = reader.getBlock(1024*1024*8);
+    
+    EQ(size_t(102), info.s_nItems);          // 100 passthrus + the docs.
+    ASSERT(info.s_pData);
+    
+    record1 = reinterpret_cast<const ParameterDefinitions*>(info.s_pData);
+    EQ(PARAMETER_DEFINITIONS, record1->s_header.s_type);
+    EQ(std::uint32_t(0), record1->s_numParameters);
+    EQ(sizeof(ParameterDefinitions), size_t(record1->s_header.s_size));
+    EQ(sizeof(std::uint32_t), size_t(record1->s_header.s_unused));
+    
+    record2 = reinterpret_cast<const VariableItem*>(record1+1);
+    EQ(VARIABLE_VALUES, record2->s_header.s_type);
+    EQ(std::uint32_t(0), record2->s_numVars);
+    EQ(sizeof(VariableItem), size_t(record2->s_header.s_size));
+    EQ(sizeof(std::uint32_t), size_t(record2->s_header.s_unused));
+    
 }
