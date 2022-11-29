@@ -1,4 +1,4 @@
-m/*
+/*
     This software is Copyright by the Board of Trustees of Michigan
     State University (c) Copyright 2017.
 
@@ -28,7 +28,7 @@ m/*
 #include <string>
 namespace frib {
     namespace analysis {
-        const std::uint32_t PHYSCIS_EVENT=30;
+        const std::uint32_t PHYSICS_EVENT=30;
         /**
          * Constructor
          *    @param App - referencees the application
@@ -59,12 +59,12 @@ namespace frib {
          */
         void
         CMPIRawToParametersWorker::operator()(int argc, char** argv) {
-            initializeUserCode(argc, argv, &m_App);
+            initializeUserCode(argc, argv, m_App);
             std::unique_ptr<std::uint8_t> pData;
             size_t                         bytesReserved(0);
             while (1) {
                 requestData();
-                FRIB_MPI_Message_Header& header;
+                FRIB_MPI_Message_Header header;
                 getHeader(header);
                 
                 if (!header.s_end) {
@@ -74,7 +74,7 @@ namespace frib {
                         bytesReserved = header.s_nBytes;
                     }
                     getData(pData.get(), header.s_nBytes);
-                    processDataBlock()pData, header.s_nBytes, header.s_blockNum);
+                    processDataBlock(pData.get(), header.s_nBytes, header.s_nBlockNum);
                 } else {
                     // End of data.
                     
@@ -110,9 +110,23 @@ namespace frib {
             MPI_Status info;
             int status = MPI_Recv(
                 &header, 1, m_App.messageHeaderType(),
-                0, MPI_HEADER_TAG, MPI_COMM_WORLD
+                0, MPI_HEADER_TAG, MPI_COMM_WORLD, &info
             );
             throwMPIError(status, "Unable to read data header: ");
+        }
+        /**
+         * getData
+         *    Having gottena header from the dealer, get the data itself.
+         * @param pData -buffer for the data.
+         * @param nBytes - size of pData.
+         */
+        void
+        CMPIRawToParametersWorker::getData(void* pData, size_t nBytes) {
+            MPI_Status s;
+            int status = MPI_Recv(
+                pData, nBytes, MPI_UINT8_T, 0, MPI_DATA_TAG, MPI_COMM_WORLD, &s
+            );
+            throwMPIError(status, "Unable to receive data block from dealer: ");
         }
         /**
          * forwardPassthrough
@@ -153,14 +167,14 @@ namespace frib {
          */
         void
         CMPIRawToParametersWorker::sendParameters(
-            const std::vector<std::pair<unsigned, double>& event,
+            const std::vector<std::pair<unsigned, double>>& event,
             std::uint64_t trigger
         ) {
             // See if we need to expand the parameter buffer:
             
             if (event.size() > m_paramBufferSize) {
                 delete m_pParameterBuffer;
-                m_pParameterBuffer = new FRIB_MPI_ParameterValue[event.size()];
+                m_pParameterBuffer = new FRIB_MPI_Parameter_Value[event.size()];
                 m_paramBufferSize= event.size();
             }
             // Marshall the data into the parameter buffer:
@@ -188,7 +202,7 @@ namespace frib {
             // Send the data:
             
             status = MPI_Send(
-                m_pParameterBuffer, event.size(), m_App.parmaeterValueDataType(),
+                m_pParameterBuffer, event.size(), m_App.parameterValueDataType(),
                 1, MPI_DATA_TAG, MPI_COMM_WORLD
             );
             throwMPIError(status, "Failed to send parameter data to farmer: ");
@@ -204,7 +218,7 @@ namespace frib {
         {
             FRIB_MPI_Parameter_MessageHeader header;
             header.s_triggerNumber = 0;
-            header.s_numParameters = 0
+            header.s_numParameters = 0;
             header.s_end           = true;
             
             int status = MPI_Send(
@@ -241,7 +255,7 @@ namespace frib {
                 const RingItemHeader* pH;
                 const std::uint8_t*   p8;
             } p;
-            p.p8 = reinterpret_cast<std::uint8_t*>(pData);
+            p.p8 = reinterpret_cast<const std::uint8_t*>(pData);
             
             while (nBytes) {
                 if (p.pH->s_type == PHYSICS_EVENT) {

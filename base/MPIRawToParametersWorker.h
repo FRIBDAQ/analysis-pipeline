@@ -28,8 +28,10 @@
 namespace frib {
     namespace analysis {
         class AbstractApplication;
-        struct FRIB_MPI_Message_Header;
-        struct FRIB_MPI_Parameter_Value;
+        struct _FRIB_MPI_Message_Header;
+        typedef struct _FRIB_MPI_Message_Header FRIB_MPI_Message_Header;
+        struct _FRIB_MPI_Parameter_Value;
+        typedef struct _FRIB_MPI_Parameter_Value FRIB_MPI_Parameter_Value;
         /**
          * @class CMPIRawToParametersWorker
          *    This is an abstract base class for a worker that maps raw
@@ -63,7 +65,7 @@ namespace frib {
          *         event processor code as much as possible.
          */
         class CMPIRawToParametersWorker {
-            Application& m_App;
+            AbstractApplication& m_App;
             int          m_rank;
             FRIB_MPI_Parameter_Value* m_pParameterBuffer;
             size_t       m_paramBufferSize;
@@ -71,14 +73,16 @@ namespace frib {
             CMPIRawToParametersWorker(AbstractApplication& App);
             virtual ~CMPIRawToParametersWorker();
             virtual void operator()(int argc, char** argv);
-            virtual void initializeUserCode(int argc, char** argv, Application& pApp);
-            virtual void unpackData(const void* pData);
+            virtual void initializeUserCode(
+                int argc, char** argv, AbstractApplication& pApp
+            ) {}
+            virtual void unpackData(const void* pData) = 0;
         private:
             void requestData();
             void getHeader(FRIB_MPI_Message_Header& header);
             void getData(void* pData, size_t nBytes);
             void forwardPassthrough(const void* pData, size_t nBytes);
-            void sendParameters(const std::vector<std::pair<unsigned, double>& event, std::uint64_t trigger);
+            void sendParameters(const std::vector<std::pair<unsigned, double>>& event, std::uint64_t trigger);
             void sendEnd();
             void processDataBlock(const void* pData, size_t nBytes, std::uint64_t firstTrigger);
             void throwMPIError(int status, const char* prefix);
