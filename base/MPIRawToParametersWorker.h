@@ -20,11 +20,16 @@
  */
 #ifndef MPIRAWTOPARAMETERSWORKER_H
 #define MPIRAWTOPARAMETERSWORKER_H
+#include <stddef.h>
+#include <vector>
+#include <cstdint>
+
 
 namespace frib {
     namespace analysis {
         class AbstractApplication;
-        
+        struct FRIB_MPI_Message_Header;
+        struct FRIB_MPI_Parameter_Value;
         /**
          * @class CMPIRawToParametersWorker
          *    This is an abstract base class for a worker that maps raw
@@ -58,12 +63,25 @@ namespace frib {
          *         event processor code as much as possible.
          */
         class CMPIRawToParametersWorker {
+            Application& m_App;
+            int          m_rank;
+            FRIB_MPI_Parameter_Value* m_pParameterBuffer;
+            size_t       m_paramBufferSize;
         public:
-            CMPIRawToParametersWorker();
+            CMPIRawToParametersWorker(AbstractApplication& App);
             virtual ~CMPIRawToParametersWorker();
-            virtual void operator()(int argc, char** argv, Application* pApp);
-            virtual void initializeUserCode(int argc, char** argv, Application* pApp);
+            virtual void operator()(int argc, char** argv);
+            virtual void initializeUserCode(int argc, char** argv, Application& pApp);
             virtual void unpackData(const void* pData);
+        private:
+            void requestData();
+            void getHeader(FRIB_MPI_Message_Header& header);
+            void getData(void* pData, size_t nBytes);
+            void forwardPassthrough(const void* pData, size_t nBytes);
+            void sendParameters(const std::vector<std::pair<unsigned, double>& event, std::uint64_t trigger);
+            void sendEnd();
+            void processDataBlock(const void* pData, size_t nBytes, std::uint64_t firstTrigger);
+            void throwMPIError(int status, const char* prefix);
         };
         
     }
