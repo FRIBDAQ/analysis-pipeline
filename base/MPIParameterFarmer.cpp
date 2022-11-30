@@ -22,6 +22,7 @@
 #include "AbstractApplication.h"
 #include "MPITriggerSorter.h"
 #include <mpi.h>
+#include <iostream>
 
 namespace frib {
     namespace analysis {
@@ -70,10 +71,12 @@ namespace frib {
                     sorter.addItem(pItem);     // If possible this will send items.
                 } else {
                     m_nEndsLeft--;
+                    
                 }
             }
             sorter.flush();
             sendEnd();
+            
         }
         ///////////////////////////////////////////////////////////////////////
         // Private utilities.
@@ -150,7 +153,7 @@ namespace frib {
             // If this is an end, return null:
             
             if (!header.s_end) {
-    
+                
                // If needed, enlarge m_parameterBuffer:
                
                if (header.s_numParameters > m_nMaxParams) {
@@ -165,6 +168,7 @@ namespace frib {
                    from, MPI_ANY_TAG, MPI_COMM_WORLD,
                    &mpistat
                );
+               
                // Status must be ok and tag must be MPI_DATA_TAG.
                
                if (status != MPI_SUCCESS) {

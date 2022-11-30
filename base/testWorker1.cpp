@@ -21,8 +21,8 @@
 #include "AbstractApplication.h"
 #include "MPIRawToParametersWorker.h"
 #include "MPIParameterFarmer.h"
-#include "MPIParmeterOutput.h"
-#include "MPTriggerSorter.h"
+#include "MPIParameterOutput.h"
+#include "MPITriggerSorter.h"
 #include "MPIRawReader.h"
 #include "TreeParameterArray.h"
 #include "ParameterReader.h"
@@ -41,7 +41,7 @@ class DummyParameterReader : public CParameterReader {
 public:
     DummyParameterReader() : CParameterReader("/dev/null") {}
     virtual void read() {
-        CTreePrameterArray array("array", 10, 0);  // Registers the array.
+        CTreeParameterArray array("array", 16, 0);  // Registers the array.
     }
 };
 
@@ -51,23 +51,25 @@ public:
  * we're going to 'unpack' a set of parameters that depends on the
  * 'index' of the event for this worker...ignoring the actual data.
  */
-class Worker : public CMPIRawToParameterWorker {
+class Worker : public CMPIRawToParametersWorker {
     unsigned trigger;
     CTreeParameterArray* m_pParams;
 public:
-    Worker(AbstractApplication& app) : trigger(0), m_pParams(nullptr) {}
+    Worker(AbstractApplication& app) :
+        CMPIRawToParametersWorker(app), trigger(0), m_pParams(nullptr)
+    {}
     virtual ~Worker() {}
-    virtual void unpackData(const char* pData) {
+    virtual void unpackData(const void* pData) {
         if (!m_pParams) {
-            m_pParams = new CTreeParameterArray("array", 10, 0);
+            m_pParams = new CTreeParameterArray("array", 16, 0);
         }
 
         CTreeParameterArray& array(*m_pParams);
-        for (int i =0; i < trigger; i++) {
+        for (int i =0; i < trigger+1; i++) {
             array[i] = trigger;
         }
         trigger++;
-        trigger = trigger % array.size();
+        trigger = trigger % 10;
     }
     
     
@@ -80,7 +82,7 @@ public:
 
 class Application : public AbstractApplication {
 public:
-    Application(int argc,char** argv) : AbstractApplicatino(argc, argv) {}
+    Application(int argc,char** argv) : AbstractApplication(argc, argv) {}
     virtual ~Application() {}
     
     virtual void dealer(int argc, char** argv, AbstractApplication* pApp);  // Rank 0
@@ -92,7 +94,7 @@ public:
 private:
     // for the dealer:
     
-    std::string getInputFilename(argc, char**argv);
+    std::string getInputFilename(int argc, char**argv);
     void makeEventFile(const std::string& filename);
     void removeFile(const std::string& filename);
     
@@ -129,7 +131,7 @@ Application::farmer(int argc, char** argv, AbstractApplication* pApp) {
 
 void
 Application::outputter(int argc, char** argv, AbstractApplication* pApp) {
-    CMPIParameterOutput ouptutter;
+    CMPIParameterOutput outputter;
     outputter(argc, argv, pApp);
     
     MPI_Barrier(MPI_COMM_WORLD);
@@ -156,7 +158,7 @@ Application::getInputFilename(int argc, char** argv) {
         throw std::invalid_argument("incorrect # of command line parameters");
     }
     return argv[1];
-
+}
 // Create an event file with a minimal begin run, 10,000 minimal events
 // and a minimal end run.
 // The worker ignores what's in the file so we can make empty physics events.
@@ -165,9 +167,10 @@ Application::getInputFilename(int argc, char** argv) {
 static const std::uint32_t PHYSICS_EVENT = 30;
 static const std::uint32_t BEGIN_RUN = 1;
 static const std::uint32_t END_RUN = 2;
+
 void
 Application::makeEventFile(const std::string& filename) {
-    int fd = creat(filename.c_str(), O_WRONLY, S_IRWXU );
+    int fd = creat(filename.c_str(), S_IRWXU );
     if (fd < 0) {
         throw std::runtime_error("failed to make a new event file");
     }
@@ -193,14 +196,16 @@ Application::makeEventFile(const std::string& filename) {
 // unlink
 
 void
-Application::removeFile(const std::string& fileame) {
+Application::removeFile(const std::string& filename) {
     unlink(filename.c_str());
 }
 
 int main(int argc, char** argv) {
     DummyParameterReader preader;
-    Application app(argc, argc);
+    Application app(argc, argv);
     app(preader);
+    
+    return 0;
     
 }
 

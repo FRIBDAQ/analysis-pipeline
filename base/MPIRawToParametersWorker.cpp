@@ -26,6 +26,8 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <iostream>
+
 namespace frib {
     namespace analysis {
         const std::uint32_t PHYSICS_EVENT=30;
@@ -63,9 +65,11 @@ namespace frib {
             std::unique_ptr<std::uint8_t> pData;
             size_t                         bytesReserved(0);
             while (1) {
+                
                 requestData();
                 FRIB_MPI_Message_Header header;
                 getHeader(header);
+                
                 
                 if (!header.s_end) {
                     // If necessary , resize the data block.
@@ -75,6 +79,7 @@ namespace frib {
                     }
                     getData(pData.get(), header.s_nBytes);
                     processDataBlock(pData.get(), header.s_nBytes, header.s_nBlockNum);
+                    
                 } else {
                     // End of data.
                     
@@ -170,6 +175,7 @@ namespace frib {
             const std::vector<std::pair<unsigned, double>>& event,
             std::uint64_t trigger
         ) {
+            
             // See if we need to expand the parameter buffer:
             
             if (event.size() > m_paramBufferSize) {
@@ -195,7 +201,7 @@ namespace frib {
             
             int status = MPI_Send(
                 &header, 1, m_App.parameterHeaderDataType(),
-                1, MPI_DATA_TAG, MPI_COMM_WORLD
+                1, MPI_HEADER_TAG, MPI_COMM_WORLD
             );
             throwMPIError(status, "Failed to send parameter header: ");
             
@@ -205,6 +211,7 @@ namespace frib {
                 m_pParameterBuffer, event.size(), m_App.parameterValueDataType(),
                 1, MPI_DATA_TAG, MPI_COMM_WORLD
             );
+            
             throwMPIError(status, "Failed to send parameter data to farmer: ");
         }
         /**
@@ -223,8 +230,9 @@ namespace frib {
             
             int status = MPI_Send(
                 &header, 1, m_App.parameterHeaderDataType(),
-                1, MPI_DATA_TAG, MPI_COMM_WORLD
+                1, MPI_END_TAG, MPI_COMM_WORLD
             );
+            
             throwMPIError(status, "Failed to send end flag to farme4r: ");
         }
         /**
@@ -257,9 +265,11 @@ namespace frib {
             } p;
             p.p8 = reinterpret_cast<const std::uint8_t*>(pData);
             
+            
             while (nBytes) {
+                
                 if (p.pH->s_type == PHYSICS_EVENT) {
-                    
+                
                     unpackData(p.pH);
                     auto event = CTreeParameter::collectEvent();
                     sendParameters(event, firstTrigger);

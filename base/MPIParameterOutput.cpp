@@ -87,7 +87,6 @@ namespace frib {
                     throw std::runtime_error(msg);
                 }
                 
-                
                 if (mpistat.MPI_TAG == MPI_HEADER_TAG) {
                     // If it's a header we have actual data:
             
@@ -143,6 +142,7 @@ namespace frib {
                         "CMPIParameterOutput - expected MPI Header got data"
                     );
                 } else if (mpistat.MPI_TAG == MPI_END_TAG) {
+
                      // Do nothing - s_end will be true.
                      header.s_end = true;             // Just in case.
                      
