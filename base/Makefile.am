@@ -70,7 +70,7 @@ passthruTest_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 passthruTest_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 passthruTest_LDADD=libfribCore.la
 
-testWorker1_SOURCES=testWorker1.cpp
+testWorker1_SOURCES=testWorker1.cpp worker1Tests.cpp
 testWorker1_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testWorker1_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testWorker1_LDADD=libfribCore.la
