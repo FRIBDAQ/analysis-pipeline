@@ -35,6 +35,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+// For unit test support:
+
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include <iostream>
+#include <stdexcept>
+
 using namespace frib::analysis;
 
 class DummyParameterReader : public CParameterReader {
@@ -129,12 +136,20 @@ Application::farmer(int argc, char** argv, AbstractApplication* pApp) {
 
 // outputter
 
+std::string filename;
+static void tests();
+
 void
 Application::outputter(int argc, char** argv, AbstractApplication* pApp) {
     CMPIParameterOutput outputter;
     outputter(argc, argv, pApp);
     
     MPI_Barrier(MPI_COMM_WORLD);
+    
+    filename = argv[2];              // save for tests.
+    
+    tests();
+    
 }
 
 //worker:
@@ -210,5 +225,31 @@ int main(int argc, char** argv) {
 }
 
 
+// test runner for unit tests:
+
+void tests() {
+    
+    CppUnit::TextUi::TestRunner
+               runner; // Control tests.
+    CppUnit::TestFactoryRegistry&
+                 registry(CppUnit::TestFactoryRegistry::getRegistry());
+
+    runner.addTest(registry.makeTest());
+
+    bool wasSucessful;
+    try {
+      wasSucessful = runner.run("",false);
+    }
+    catch(std::string& rFailure) {
+      std::cerr << "Caught a string exception from test suites.: \n";
+      std:: cerr << rFailure << std::endl;
+      wasSucessful = false;
+    }
+    unlink(filename.c_str());     // Remove the test output file.
+    if (!wasSucessful) {
+        throw std::runtime_error("Tests failed!");
+    }
+
+}
 
 
