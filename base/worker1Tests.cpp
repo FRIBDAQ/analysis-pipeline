@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string>
+#include <cstdint>
 
 extern std::string filename;
 
@@ -37,25 +38,39 @@ using namespace frib::analysis;
 
 class worker1test : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(worker1test);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(header_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
     int m_fd;
+    std::uint8_t* m_data;
 public:
     void setUp() {
         m_fd = open(filename.c_str(), O_RDONLY);
         ASSERT(m_fd >= 0);
+        // figure out how big the file is and suck it oll in
+        // not too big since the items are minimal.
+        
+        struct stat statbuf;
+        ASSERT(fstat(m_fd, &statbuf) >= 0);
+        m_data = new std::uint8_t[statbuf.st_size];
+        EQ(ssize_t(statbuf.st_size), read(m_fd, m_data, statbuf.st_size));
+        
+        //rewind the file in case a test wants to read it for itself:
+        
+        lseek(m_fd, 0, SEEK_SET);
+        
     }
     void tearDown() {
+        delete []m_data;
         close(m_fd);
     }
 protected:
-    void test_1();
+    void header_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(worker1test);
 
-void worker1test::test_1()
+void worker1test::header_1()
 {
 }
