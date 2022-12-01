@@ -46,6 +46,7 @@ class worker1test : public CppUnit::TestFixture {
     CPPUNIT_TEST(header_1);
     CPPUNIT_TEST(statechanges_1);
     CPPUNIT_TEST(events_1);
+    CPPUNIT_TEST(events_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -78,6 +79,7 @@ protected:
     void header_1();
     void statechanges_1();
     void events_1();
+    void events_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(worker1test);
@@ -147,4 +149,33 @@ void worker1test::events_1() {
         p.p8 += p.pH->s_size;
     }
     EQ(size_t(10000), nEvents);
+}
+// Each event has the correct trigger number and # of parameters.
+
+void worker1test::events_2() {
+    // There should be 10000 physics events.
+    
+    off_t size(0);
+    
+    union {
+        pRingItemHeader pH;
+        pParameterItem   pP;
+        std::uint8_t*     p8;
+    } p;
+    p.p8 = m_data;
+    
+    std::uint64_t trigger = 0;
+    
+    while(size < m_nBytes) {
+        
+        if (p.pH->s_type == PARAMETER_DATA) {
+            EQ(trigger, p.pP->s_triggerCount);
+            std::uint32_t expectedParams = trigger % 10 + 1;
+            EQ(expectedParams, p.pP->s_parameterCount);
+            trigger++;
+        }
+        
+        size += p.pH->s_size;
+        p.p8 += p.pH->s_size;
+    }
 }
