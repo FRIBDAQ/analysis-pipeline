@@ -25,6 +25,8 @@
 #include "Asserts.h"
 
 #include "AnalysisRingItems.h"
+#include "TreeParameterArray.h"
+#include "TreeParameter.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -47,6 +49,7 @@ class worker1test : public CppUnit::TestFixture {
     CPPUNIT_TEST(statechanges_1);
     CPPUNIT_TEST(events_1);
     CPPUNIT_TEST(events_2);
+    CPPUNIT_TEST(events_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -80,6 +83,7 @@ protected:
     void statechanges_1();
     void events_1();
     void events_2();
+    void events_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(worker1test);
@@ -172,6 +176,38 @@ void worker1test::events_2() {
             EQ(trigger, p.pP->s_triggerCount);
             std::uint32_t expectedParams = trigger % 10 + 1;
             EQ(expectedParams, p.pP->s_parameterCount);
+            trigger++;
+        }
+        
+        size += p.pH->s_size;
+        p.p8 += p.pH->s_size;
+    }
+}
+// Parameters and contents are going to be correct:
+
+void worker1test::events_3()
+{
+    off_t size(0);
+    
+    union {
+        pRingItemHeader pH;
+        pParameterItem   pP;
+        std::uint8_t*     p8;
+    } p;
+    p.p8 = m_data;
+    
+    std::uint64_t trigger = 0;
+    CTreeParameterArray array("array", 16, 0); // so we can get ids.
+    
+    while(size < m_nBytes) {
+        
+        if (p.pH->s_type == PARAMETER_DATA) {
+            
+            std::uint32_t expectedParams = trigger % 10 + 1;
+            for (int i = 0; i < expectedParams; i++) {
+                EQ(array[i].getId(), p.pP->s_parameters[i].s_number);
+                EQ(double(expectedParams-1), p.pP->s_parameters[i].s_value);
+            }
             trigger++;
         }
         
