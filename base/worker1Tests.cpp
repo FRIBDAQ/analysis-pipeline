@@ -34,16 +34,22 @@
 
 extern std::string filename;
 
+const std::uint32_t BEGIN_RUN =1;
+const std::uint32_t END_RUN   =2;
+const std::uint32_t PHYSICS_EVENT=30;
+
 using namespace frib::analysis;
 
 class worker1test : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(worker1test);
     CPPUNIT_TEST(header_1);
+    CPPUNIT_TEST(statechanges_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
-    int m_fd;
+    int           m_fd;
     std::uint8_t* m_data;
+    off_t         m_nBytes;
 public:
     void setUp() {
         m_fd = open(filename.c_str(), O_RDONLY);
@@ -55,6 +61,7 @@ public:
         ASSERT(fstat(m_fd, &statbuf) >= 0);
         m_data = new std::uint8_t[statbuf.st_size];
         EQ(ssize_t(statbuf.st_size), read(m_fd, m_data, statbuf.st_size));
+        m_nBytes = statbuf.st_size;
         
         //rewind the file in case a test wants to read it for itself:
         
@@ -67,10 +74,50 @@ public:
     }
 protected:
     void header_1();
+    void statechanges_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(worker1test);
 
 void worker1test::header_1()
 {
+    union {
+        pRingItemHeader pH;
+        std::uint8_t*     p8;
+    } p;
+    p.p8 = m_data;
+    
+    // First two items should be just the parameter and var defs:
+    
+    EQ(PARAMETER_DEFINITIONS, p.pH->s_type);
+    p.p8 += p.pH->s_size;
+    EQ(VARIABLE_VALUES, p.pH->s_type);
+    
+    
+}
+/** Somewhere in all of those items there should be a begin and an end item:
+ *  because of how passthroughs are handled we can't say anything about where they are
+ */
+void worker1test::statechanges_1()
+{
+    bool begin(false);
+    bool end(false);
+    off_t size(0);
+    
+    union {
+        pRingItemHeader pH;
+        std::uint8_t*     p8;
+    } p;
+    p.p8 = m_data;
+    
+    
+    while(size < m_nBytes) {
+        if (p.pH->s_type == BEGIN_RUN) begin = true;
+        if (p.pH->s_type == END_RUN) end = true;
+        
+        size += p.pH->s_size;
+        p.p8 += p.pH->s_size;
+    }
+    ASSERT(begin);
+    ASSERT(end);
 }
