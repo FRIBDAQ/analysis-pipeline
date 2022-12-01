@@ -6,7 +6,7 @@ libfribCore_la_SOURCES = TreeParameter.cpp TreeParameterArray.cpp \
 	MPIParameterOutput.cpp MPIRawReader.cpp TriggerSorter.cpp \
 	MPITriggerSorter.cpp MPIParameterFarmer.cpp \
 	MPIRawToParametersWorker.cpp
-include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \ 
+include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
 	TreeVariableArray.h \
 	ParameterReader.h  AnalysisRingItems.h \
 	TCLParameterReader.h AbstractApplication.h DataReader.h \

@@ -51,6 +51,7 @@ AC_SUBST(TCLPLUS_LIBS)
 
 AC_CONFIG_FILES([Makefile
         base/Makefile
+	spectcl/Makefile
     ])
     
 
