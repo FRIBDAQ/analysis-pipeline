@@ -31,12 +31,13 @@
 #include <unistd.h>
 #include <string>
 #include <cstdint>
+#include <iostream>
 
 extern std::string filename;
 
 const std::uint32_t BEGIN_RUN =1;
 const std::uint32_t END_RUN   =2;
-const std::uint32_t PHYSICS_EVENT=30;
+
 
 using namespace frib::analysis;
 
@@ -44,6 +45,7 @@ class worker1test : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(worker1test);
     CPPUNIT_TEST(header_1);
     CPPUNIT_TEST(statechanges_1);
+    CPPUNIT_TEST(events_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -75,6 +77,7 @@ public:
 protected:
     void header_1();
     void statechanges_1();
+    void events_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(worker1test);
@@ -120,4 +123,28 @@ void worker1test::statechanges_1()
     }
     ASSERT(begin);
     ASSERT(end);
+}
+// Ensure the event data has the right stuff.
+
+void worker1test::events_1() {
+    // There should be 10000 physics events.
+    
+    off_t size(0);
+    
+    union {
+        pRingItemHeader pH;
+        std::uint8_t*     p8;
+    } p;
+    p.p8 = m_data;
+    
+    size_t nEvents(0);
+    
+    while(size < m_nBytes) {
+        
+        if (p.pH->s_type == PARAMETER_DATA) nEvents++;
+        
+        size += p.pH->s_size;
+        p.p8 += p.pH->s_size;
+    }
+    EQ(size_t(10000), nEvents);
 }
