@@ -96,7 +96,7 @@ void eventtest::exist_3() {
     CTreeParameter t1("t1");
     CEvent e;
     e[t1.getId()] = 2.0;
-    ASSERT(!t1.isValid());
+    ASSERT(!t1.isValid());  // nasty incompatibility.
 }
 // Have to create a new tree parameter:
 
@@ -125,6 +125,6 @@ void eventtest::new_3() {
     e[2] = 1.2345;
     EQ(size_t(3), CTreeParameter::m_parameterDictionary.size());
     EQ(size_t(1), CTreeParameter::m_scoreboard.size());
-    double d = e[1];
+    double d = e[1];                                     // nasty incompatiblilty...
     EQ(size_t(2),  CTreeParameter::m_scoreboard.size()); // peculiarity of CEvent
 }
