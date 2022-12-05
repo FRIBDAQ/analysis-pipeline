@@ -8,7 +8,7 @@ include_HEADERS = BufferDecoder.h Analyzer.h Event.h
 
 noinst_PROGRAMS=eventTests
 
-eventTests_SOURCES=TestRunner.cpp
+eventTests_SOURCES=TestRunner.cpp eventtests.cpp
 eventTests_CPPFLAGS=@CPPUNIT_CFLAGS@ -I@top_srcdir@/base
 eventTests_LDFLAGS=libSpecTclFramework.la @CPPUNIT_LIBS@
 
