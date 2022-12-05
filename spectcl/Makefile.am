@@ -10,7 +10,9 @@ noinst_PROGRAMS=eventTests
 
 eventTests_SOURCES=TestRunner.cpp eventtests.cpp
 eventTests_CPPFLAGS=@CPPUNIT_CFLAGS@ -I@top_srcdir@/base
-eventTests_LDFLAGS=libSpecTclFramework.la @CPPUNIT_LIBS@
+eventTests_LDFLAGS=@top_builddir@/spectcl/libSpecTclFramework.la \
+	@top_builddir@/base/libfribCore.la \
+	@CPPUNIT_LIBS@
 
 TESTS=eventTests
 

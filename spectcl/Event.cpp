@@ -137,7 +137,7 @@ namespace frib {
                std::string name = namestr.str();
                CTreeParameter p(name);
                n++;
-            } while (n <= (index + 1));
+            } while (n <= (index));
         }
         
         
