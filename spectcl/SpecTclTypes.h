@@ -27,4 +27,5 @@ typedef unsigned UInt_t;
 typedef int       Int_t;
 typedef uint16_t UShort_t;
 typedef int16_t   Short_t;
+typedef bool      Bool_t;
 #endif
