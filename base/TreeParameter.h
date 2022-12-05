@@ -26,6 +26,7 @@
 #include <vector>
 namespace frib {
     namespace analysis {
+        class CEvent;
         /**
          * @class TreeParameter
          * 
@@ -163,7 +164,12 @@ namespace frib {
             void   resetChanged() ;
             static void ResetAll();
             
-            void Bind();             
+            void Bind();
+            // It's either this or expose all the internals via public methods
+            // I think this is preferable....much as I hate the friend feature
+            // of C++.
+            
+            friend ::frib::analysis::CEvent;
         };
         
         
