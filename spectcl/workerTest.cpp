@@ -27,6 +27,8 @@
 #include "TreeParameter.h"
 #undef private
 
+#include <stdexcept>
+
 
 using namespace frib::analysis;
 
@@ -97,6 +99,11 @@ class spworkertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(add_1);
     CPPUNIT_TEST(add_2);
     CPPUNIT_TEST(add_3);
+    
+    CPPUNIT_TEST(remove_1);
+    CPPUNIT_TEST(remove_2);
+    CPPUNIT_TEST(remove_3);
+    CPPUNIT_TEST(remove_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -123,8 +130,12 @@ protected:
     void add_1();
     void add_2();
     void add_3();
+    
+    void remove_1();
+    void remove_2();
+    void remove_3();
+    void remove_4();
 };
-
 CPPUNIT_TEST_SUITE_REGISTRATION(spworkertest);
 
 // Initial data correct on construction:
@@ -164,4 +175,65 @@ void spworkertest::add_3() {
     
     EQ(std::string("_Unamed_.0"), name1);
     EQ(std::string("_Unamed_.1"), name2);
+}
+// Remove correct one by pointer.
+
+void spworkertest::remove_1() {
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+    
+    CPPUNIT_ASSERT_NO_THROW(m_pWorker->removeEventProcessor(&ep1));
+    
+    EQ(size_t(1), m_pWorker->m_pipeline.size());
+    EQ(name2, m_pWorker->m_pipeline[0].first);
+}
+// no such is an exception:
+
+void spworkertest::remove_2() {
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+
+    CPPUNIT_ASSERT_NO_THROW(m_pWorker->removeEventProcessor(&ep1));
+    
+    // Can't remove it again:
+    
+    CPPUNIT_ASSERT_THROW(m_pWorker->removeEventProcessor(&ep1), std::logic_error);    
+}
+
+// Remove ok by name:
+
+void spworkertest::remove_3()
+{
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+
+    CPPUNIT_ASSERT_NO_THROW(m_pWorker->removeEventProcessor(name1.c_str()));
+    
+    EQ(size_t(1), m_pWorker->m_pipeline.size());
+    EQ(name2, m_pWorker->m_pipeline[0].first);
+}
+// Remove nonexistent name:
+
+void spworkertest::remove_4() {
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+
+    
+    name1 += "nope";               // No such
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pWorker->removeEventProcessor(name1.c_str()), std::logic_error
+    );
 }
