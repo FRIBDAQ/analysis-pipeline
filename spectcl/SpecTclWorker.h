@@ -50,11 +50,11 @@ namespace frib {
             unsigned m_unNamedIndex;
             
             // Needed for the event processors:
-            
+        
             CBufferDecoder*  m_pDecoder;
             CAnalyzer*       m_pAnalyzer;
             CEvent*          m_pEvent;
-        public:
+            public:
             CSpecTclWorker(AbstractApplication& app);
             virtual ~CSpecTclWorker();
             

@@ -93,7 +93,10 @@ public:
 
 class spworkertest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(spworkertest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(add_1);
+    CPPUNIT_TEST(add_2);
+    CPPUNIT_TEST(add_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -116,11 +119,49 @@ public:
         delete m_pApp;
     }
 protected:
-    void test_1();
+    void construct_1();
+    void add_1();
+    void add_2();
+    void add_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(spworkertest);
 
-void spworkertest::test_1()
+// Initial data correct on construction:
+void spworkertest::construct_1()
 {
+    ASSERT(m_pWorker->m_pipeline.empty());
+    EQ(unsigned(0), m_pWorker->m_unNamedIndex);
+    ASSERT(m_pWorker->m_pDecoder);
+    ASSERT(m_pWorker->m_pAnalyzer);
+    ASSERT(m_pWorker->m_pEvent);
+}
+// Add named event processor.
+void spworkertest::add_1() {
+    MyEp ep("param", 1);
+    std::string name = m_pWorker->addProcessor(&ep, "name");
+    EQ(std::string("name"), name);
+    EQ(size_t(1), m_pWorker->m_pipeline.size());
+    auto info = m_pWorker->m_pipeline[0];
+    EQ(std::string("name"), info.first);
+    EQ(reinterpret_cast<CEventProcessor*>(&ep), info.second);
+}
+// add unnmamed:
+
+void spworkertest::add_2() {
+    MyEp ep("param", 1);
+    auto name = m_pWorker->addProcessor(&ep);
+    EQ(std::string("_Unamed_.0"), name);
+}
+// multiple unamed are unique:
+
+void spworkertest::add_3() {
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+    
+    EQ(std::string("_Unamed_.0"), name1);
+    EQ(std::string("_Unamed_.1"), name2);
 }
