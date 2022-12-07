@@ -12,15 +12,17 @@ noinst_PROGRAMS=eventTests workerTests
 
 eventTests_SOURCES=TestRunner.cpp eventtests.cpp
 eventTests_CPPFLAGS=@CPPUNIT_CFLAGS@ -I@top_srcdir@/base
-eventTests_LDFLAGS=@top_builddir@/spectcl/libSpecTclFramework.la \
-	@top_builddir@/base/libfribCore.la \
-	@CPPUNIT_LIBS@
+eventTests_LDFLAGS=@CPPUNIT_LIBS@
+eventTests_LDADD=libSpecTclFramework.la \
+        @top_builddir@/base/libfribCore.la
+
 
 workerTests_SOURCES=TestRunner.cpp workerTest.cpp
 workerTests_CPPFLAGS=@CPPUNIT_CFLAGS@ -I@top_srcdir@/base
-workerTests_LDFLAGS=@top_builddir@/spectcl/libSpecTclFramework.la \
-        @top_builddir@/base/libfribCore.la \
-        @CPPUNIT_LIBS@
+workerTests_LDFLAGS= @CPPUNIT_LIBS@
+workerTests_LDADD=libSpecTclFramework.la \
+        @top_builddir@/base/libfribCore.la
+
 
 
 TESTS=eventTests workerTests
