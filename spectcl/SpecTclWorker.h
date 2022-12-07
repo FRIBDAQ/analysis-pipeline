@@ -45,6 +45,7 @@ namespace frib {
          *    Note NSCLDAQ 11.x and later are the only formats supported.
          */
         class CSpecTclWorker : public CMPIRawToParametersWorker {
+        private:
             std::vector<std::pair<std::string, CEventProcessor*>> m_pipeline;
             unsigned m_unNamedIndex;
             
