@@ -26,6 +26,7 @@
 #include "SpecTclWorker.h"
 #include "TreeParameter.h"
 #undef private
+#include <AnalysisRingItems.h>
 
 #include <stdexcept>
 
@@ -122,6 +123,8 @@ class spworkertest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(init_1);
     CPPUNIT_TEST(init_2);
+    
+    CPPUNIT_TEST(unpack_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -156,6 +159,8 @@ protected:
     
     void init_1();
     void init_2();
+    
+    void unpack_1();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(spworkertest);
 
@@ -306,4 +311,32 @@ void spworkertest::init_2()
     
     ASSERT(!ep3.m_initialized);
     ASSERT(!ep3.m_connected);
+}
+// Calling unpackData runs the whole pipeline if there are no failling elements.
+void spworkertest::unpack_1() {
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+    
+    // I need data:
+    
+    RingItemHeader h;
+    h.s_size = sizeof(RingItemHeader);
+    h.s_type  = 30;                      // PHYSICS_EVENT.
+    h.s_unused = sizeof(std::uint32_t);
+    
+    CPPUNIT_ASSERT_NO_THROW(m_pWorker->unpackData(&h));
+    
+    // The parameters should be valid:
+    
+    CTreeParameter p1("param1");
+    CTreeParameter p2("param2");
+    ASSERT(p1.isValid());
+    ASSERT(p2.isValid());
+    EQ(unsigned(1), ep1.m_callCount);
+    EQ(unsigned(1), ep2.m_callCount);
+    EQ(0.0, double(p1));
+    EQ(0.0, double(p2));
 }
