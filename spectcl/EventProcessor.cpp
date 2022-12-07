@@ -28,10 +28,7 @@ namespace frib {
         CEventProcessor::OnEventSourceOpen(std::string name) {
             return kfTRUE;
         }
-        Bool_t
-        CEventProcessor::OnEventSourceEOF() {
-            return kfTRUE;
-        }
+        
         Bool_t
         CEventProcessor::OnInitialize() {
             return kfTRUE;

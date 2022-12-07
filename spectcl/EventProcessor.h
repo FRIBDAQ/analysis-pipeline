@@ -43,7 +43,6 @@ namespace frib {
                             CAnalyzer& rAnalyzer,
                             CBufferDecoder& rDecoder) = 0;
             virtual Bool_t OnEventSourceOpen(std::string name);
-            virtual Bool_t OnEventSourceEOF();
             virtual Bool_t OnInitialize();
 
                 
