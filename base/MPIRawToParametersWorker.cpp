@@ -39,8 +39,7 @@ namespace frib {
             AbstractApplication& App
         ) : m_App(App), m_pParameterBuffer(nullptr), m_paramBufferSize(0)
         {
-            int status = MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
-            throwMPIError(status, "Unable to obtain worker rank: ");
+            
         }
         
         /** Destructor
@@ -61,6 +60,8 @@ namespace frib {
          */
         void
         CMPIRawToParametersWorker::operator()(int argc, char** argv) {
+            int status = MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+            throwMPIError(status, "Unable to obtain worker rank: ");
             initializeUserCode(argc, argv, m_App);
             std::unique_ptr<std::uint8_t> pData;
             size_t                         bytesReserved(0);
