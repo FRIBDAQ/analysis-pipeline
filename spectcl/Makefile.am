@@ -16,7 +16,7 @@ eventTests_LDFLAGS=@top_builddir@/spectcl/libSpecTclFramework.la \
 	@top_builddir@/base/libfribCore.la \
 	@CPPUNIT_LIBS@
 
-workerTests_SOURCES=TestRunner.cpp 
+workerTests_SOURCES=TestRunner.cpp workerTest.cpp
 workerTests_CPPFLAGS=@CPPUNIT_CFLAGS@ -I@top_srcdir@/base
 workerTests_LDFLAGS=@top_builddir@/spectcl/libSpecTclFramework.la \
         @top_builddir@/base/libfribCore.la \
