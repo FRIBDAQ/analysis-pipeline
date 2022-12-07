@@ -32,6 +32,21 @@
 
 using namespace frib::analysis;
 
+// Failing event processor:
+//
+struct BadEp : public CEventProcessor {
+    BadEp() {}
+    ~BadEp() {}
+    
+    Bool_t operator()(const Address_t pEvent,
+                            CEvent& rEvent,
+                            CAnalyzer& rAnalyzer,
+                            CBufferDecoder& rDecoder) { return kfFALSE;}
+    Bool_t OnEventSourceOpen(std::string name) {return kfFALSE;}
+    Bool_t OnInitialize() {return kfFALSE;}
+
+    
+};
 // 'Fancy' event processor - open to simplify for tests.
 struct MyEp : public CEventProcessor {
 
@@ -104,6 +119,9 @@ class spworkertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(remove_2);
     CPPUNIT_TEST(remove_3);
     CPPUNIT_TEST(remove_4);
+    
+    CPPUNIT_TEST(init_1);
+    CPPUNIT_TEST(init_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -135,6 +153,9 @@ protected:
     void remove_2();
     void remove_3();
     void remove_4();
+    
+    void init_1();
+    void init_2();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(spworkertest);
 
@@ -236,4 +257,53 @@ void spworkertest::remove_4() {
     CPPUNIT_ASSERT_THROW(
         m_pWorker->removeEventProcessor(name1.c_str()), std::logic_error
     );
+}
+// All pipline elment inits get called:
+
+void spworkertest::init_1() {
+    MyEp ep1("param1", 1);
+    MyEp ep2("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+    
+    int argc = 2;
+    const char* cargv[2] = {"junk", "afile.evt"};
+    char** argv = const_cast<char**>(cargv);
+    
+    // Actually calls both OnInitialize and OnEventSourceOpen
+    
+    CPPUNIT_ASSERT_NO_THROW(m_pWorker->initializeUserCode(argc , argv, *m_pApp));
+    
+    ASSERT(ep1.m_initialized);
+    ASSERT(ep2.m_initialized);
+    ASSERT(ep1.m_connected);
+    EQ(std::string("afile.evt"), ep1.m_source);
+    ASSERT(ep2.m_connected);
+    EQ(std::string("afile.evt"), ep2.m_source);
+}
+// three pipeline elements but the second one returns other than true:
+
+void spworkertest::init_2()
+{
+    MyEp ep1("param1", 1);
+    BadEp ep2;
+    MyEp ep3("param2", 2);
+    
+    auto name1 = m_pWorker->addProcessor(&ep1);
+    auto name2 = m_pWorker->addProcessor(&ep2);
+    auto name3 = m_pWorker->addProcessor(&ep3);
+    
+    int argc = 2;
+    const char* cargv[2] = {"junk", "afile.evt"};
+    char** argv = const_cast<char**>(cargv);
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pWorker->initializeUserCode(argc, argv, *m_pApp), std::runtime_error
+    );
+    
+    // ep3 should not be initialized etc.
+    
+    ASSERT(!ep3.m_initialized);
+    ASSERT(!ep3.m_connected);
 }
