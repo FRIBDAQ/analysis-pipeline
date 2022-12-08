@@ -55,6 +55,8 @@
 
 using namespace frib::analysis;
 
+void runTests(const std::string& fname);
+
 // This parameter reader is a dummy that just makes an array and a single parameter.
 // This is run in all ranks so all ranks know the parameter indexes involved.
 // Specifically the output stage knows how to write the parameter definition record.
@@ -238,9 +240,15 @@ Application::outputter(int argc, char** argv, AbstractApplication* pApp) {
     
     MPI_Barrier(MPI_COMM_WORLD);
     
-    // Now we could test the output file:
+    // Run unit tests on the output file which, by now is complete:
     
     std::string outFile = argv[2];
+    runTests(outFile);
+    
+    
+    // Now we could test the output file:
+    
+    
     removeFile(outFile.c_str());
 }
 // Worker:
@@ -269,4 +277,29 @@ int main(int argc, char** argv) {
     DummyParameterReader reader;
     
     app(reader);
+}
+// Run unit tests
+
+std::string testFile;
+
+void runTests(const std::string& outfile) {
+  CppUnit::TextUi::TestRunner
+               runner; // Control tests.
+  CppUnit::TestFactoryRegistry&
+               registry(CppUnit::TestFactoryRegistry::getRegistry());
+
+  runner.addTest(registry.makeTest());
+
+  bool wasSucessful;
+  try {
+    wasSucessful = runner.run("",false);
+  }
+  catch(...) {
+    wasSucessful = false;
+    
+  }
+  if ( !wasSucessful ) {
+     throw std::runtime_error("Tests failed");
+  }
+
 }
