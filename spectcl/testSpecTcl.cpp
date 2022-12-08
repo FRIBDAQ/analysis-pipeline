@@ -48,6 +48,7 @@ const std::uint32_t PHYSICS_EVENT = 30;
 class spectest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(spectest);
     CPPUNIT_TEST(header_1);
+    CPPUNIT_TEST(data_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -66,8 +67,6 @@ public:
         m_pSum = new CTreeParameter("sum");
         m_pArray = new CTreeParameterArray("array", 16, 0);
         
-        std::cerr << " sum " << m_pSum->getId() << std::endl;
-        std::cerr << " array[0] " << (*m_pArray)[0].getId() << std::endl;
         
         m_fd = open(testFile.c_str(), O_RDONLY);
         ASSERT(m_fd >= 0);
@@ -91,11 +90,33 @@ public:
     
 protected:
     void header_1();
+    void data_1();
 private:
     void makeMapping(const ParameterDefinitions* pDefs);
     void addMapping(const ParameterDefinition* pDef);
     void dumpMappings();
+    void mapData(const ParameterItem* pData);
 };
+
+// Use the mappings to map an item.
+
+void
+spectest::mapData(const ParameterItem* pData) {
+    union {
+        const ParameterValue* pV;
+        const std::uint8_t*   p8;
+    } p;
+    p.pV = pData->s_parameters;
+    
+    for (int i =0; i < pData->s_parameterCount; i++) {
+        unsigned n = p.pV->s_number;
+        if (m_fileToInternalMapping[n]) {
+            *m_fileToInternalMapping[n] = p.pV->s_value;
+        }
+        
+        p.p8 += sizeof(ParameterValue);
+    }
+}
 
 // Add a mapping between a file parameter and an internal parameter.
 
@@ -181,4 +202,61 @@ void spectest::header_1()
     EQ(BEGIN_RUN, p.pH->s_type);   
     
     
+}
+// after establishing the mapping we should be able to read the  data into
+// this test just requires that the number of parameter data items is correct.
+
+
+void spectest::data_1() {
+    CDataReader r(m_fd, 1000);
+    auto info = r.getBlock(1000);
+    ASSERT(info.s_nItems >= 3);    // Want all header recrods.
+    
+    union {
+        const std::uint8_t*  p8;
+        const RingItemHeader* pH;
+    } p;
+    p.p8 = reinterpret_cast<const std::uint8_t*>(info.s_pData);
+    
+    // First item must be a parameter def record:
+    
+    EQ(PARAMETER_DEFINITIONS, p.pH->s_type);
+    
+    makeMapping(reinterpret_cast<const ParameterDefinitions*>(p.pH));
+    
+    // Second item must be a VARIABLE_VALUES
+    
+    p.p8 += p.pH->s_size;
+    EQ(VARIABLE_VALUES, p.pH->s_type);
+    
+    // Then a minimal begin run:
+    
+    p.p8 += p.pH->s_size;
+    EQ(BEGIN_RUN, p.pH->s_type);   
+    p.p8 += p.pH->s_size;
+    // Now for all the data items:
+    
+    size_t nRemaining = info.s_nItems - 3;
+    int nPhy = 0;
+    while (info.s_nItems) {
+
+        if (p.pH->s_type == PARAMETER_DATA) {
+            mapData(reinterpret_cast<const ParameterItem*>(p.pH));
+            nPhy++;
+        } else {
+            EQ(END_RUN, p.pH->s_type);   // only other thing is an end run.
+        }
+        
+        p.p8 += p.pH->s_size;
+        nRemaining--;
+
+        if(nRemaining == 0) {
+            r.done();
+            info = r.getBlock(1000);     // next block -- if there is one.
+            nRemaining = info.s_nItems;
+            p.p8 = reinterpret_cast<const std::uint8_t*>(info.s_pData);
+        }
+    }
+    
+    EQ(10000, nPhy);
 }
