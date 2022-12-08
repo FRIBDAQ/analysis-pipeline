@@ -24,7 +24,7 @@ workerTests_LDADD=libSpecTclFramework.la \
         @top_builddir@/base/libfribCore.la
 
 
-spectclTest_SOURCES=spectclTest.cpp
+spectclTest_SOURCES=spectclTest.cpp testSpecTcl.cpp
 spectclTest_CPPFLAGS=@CPPUNIT_CFLAGS@ -I@top_srcdir@/base
 spectclTest_LDFLAGS= @CPPUNIT_LIBS@
 spectclTest_LDADD=libSpecTclFramework.la \
