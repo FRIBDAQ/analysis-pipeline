@@ -283,6 +283,8 @@ int main(int argc, char** argv) {
 std::string testFile;
 
 void runTests(const std::string& outfile) {
+
+    testFile = outfile;
   CppUnit::TextUi::TestRunner
                runner; // Control tests.
   CppUnit::TestFactoryRegistry&
