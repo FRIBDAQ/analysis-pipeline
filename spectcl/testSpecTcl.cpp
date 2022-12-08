@@ -43,7 +43,7 @@ extern std::string testFile;
 
 const std::uint32_t BEGIN_RUN = 1;
 const std::uint32_t END_RUN   = 2;
-const std::uint32_t PHYSICS_EVENT = 30;
+
 
 class spectest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(spectest);
