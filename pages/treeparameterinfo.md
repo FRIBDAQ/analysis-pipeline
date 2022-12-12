@@ -149,5 +149,8 @@ int main(int argc, char** argv) {
 }
 ```
 
+For information about the Tcl tree parameter reader definition file syntax see
+\ref tcldeffile
+
 For more about how to build your application class, see
 \ref appclass 
