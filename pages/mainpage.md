@@ -76,9 +76,10 @@ between the input, compute, and output stages (re-ordering is trivial).
 *  \ref treevars    Steering variables.
 *  \ref appclass 
 *  \ref treereader Parameter Definition reader
-*  Raw parameter decoding
+*  \ref rawtoparams
+    *    \ref rawtoparamworker Writing the worker.
     *    How to setup the application.
-    *    Writing the worker.
     *    Format of the output file.
-    *  SpecTcl compatibility software.
+    *    \ref spectclworker SpecTcl compatibility software.
+    *    Compiling and running the application
     
