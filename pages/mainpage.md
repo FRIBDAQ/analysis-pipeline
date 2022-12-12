@@ -73,9 +73,13 @@ between the input, compute, and output stages (re-ordering is trivial).
 ### Where to go for more information:
 
 *  Overall structure of the application framework and its implementation in MPI
-*  Internal paramter representation
-*  Steering variables.
+*  \ref treeparams Internal parameter representation  
+*  \ref treevars    Steering variables.
+*  \ref appclass Application class
+*  \ref treereader Parameter Definition reader
 *  Raw parameter decoding
     *    How to setup the application.
+    *    Writing the worker.
     *    Format of the output file.
+*  SpecTcl compatibility software.
     
