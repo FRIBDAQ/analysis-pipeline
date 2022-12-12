@@ -150,4 +150,4 @@ int main(int argc, char** argv) {
 ```
 
 For more about how to build your application class, see
-\ref appclass Application class.
+\ref appclass 
