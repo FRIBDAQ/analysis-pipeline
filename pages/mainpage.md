@@ -77,8 +77,8 @@ between the input, compute, and output stages (re-ordering is trivial).
 *  \ref appclass 
 *  \ref treereader Parameter Definition reader
 *  \ref rawtoparams
-    *    \ref rawtoparamworker Writing the worker.
-    *    How to setup the application.
+    *    \ref rawtoparamworker 
+    *    \ref rawtoparamapp
     *    Format of the output file.
     *    \ref spectclworker SpecTcl compatibility software.
     *    Compiling and running the application
