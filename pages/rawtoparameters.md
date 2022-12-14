@@ -201,15 +201,15 @@ MyApp::farmer(int argc, char** argv, AbstractApplication* pApp) {
     CMPIParameterFarmer farmer(argc, argv, *pApp);       // 7
     farmer();                                            // 8
 }
-
+void
 MyApp::outputter(int argc, char** argv, AbstractApplication* pApp) {
     CMPIParameterOutput outputter(argc, argv, pApp);   // 9
     outputter();                                       // 10
 }
-
+void
 MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     MyWorker worker(*pApp);                          // 11
-    worker();                                        // 12
+    worker(argc, argv);                              // 12
 }
 
 
