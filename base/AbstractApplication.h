@@ -112,6 +112,8 @@ namespace frib {
             MPI_Datatype  m_requestDataType;
             MPI_Datatype  m_parameterHeaderDataType;
             MPI_Datatype  m_parameterValueDataType;
+            MPI_Datatype  m_parameterDefDataType;
+            MPI_Datatype  m_variableDefDataType;
         public:
             AbstractApplication(int argc, char** argv);
             virtual ~AbstractApplication();
@@ -139,6 +141,8 @@ namespace frib {
             MPI_Datatype& requestDataType();
             MPI_Datatype& parameterHeaderDataType();
             MPI_Datatype& parameterValueDataType();
+            MPI_Datatype& parameterDefType();
+            MPI_Datatype& variableDefType();
             
             unsigned numWorkers();
             

@@ -27,6 +27,7 @@ namespace frib {
     namespace analysis {
 #pragma pack(push, 1)        // We want structs packed tight.
         static const unsigned MAX_UNITS_LENGTH(32);
+        static const unsigned MAX_IDENT(128);
         /**
          * Analysis ring items don't have body headers so:
          */
@@ -111,6 +112,8 @@ namespace frib {
         static const int  MPI_DATA_TAG = 3;
         static const int  MPI_REQUEST_TAG = 4;
         static const int  MPI_PASSTHROUGH_TAG = 5;    // Header for passthrough
+        static const int  MPI_PARAMDEF_TAG = 6;
+        static const int  MPI_VARIABLES_Tag = 7;
         
         
         
@@ -149,7 +152,17 @@ namespace frib {
             std::uint32_t s_number;
             double   s_value;
         } FRIB_MPI_Parameter_Value, *pFRIB_MPI_Parameter_Value;
+      
+        typedef struct _FRIB_MPI_ParameterDef {
+            char     s_name[MAX_IDENT];
+            long s_parameterId;
+        } FRIB_MPI_ParameterDef, *pFRIB_MPI_ParameterDef;
         
+        typedef struct _FRIB_MPI_VariableDef {
+            char   s_name[MAX_IDENT];
+            char   s_variableUnits[MAX_UNITS_LENGTH];
+            double s_value;
+        } FRIB_MPI_VariableDef, *pFRIB_MPI_VariableDef;
     }
 }
 
