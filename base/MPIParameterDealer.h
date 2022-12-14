@@ -21,12 +21,13 @@
 #ifndef MPIPARAMETERDEALER_H
 #define MPIPARAMETERDEALER_H
 #include <stddef.h>
-
+#include <DataReader.h>
+#include <mpi.h>
 
 namespace frib {
     namespace analysis {
         class AbstractApplication;
-        class CDataReader;
+
         
         /**
          * @class CMPIParameterDealer
@@ -86,15 +87,18 @@ namespace frib {
             virtual const char* getInputFile(int  argc, char** argv) const;
             virtual unsigned getBlockSize(int argc, char** argv) const;
             
-            void sendDefinitions();
-            void sendParameterDefs(const void* pData);
-            void sendVariableValues(const void* pData);
-            void sendData();
+            size_t sendDefinitions(const void* pData);
+            size_t sendParameterDefs(const void* pData);
+            size_t sendVariableValues(const void* pData);
+            void sendData(size_t nItems, const void* pData);
+            void sendWorkItem(const void* pData, size_t nBytes);
+            void sendPassthrough(size_t nBytes, const void* pData);
             void sendEofs();
             
-            
-            void sendWorkItem(const void* pData, size_t nBytes);
             int  getRequest();
+            void sendAll(
+                const void* pData, MPI_Datatype, type, size_t numItems, int tag
+            );
         };
     }
 }
