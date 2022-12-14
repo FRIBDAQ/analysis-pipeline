@@ -20,9 +20,14 @@
  */
 #ifndef MPIPARAMETERDEALER_H
 #define MPIPARAMETERDEALER_H
+#include <stddef.h>
+
 
 namespace frib {
     namespace analysis {
+        class AbstractApplication;
+        class CDataReader;
+        
         /**
          * @class CMPIParameterDealer
          *
@@ -71,8 +76,8 @@ namespace frib {
             CMPIParameterDealer(int argc, char** argv, AbstractApplication* pApp);
             virtual ~CMPIParameterDealer();
         private:
-            CMPIParmeterDealer(const CMPIParameterDealer& rhs);
-            CMPParameterDealer& operator=(const CMPIParameterDealer& rhs);
+            CMPIParameterDealer(const CMPIParameterDealer& rhs);
+            CMPIParameterDealer& operator=(const CMPIParameterDealer& rhs);
             int operator==(const CMPIParameterDealer& rhs);
             int operator!=(const CMPIParameterDealer& rhs);
         public:
