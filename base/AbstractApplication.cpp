@@ -153,6 +153,22 @@ namespace frib {
             return m_parameterValueDataType;
         }
         /**
+         * parameterDefType
+         *   @return MPI_Datatype&  - references data type for parameter definition.
+         */
+        MPI_Datatype&
+        AbstractApplication::parameterDefType() {
+            return m_parameterDefDataType;
+        }
+        /**
+         * variableDefType
+         *    @return MPI_Datatype& - references the data type for variable values.
+         */
+        MPI_Datatype&
+        AbstractApplication::variableDefType() {
+            return m_variableDefDataType;
+        }
+        /**
          * return the number of worker processes in the application.
          * This is just size-3 (dealer, farmer, outputer).
          */
@@ -272,7 +288,51 @@ namespace frib {
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to commit parameter message header request MPI type");
             }
+            // Parameter definition:
             
+            types[0] = MPI_CHAR;
+            offsets[0] = offsetof(FRIB_MPI_ParameterDef, s_name);
+            lengths[0] = MAX_IDENT;
+            
+            types[1] = MPI_UNSIGNED_LONG;
+            offsets[1] = offsetof(FRIB_MPI_ParameterDef, s_parameterId);
+            lengths[1]  = 1;
+            
+            status = MPI_Type_create_struct(
+                2, lengths, offsets, types, &m_parameterDefDataType
+            );
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to create parameter definition MPI type");
+            }
+            status = MPI_Type_commit(&m_parameterDefDataType);
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to commit parameter definition MPI type");
+            }
+            
+            // Variable value:
+            
+            types[0] = MPI_CHAR;
+            offsets[0] = offsetof(FRIB_MPI_VariableDef, s_name);
+            lengths[0] = MAX_IDENT;
+            
+            types[1] = MPI_CHAR;
+            offsets[1] = offsetof(FRIB_MPI_VariableDef, s_variableUnits);
+            lengths[1] = MAX_UNITS_LENGTH;
+            
+            types[2] = MPI_DOUBLE;
+            offsets[2] = offsetof(FRIB_MPI_VariableDef, s_value);
+            lengths[2] = 1;
+            
+            status = MPI_Type_create_struct(
+                3, lengths, offsets, types, &m_variableDefDataType
+            );
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to create variable value MPI type");
+            }
+            status = MPI_Type_commit(&m_variableDefDataType);
+            if (status != MPI_SUCCESS) {
+                throw std::runtime_error("Unable to commit variable value MPI type");
+            }
         }
     }
 
