@@ -80,6 +80,6 @@ between the input, compute, and output stages (re-ordering is trivial).
     *    \ref rawtoparamworker 
     *    \ref rawtoparamapp
     *    \ref paramfileformat 
-    *    \ref spectclworker SpecTcl compatibility software.
-    *    Compiling and running the application
+    *    \ref spectclworker 
+    *    \ref compileandrunrawtoparams 
     
