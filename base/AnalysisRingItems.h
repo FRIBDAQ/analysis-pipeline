@@ -113,7 +113,7 @@ namespace frib {
         static const int  MPI_REQUEST_TAG = 4;
         static const int  MPI_PASSTHROUGH_TAG = 5;    // Header for passthrough
         static const int  MPI_PARAMDEF_TAG = 6;
-        static const int  MPI_VARIABLES_Tag = 7;
+        static const int  MPI_VARIABLES_TAG = 7;
         
         
         
