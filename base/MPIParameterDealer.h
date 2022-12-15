@@ -70,7 +70,7 @@ namespace frib {
             char** m_argv;
             AbstractApplication* m_pApp;
             CDataReader* m_pReader;
-            unsigned     m_nBlocksize;
+            unsigned     m_nBlockSize;
             unsigned     m_nEndsLeft;
             
         public:
@@ -91,14 +91,13 @@ namespace frib {
             size_t sendParameterDefs(const void* pData);
             size_t sendVariableValues(const void* pData);
             void sendData(size_t nItems, const void* pData);
-            void sendWorkItem(const void* pData, size_t nBytes);
-            void sendPassthrough(size_t nBytes, const void* pData);
-            void sendEofs();
+            void sendWorkItem(const void* pData);
+            void sendPassthrough(const void* pData);
             
-            int  getRequest();
             void sendAll(
-                const void* pData, MPI_Datatype, type, size_t numItems, int tag
+                const void* pData, MPI_Datatype type, size_t numItems, int tag
             );
+            
         };
     }
 }

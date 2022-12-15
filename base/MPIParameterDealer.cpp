@@ -22,7 +22,7 @@
 #include "MPIParameterDealer.h"
 #include "AbstractApplication.h"
 #include "AnalysisRingItems.h"
-#include "CDataReader.h"
+#include "DataReader.h"
 #include <stdexcept>
 #include <cstdint>
 #include <vector>
@@ -30,7 +30,7 @@
 
 static unsigned DEFAULT_BLOCKSIZE=16*1024*1024;
 
-nameespace frib {
+namespace frib {
     namespace analysis {
         /**
          * constructor
@@ -58,15 +58,15 @@ nameespace frib {
          */
         void
         CMPIParameterDealer::operator()() {
-            m_nBlockSize = getBlockSize(argc, argv);
-            auto name = getInputFile(argc, argv);
+            m_nBlockSize = getBlockSize(m_argc, m_argv);
+            auto name = getInputFile(m_argc, m_argv);
             m_pReader = new CDataReader(name, m_nBlockSize);
             m_nEndsLeft = m_pApp->numWorkers();
             
             auto info = m_pReader->getBlock(m_nBlockSize);
-            if (info.s_nBytes == 0) {
+            if (info.s_nbytes == 0) {
                 
-                sendEofs();
+                m_pApp->sendEofs();
                 return;
             }
             // Gulp in the intial read and be sure it gets enough to send
@@ -80,13 +80,13 @@ nameespace frib {
                 );
             }
             
-            p += sendDefinitions();
+            p += sendDefinitions(p);
             nItems -= 2;
             
             // Send the remainder of the data and then EOFS to everyone.
     
             sendData(nItems, p);
-            sendEofs();
+            m_pApp->sendEofs();
         }
         ////////////////////////////////////////////////////////////////////
         // Private methods
@@ -101,7 +101,7 @@ nameespace frib {
          *  @return const char*
          */
         const char*
-        CMPIParameterDealer::getInputFile(int argc, char** argv) {
+        CMPIParameterDealer::getInputFile(int argc, char** argv) const {
             if (argc >= 2) {
                 return argv[1];
             } else {
@@ -118,7 +118,7 @@ nameespace frib {
          *  if you want somethingn different
          */
         unsigned
-        CMPIParameterDealer::getBlockSize(int argc, char** argv) {
+        CMPIParameterDealer::getBlockSize(int argc, char** argv) const {
             return DEFAULT_BLOCKSIZE;
         }
         /**
@@ -130,12 +130,12 @@ nameespace frib {
          *  consecutive ring items.
          */
         size_t
-        CMPIParamterDealer::sendDefinitions(const void* pData) {
+        CMPIParameterDealer::sendDefinitions(const void* pData) {
             size_t result(0);
-            std::uint8_t* p = reinterpret_cast<const std::uint8_t*>(pData);
+            const std::uint8_t* p = reinterpret_cast<const std::uint8_t*>(pData);
             
             result = sendParameterDefs(p);
-            p.p += result
+            p += result;
             
             result += sendVariableValues(p);
             
@@ -169,12 +169,12 @@ nameespace frib {
                 std::vector<FRIB_MPI_ParameterDef> defs;
                 defs.reserve(pDefs->s_numParameters);
                 union {
-                    const ParamterDefinition* pDef;
+                    const ParameterDefinition* pDef;
                     std::uint8_t*             p8;
                 } p;
                 p.pDef = pDefs->s_parameters;
                 
-                for (int i =0; i < pDefs->s_numParameters) {
+                for (int i =0; i < pDefs->s_numParameters; i++) {
                     FRIB_MPI_ParameterDef item;
                     item.s_parameterId = p.pDef->s_parameterNumber;
                     strncpy(item.s_name, p.pDef->s_parameterName, MAX_IDENT);
@@ -215,7 +215,7 @@ nameespace frib {
             // Only actuallys end variables if there are some:
             
             if (pItem->s_numVars) {
-                std::vector<MPI_VariableDef> defs;
+                std::vector<FRIB_MPI_VariableDef> defs;
                 defs.reserve(pItem->s_numVars);
                 
                 const Variable* pVar = pItem->s_variables;
@@ -226,13 +226,13 @@ nameespace frib {
                         def.s_variableUnits, pVar->s_variableUnits,
                         MAX_UNITS_LENGTH
                     );
-                    strncpy(def.s_name, pVar->s_varibableName, MAX_IDENT);
+                    strncpy(def.s_name, pVar->s_variableName, MAX_IDENT);
                     
                     defs.push_back(def);
                 }
                 sendAll(
-                    defs.data(), m_pApp->variableDefType,
-                    mItem->s_numVars, MPI_VARIABLES_TAG
+                    defs.data(), m_pApp->variableDefType(),
+                    pItem->s_numVars, MPI_VARIABLES_TAG
                 );
             }
             
@@ -256,9 +256,9 @@ nameespace frib {
                     reinterpret_cast<const ParameterItem*>(pData);
                 
                 if (pItem->s_header.s_type == PARAMETER_DATA) {
-                    sendWorkItem(pData, pItem->s_header.s_size);
+                    sendWorkItem(pData);
                 } else {
-                    sendPassthroug(pItem->s_header.s_size, pData);
+                    sendPassthrough(pData);
                 }
                 
                 nItems--;
@@ -275,5 +275,97 @@ nameespace frib {
                 }
             }
         }
-    }
+        /**
+         * sendWorkItem
+         *    - Marshall a work item into a message for a worker.
+         *    - Accept to the next work item request from a worker and satisfy
+         *      it with the parameter item we have.
+         *  @param pData - pointer to what is known  to be a PARAMETER_DATA ring item
+         */
+        void
+        CMPIParameterDealer::sendWorkItem(const void* pData) {
+            const ParameterItem* pItem =
+                reinterpret_cast<const ParameterItem*>(pData);
+                
+            // Marshall the header:
+            
+            FRIB_MPI_Parameter_MessageHeader header;
+            header.s_triggerNumber = pItem->s_triggerCount;
+            header.s_numParameters = pItem->s_parameterCount;
+            header.s_end           = false;
+            
+            // Marshall the parameters:
+            
+            std::vector<FRIB_MPI_Parameter_Value> body;
+            body.reserve(pItem->s_parameterCount);
+            
+            auto p = pItem->s_parameters;
+            for (int i =0; i < pItem->s_parameterCount; i++) {
+                FRIB_MPI_Parameter_Value v = {
+                    .s_number = p->s_number,
+                    .s_value  = p->s_value
+                };
+                body.push_back(v);
+            }
+            
+            // Now we're read to respond to a request:
+            
+            int worker = m_pApp->getRequest();    // Send it to this rank.
+            
+            int status = MPI_Send(
+                &header, 1, m_pApp->parameterHeaderDataType(), worker,
+                MPI_HEADER_TAG,
+            MPI_COMM_WORLD);
+            m_pApp->throwMPIError(status, "Sending parameter header to worker");
+            
+            status = MPI_Send(
+                body.data(),
+                pItem->s_parameterCount, m_pApp->parameterValueDataType(),
+                worker, MPI_DATA_TAG, MPI_COMM_WORLD
+            );
+        
+            m_pApp->throwMPIError(status, "Sending parameter data block to worker");
+        
+        }
+        /**
+         * sendPassthrough
+         *    Sends a ring item around the normal flow of work, directly to the
+         *    outputter because it's not suitable for processign by workers.
+         * @param pData - pointer to a ring item.
+         */
+        void
+        CMPIParameterDealer::sendPassthrough(const void* pData) {
+            const RingItemHeader* pItem =
+                reinterpret_cast<const RingItemHeader*>(pData);
+            
+            m_pApp->forwardPassThrough(pData, pItem->s_size);
+        }
+        /**
+         * sendAll
+         *    Rather than play with making additional groups and communicators,
+         *    since we only have a couple of messages to send; and only once,
+         *    we just iterate over the workers to multicast the definition
+         *    items to them:
+         *  @param pData - pointer to the data to send.
+         *  @param type  - MPI Data type of the payload
+         *  @param numItesm - Number of items of *type* in pData.
+         *  @param ttag  - MPI Tag to use to send the items.
+         */
+        void
+        CMPIParameterDealer::sendAll(
+            const void* pData, MPI_Datatype type, size_t numItems, int tag
+        ) {
+            int nextWorker = 3;    // 0 - dealer 1 - farmer  2- outputter.
+            unsigned nWorkers  = m_pApp->numWorkers();
+            
+            for (int i =0; i < nWorkers; i++ ) {
+                int status = MPI_Send(
+                    pData, numItems, type, nextWorker, tag, MPI_COMM_WORLD
+                );
+                m_pApp->throwMPIError(status, "Failed send in CMPIParameterDealer::sendAll");
+                
+                nextWorker++;
+            }
+        }
+    }    
 }
