@@ -146,11 +146,21 @@ namespace frib {
             
             unsigned numWorkers();
             
+            // Code factored out of other bits of the system:
+            
+            void forwardPassThrough(const void* pData, size_t nBytes);
+            int  getRequest();
+            void sendEofs();
+            void sendEof();
+            void throwMPIError(int status, const char* reason);
+            
+
             // Services for derived classes that might override operator():
         protected:            
             int getArgc() const;
             char** getArgv();            
             void makeDataTypes();
+            
         };
         
          

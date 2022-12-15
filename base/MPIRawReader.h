@@ -75,11 +75,9 @@ namespace frib {
             virtual unsigned getBlockSize(int argc, char** argv) const;
             
             void sendData();
-            void sendEofs();
             
             unsigned countTriggers(const void* pData, size_t numItems) const;
             void sendWorkItem(const void* pData, size_t nBytes, unsigned blockNum);
-            void sendEof();
             int getRequest();
         };
     }

@@ -145,25 +145,8 @@ namespace frib {
         void CMPIRawToParametersWorker::forwardPassthrough(
             const void* pData, size_t nBytes
         )  {
-            // The data uses a parameter header but a passthrough tag:
+            m_App.forwardPassThrough(pData, nBytes);
             
-            FRIB_MPI_Parameter_MessageHeader header;
-            header.s_triggerNumber = 0;       // ignored.
-            header.s_numParameters = nBytes;  // Actualy block size...
-            header.s_end           = false;   // not an end.
-            int status = MPI_Send(
-                &header, 1, m_App.parameterHeaderDataType(),
-                2, MPI_PASSTHROUGH_TAG, MPI_COMM_WORLD
-            );
-            throwMPIError(status, "Failed to send passthrough header: ");
-            
-            // Now the data block itself:
-            
-            status = MPI_Send(
-                pData, nBytes, MPI_UINT8_T,
-                2, MPI_DATA_TAG, MPI_COMM_WORLD
-            );
-            throwMPIError(status, "Failed to send passthrough data block: ");
         }
         /**
          * sendParameters
@@ -300,15 +283,7 @@ namespace frib {
          */
         void
         CMPIRawToParametersWorker::throwMPIError(int status, const char* prefix) {
-            if (status != MPI_SUCCESS) {
-                std::string msg = prefix;
-                int len;
-                char error[MPI_MAX_ERROR_STRING];
-                MPI_Error_string(status, error, &len);
-                msg += error;
-                throw std::runtime_error(msg);
-            }                
-            
+            m_App.throwMPIError(status, prefix);
         }
         
         

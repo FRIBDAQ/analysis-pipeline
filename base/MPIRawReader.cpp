@@ -66,7 +66,7 @@ namespace frib {
             m_pReader = new CDataReader(getInputFile(m_argc, m_argv), m_nBlockSize);
             
             sendData();
-            sendEofs();
+            m_pApp->sendEofs();
         }
                 /**
          * getInputFile
@@ -126,18 +126,7 @@ namespace frib {
                 }
             }
         }
-        /**
-         * sendEofs
-         *    Send Eofs to all the workers.
-         */
-        void
-        CMPIRawReader::sendEofs()
-        {
-            while (m_nEndsLeft) {
-                sendEof();
-                m_nEndsLeft--;
-            }
-        }
+        
         /**
          * countTriggers
          *   Given  a block of ring items, counts the number of physics items.
@@ -238,36 +227,7 @@ namespace frib {
                 throw std::runtime_error(msg);
             }
         }
-        /**
-         * sendEof
-         *   Send a single EOF in reponse to a request that we get from a worker.
-         */
-        void
-        CMPIRawReader::sendEof()
-        {
-            
-            FRIB_MPI_Message_Header header;
-            header.s_nBytes = 0;
-            header.s_nBlockNum = 0;
-            header.s_end = true;
-            
-            char errorWhy[MPI_MAX_ERROR_STRING];
-            int len;
-            
-            int dest = getRequest();
-            
-            int status = MPI_Send(
-                &header, 1, m_pApp->messageHeaderType(),
-                dest, MPI_HEADER_TAG, MPI_COMM_WORLD
-            );
-            
-            if (status != MPI_SUCCESS) {
-                std::string msg = "Failed to send end of data message to worker: ";
-                MPI_Error_string(status, errorWhy, &len);
-                msg += errorWhy;
-                throw std::runtime_error(msg);
-            }
-        }
+        
         /**
          * getRequest
          *    Read a request message from whatever worker first gets one in:
@@ -276,39 +236,7 @@ namespace frib {
         int
         CMPIRawReader::getRequest()
         {
-            
-            char errorWhy[MPI_MAX_ERROR_STRING];
-            int len;
-
-            FRIB_MPI_Request_Data req;
-            MPI_Status info;
-            int status = MPI_Recv(
-                &req, 1, m_pApp->requestDataType(), MPI_ANY_SOURCE,
-                MPI_ANY_TAG, MPI_COMM_WORLD, &info
-            );
-            if (status != MPI_SUCCESS) {
-                std::string msg = "Failed to receive a data request: ";
-                MPI_Error_string(status, errorWhy, &len);
-                msg += errorWhy;
-                throw std::runtime_error(msg);
-            }
-
-            // Consistency check the rank in the request must be the same as
-            // the one that sent us the request - note in the future,
-            // this could be lifted if there's an agent that determines who
-            // gets the next data item:
-            
-            if (req.s_requestor != info.MPI_SOURCE) {
-                throw std::logic_error("Mismatch between requestor in data and actual sender");
-            }
-            if (info.MPI_TAG != MPI_REQUEST_TAG) {
-                throw std::logic_error("Request data but not a request tag");
-            }
-            
-            // Returning this allows later support for an agent to request
-            // data on behalf of another rank.
-            
-            return req.s_requestor;
+            return m_pApp->getRequest();
         }
         
     }

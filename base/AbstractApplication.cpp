@@ -175,7 +175,34 @@ namespace frib {
         unsigned AbstractApplication::numWorkers() {
             return m_nWorkers;    
         }
-        
+        /**
+         * forwardPassThrough
+         *    Send bytes without any real interpretation to the output
+         * @param pData - data to send.
+         * @param nBytes - number of bytes to send.
+         */
+        void
+        AbstractApplication::forwardPassThrough(const void* pData, size_t nBytes) {
+            // The data uses a parameter header but a passthrough tag:
+            
+            FRIB_MPI_Parameter_MessageHeader header;
+            header.s_triggerNumber = 0;       // ignored.
+            header.s_numParameters = nBytes;  // Actualy block size...
+            header.s_end           = false;   // not an end.
+            int status = MPI_Send(
+                &header, 1, parameterHeaderDataType(),
+                2, MPI_PASSTHROUGH_TAG, MPI_COMM_WORLD
+            );
+            throwMPIError(status, "Failed to send passthrough header: ");
+            
+            // Now the data block itself:
+            
+            status = MPI_Send(
+                pData, nBytes, MPI_UINT8_T,
+                2, MPI_DATA_TAG, MPI_COMM_WORLD
+            );
+            throwMPIError(status, "Failed to send passthrough data block: ");
+        }
         
         /**
         /////////////////////////////// Utility methods for the subclasses ////////
@@ -334,6 +361,92 @@ namespace frib {
                 throw std::runtime_error("Unable to commit variable value MPI type");
             }
         }
+        /**
+         * throwMPIError
+         *    Analyzes an MPI call status return throwing a runtime error if
+         *    the status is not normal
+         * @param status - status from the MPI call.
+         * @param prefix - Prefix to the error text from status
+         */
+        void
+        AbstractApplication::throwMPIError(int status, const char* prefix) {
+            if (status != MPI_SUCCESS) {
+                std::string msg = prefix;
+                int len;
+                char error[MPI_MAX_ERROR_STRING];
+                MPI_Error_string(status, error, &len);
+                msg += error;
+                throw std::runtime_error(msg);
+            }                
+            
+        }
+        /**
+         *  getRequest
+         *     Receive a request from a worker and return the rank of the sender.
+         *  @return int - requesting worker.
+         */
+        int
+        AbstractApplication:: getRequest() {
+            
+
+            FRIB_MPI_Request_Data req;
+            MPI_Status info;
+            int status = MPI_Recv(
+                &req, 1, requestDataType(), MPI_ANY_SOURCE,
+                MPI_ANY_TAG, MPI_COMM_WORLD, &info
+            );
+            throwMPIError(status, "Failed to receive a data request: ");
+            
+            // Consistency check the rank in the request must be the same as
+            // the one that sent us the request - note in the future,
+            // this could be lifted if there's an agent that determines who
+            // gets the next data item:
+            
+            if (req.s_requestor != info.MPI_SOURCE) {
+                throw std::logic_error("Mismatch between requestor in data and actual sender");
+            }
+            if (info.MPI_TAG != MPI_REQUEST_TAG) {
+                throw std::logic_error("Request data but not a request tag");
+            }
+            
+            // Returning this allows later support for an agent to request
+            // data on behalf of another rank.
+            
+            return req.s_requestor;
+
+        }
+        /**
+         * sendEofs
+         *    Send all the EOFS to workers.
+         */
+        void
+        AbstractApplication::sendEofs() {
+            for (int i =0; i < m_nWorkers; i++) {
+                sendEof();
+            }
+        }
+        /**
+         * get a request and send an EOF to it.
+         */
+        void
+        AbstractApplication::sendEof() {
+            FRIB_MPI_Message_Header header;
+            header.s_nBytes = 0;
+            header.s_nBlockNum = 0;
+            header.s_end = true;
+            
+            char errorWhy[MPI_MAX_ERROR_STRING];
+            int len;
+            
+            int dest = getRequest();
+            
+            int status = MPI_Send(
+                &header, 1, messageHeaderType(),
+                dest, MPI_HEADER_TAG, MPI_COMM_WORLD
+            );
+            throwMPIError(status, "Failed to send end of data message to worker: ");
+        }
+        
     }
 
 }
