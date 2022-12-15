@@ -107,6 +107,7 @@ namespace frib {
             int m_argc;
             char** m_argv;
             unsigned m_nWorkers;
+            int    m_rank;
         private:
             MPI_Datatype  m_messageHeaderType;
             MPI_Datatype  m_requestDataType;
@@ -152,6 +153,7 @@ namespace frib {
             int  getRequest();
             void sendEofs();
             void sendEof();
+            void requestData(size_t maxBytes);
             void throwMPIError(int status, const char* reason);
             
 

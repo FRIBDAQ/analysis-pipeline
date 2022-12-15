@@ -96,15 +96,7 @@ namespace frib {
          */
         void
         CMPIRawToParametersWorker::requestData() {
-            FRIB_MPI_Request_Data req;
-            req.s_requestor = m_rank;
-            req.s_maxdata   = 1024*1024;   // currently gets ignored anyway.
-            
-            int status = MPI_Send(
-                &req, 1, m_App.requestDataType(),
-                0, MPI_REQUEST_TAG, MPI_COMM_WORLD
-            );
-            throwMPIError(status, "Unable to send work request: ");
+            m_App.requestData(1024*1024);
         }
         /**
          * getHeader

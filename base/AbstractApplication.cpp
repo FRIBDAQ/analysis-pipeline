@@ -68,7 +68,7 @@ namespace frib {
                     MPI_Error_string(status, msg, &reslen);
                     throw std::runtime_error(msg);
                 }
-                
+                m_rank = rank;
                 status = MPI_Comm_size(MPI_COMM_WORLD, &size);
                 if (status != MPI_SUCCESS) {
                     MPI_Error_string(status, msg, &reslen);
@@ -360,6 +360,23 @@ namespace frib {
             if (status != MPI_SUCCESS) {
                 throw std::runtime_error("Unable to commit variable value MPI type");
             }
+        }
+        /**
+         * requestData
+         *    Send a request for data to the dealer
+         *  @param maxBytes - maxium payload we want to accept.
+         */
+        void
+        AbstractApplication::requestData(size_t maxBytes) {
+            FRIB_MPI_Request_Data req;
+            req.s_requestor = m_rank;
+            req.s_maxdata   = maxBytes;   // currently gets ignored anyway.
+            
+            int status = MPI_Send(
+                &req, 1, requestDataType(),
+                0, MPI_REQUEST_TAG, MPI_COMM_WORLD
+            );
+            throwMPIError(status, "Unable to send work request: ");
         }
         /**
          * throwMPIError
