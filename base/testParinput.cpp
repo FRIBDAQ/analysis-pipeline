@@ -21,7 +21,7 @@
 
 #include "AbstractApplication.h"
 #include "MPIParameterDealer.h"
-#include "ParmaeterReader.h"
+#include "ParameterReader.h"
 #include "AnalysisRingItems.h"
 #include <stdexcept>
 #include <memory>
@@ -30,6 +30,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sstream>
+#include <iomanip>
+#include <string.h>
 
 using namespace frib::analysis;
 
@@ -52,14 +54,14 @@ private:
     std::string getOutputFile(int argc, char** argv);
     std::string getParameterOutputFile(int argc, char**argv);
     
-    void writeParaqmeterDefs(int fd);
+    void writeParameterDefs(int fd);
     void writeVariableDefs(int fd);
     void beginRun(int fd);
-    void events(fd);
-    void endRun(fd);
+    void events(int fd);
+    void endRun(int fd);
     
     
-}
+};
 // Dealer Make an input file and let the dealer process it:
 
 void
@@ -80,7 +82,7 @@ MyApp::dealer(int argc, char** argv, AbstractApplication* pApp) {
 void
 MyApp::outputter(int argc, char** argv, AbstractApplication* pApp) {
     std::string file = getOutputFile(argc, argv);
-    int fd = creat(file.c_str(), I_RUSR | IWUSR);
+    int fd = creat(file.c_str(), S_IRUSR | S_IWUSR);
     if (fd < 0) {
         throw std::runtime_error("ouputter failed to open outpu file");
     }
@@ -88,10 +90,10 @@ MyApp::outputter(int argc, char** argv, AbstractApplication* pApp) {
         FRIB_MPI_Parameter_MessageHeader header;
         MPI_Status status;
         int stat = MPI_Recv(
-            &header, 1, pApp->parameterHeaderType(),
+            &header, 1, pApp->parameterHeaderDataType(),
             MPI_ANY_SOURCE, MPI_PASSTHROUGH_TAG, MPI_COMM_WORLD, &status
         );
-        pApp->throwMPIError("Unable to receive header in outputter");
+        pApp->throwMPIError(stat, "Unable to receive header in outputter");
         if (header.s_end) break;        
         
         std::unique_ptr<std::uint8_t> pcontents(new std::uint8_t[header.s_numParameters]);
@@ -99,7 +101,7 @@ MyApp::outputter(int argc, char** argv, AbstractApplication* pApp) {
             pcontents.get(), header.s_numParameters, MPI_UINT8_T,
             status.MPI_SOURCE, MPI_DATA_TAG, MPI_COMM_WORLD, &status
         );
-        pApp->throwMPIError("Unable to receive data block for passthrough").
+        pApp->throwMPIError(stat, "Unable to receive data block for passthrough");
         if (write(fd, pcontents.get(), header.s_numParameters) < 0) {
             throw std::runtime_error("Failed to write data in ouputter");
         }
@@ -131,7 +133,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     
     // Parameter definitions:
     {
-        stat = MPI_Recv(&numItems, 1, MPI_UINT32_t, 0, MPI_PARAMDEF_TAG, MPI_COMM_WORLD, &status)
+        stat = MPI_Recv(&numItems, 1, MPI_UINT32_T, 0, MPI_PARAMDEF_TAG, MPI_COMM_WORLD, &status);
         pApp->throwMPIError(stat, "Unable to get number of parameter definitions");
         if (write(fd, &numItems, sizeof(numItems)) < 0) {
             throw std::runtime_error("Failed to write # param defs to file");
@@ -144,14 +146,14 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         );
         pApp->throwMPIError(stat, "Could not read parameter defs");
         
-        if (write(fd pData.get(), numItems*sizeof(FRIB_MPI_ParameterDef)) < 0) {
+        if (write(fd, pData.get(), numItems*sizeof(FRIB_MPI_ParameterDef)) < 0) {
             throw std::runtime_error("Unable to write parameter defs to file");
         }
         
     }
     // Variable defs/values:
     {
-        stat = MPI_Recv(&numItems, 1, MPI_UINT32_t, 0, MPI_PARAMDEF_TAG, MPI_COMM_WORLD, &status)
+        stat = MPI_Recv(&numItems, 1, MPI_UINT32_T, 0, MPI_PARAMDEF_TAG, MPI_COMM_WORLD, &status);
         pApp->throwMPIError(stat, "Unable to get number of Variable definitions");
         if (write(fd, &numItems, sizeof(numItems)) < 0) {
             throw std::runtime_error("Failed to write # variable defs to file");
@@ -175,9 +177,9 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     
     while (1) {
         pApp->requestData(1024*1024);
-        FRIB_MPI_ParameterMessageHeader header;
+        FRIB_MPI_Parameter_MessageHeader hdr;
         stat = MPI_Recv(
-            &header, 1, pApp->messageHeaderType(),
+            &hdr, 1, pApp->messageHeaderType(),
             0, MPI_HEADER_TAG, MPI_COMM_WORLD, &status
         );
         pApp->throwMPIError(stat, "Unable to get data header");
@@ -187,15 +189,15 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         }
         if (hdr.s_end) break;
         
-        std::unique_ptr<FRIB_MPI_Parameter_Value> pData(new FRIB_MPI_Parameter_Value[header.s_numParameters]);
+        std::unique_ptr<FRIB_MPI_Parameter_Value> pData(new FRIB_MPI_Parameter_Value[hdr.s_numParameters]);
         stat = MPI_Recv(
-            pData.get(), header.s_numParameters, pApp->parameterValueDataType(),
-            0 MPI_DATA_TAG, MPI_COMM_WORLD, &status
+            pData.get(), hdr.s_numParameters, pApp->parameterValueDataType(),
+            0, MPI_DATA_TAG, MPI_COMM_WORLD, &status
         );
         pApp->throwMPIError(stat, "Could not get data body");
         
         if (write(
-            fd, pData.get(), header.s_numParameters*sizeof(FRIB_MPI_Parameter_Value
+            fd, pData.get(), hdr.s_numParameters*sizeof(FRIB_MPI_Parameter_Value
         )) < 0) {
             throw std::runtime_error("Unable to write payload data");
         }
@@ -218,7 +220,7 @@ MyApp::getInputFile(int argc, char** argv)   { // argv[1]
 }
 
 std::string
-MyApp::getOuputFile(int argc, char** argv) {               // argv[2]
+MyApp::getOutputFile(int argc, char** argv) {               // argv[2]
     if (argc < 3) {
         throw std::invalid_argument("Too few command arguments");
     }
@@ -233,6 +235,7 @@ MyApp::getParameterOutputFile(int argc, char** argv) { // argv[3]
     }
     return std::string(argv[3]);
 }
+// The input file:
 
 // Make the data file.
 // We'll make a few parameter defs and variable defs in the output file.
@@ -247,7 +250,7 @@ MyApp::makeDataFile(const std::string& filename) {
         throw std::runtime_error("Failed to creat input file");
     }
     
-    writeParmeterDefs(fd);
+    writeParameterDefs(fd);
     writeVariableDefs(fd);
     
     beginRun(fd);
@@ -268,44 +271,44 @@ MyApp::writeParameterDefs(int fd) {
     // This should be big enough storage:
     
     union {
-        ParamterDefinitions item;
+        ParameterDefinitions item;
         std::uint8_t   data[8192];    // Just storage..
     } item;
     // header.
     
-    item.item.s_header.s_type = PARAMETER_DEFINITIONS
+    item.item.s_header.s_type = PARAMETER_DEFINITIONS;
     item.item.s_header.s_size = sizeof(ParameterDefinitions);
     item.item.s_header.s_unused = sizeof(std::uint32_t);
     item.item.s_numParameters = 17;    // Magic number.
     
     // Scalar:
     union {
-        ParameterDefinition* pItem 
+        ParameterDefinition* pItem;
         std::uint8_t*        p8;
-    } p
-    p.pItem = = reinterpret_cast<ParameterDefinition*>(&hdr + 1); // after header.
+    } p;
+    p.pItem  = reinterpret_cast<ParameterDefinition*>(&(item.item.s_header) + 1); // after header.
     
     p.pItem->s_parameterNumber = 1;
     strcpy(p.pItem->s_parameterName, "scalar");        // This is safe.
     std::uint32_t n = sizeof(ParameterDefinition) + strlen(p.pItem->s_parameterName) + 1;
-    item.s_header.s_size += n;
+    item.item.s_header.s_size += n;
     p.p8 += n;
     
     std::uint32_t index = 2;    
     for (int i =0; i < 16; i++) {
         std::stringstream s;
-        s << setw(2) << setfill('0') << "array." << i;
+        s << std::setw(2) << std::setfill('0') << "array." << i;
         std::string name = s.str();
         
-        p->pItem.s_parameterNumber = index;
-        strcpy(p.pItem->s_parameterName, name.c_str(), name.size());
+        p.pItem->s_parameterNumber = index;
+        strcpy(p.pItem->s_parameterName, name.c_str());
         std::uint32_t n = sizeof(ParameterDefinition) + strlen(p.pItem->s_parameterName) + 1;
-        item.hdr.s_size += n;
+        item.item.s_header.s_size += n;
         p.p8 += n;
         
-        index++:
+        index++;
     }
-    if (write(fd, &item, item.s_header.s_size) < 0) {
+    if (write(fd, &item, item.item.s_header.s_size) < 0) {
         throw std::runtime_error("Failed to write the parameter definitions");    
     }
 }
@@ -321,19 +324,127 @@ MyApp::writeVariableDefs(int fd) {
     item.item.s_header.s_type = VARIABLE_VALUES;
     item.item.s_header.s_size = sizeof(VariableItem);
     item.item.s_header.s_unused = sizeof(std::uint32_t);
+    item.item.s_numVars = 17;
     
     // The scalar
     
+    pVariable p = item.item.s_variables;
+    p->s_value = 1.234;
+    strcpy(p->s_variableUnits,"unitless");
+    strcpy(p->s_variableName, "slope");
+    
+    
+    
     // The array
+    
+    for (int i=0; i < 16; i++) {
+        // Point to next variable:
+        
+        size_t len = sizeof(Variable) + strlen(p->s_variableName) +1;
+        std::uint8_t* p8 = reinterpret_cast<std::uint8_t*>(p);
+        p8 += len;
+        item.item.s_header.s_size += len;
+        p   = reinterpret_cast<pVariable>(p8);
+        
+        p->s_value = i;
+        strcpy(p->s_variableUnits, "mm");
+        std::stringstream sname;
+        sname << std::setfill('0') << std::setw(2) << "offset." << i;
+        std::string name = sname.str();
+        
+        strcpy(p->s_variableName, name.c_str());
+    }
+    // Include size of last variable:
+    
+    item.item.s_header.s_size += sizeof(Variable) + strlen(p->s_variableName) +1;
     
     // Write it:
     
-    if (write(fd, &item, item.item._header.s_size) < 0) {
-        throw std::runtime_error("Filed to write variable def/values to file");
+    if (write(fd, &item, item.item.s_header.s_size) < 0) {
+        throw std::runtime_error("Failed to write variable def/values to file");
+    }
+}
+// Write a *minimal* begin run - this is just going to be the header:
+
+void
+MyApp::beginRun(int fd) {
+    RingItemHeader item;
+    item.s_size = sizeof(item);
+    item.s_type = BEGIN_RUN;
+    item.s_unused = sizeof(std::uint32_t);
+    
+    if (write(fd, &item, sizeof(item)) < 0) {
+        throw std::runtime_error("Failed to write a begin run item");
+    }
+}
+// Write minimal end run.
+
+void
+MyApp::endRun(int fd) {
+    RingItemHeader item;
+    item.s_size = sizeof(item);
+    item.s_type = END_RUN;
+    item.s_unused = sizeof(std::uint32_t);
+    
+    if (write(fd, &item, sizeof(item)) < 0) {
+        throw std::runtime_error("Failed to write a end run item");
     }
 }
 
+// Write some parameter events.
+// parameters are in the range 1-17.  Contents are predicable/boring.
+// as are the set of parameters - that's what makes this testable.
+
+void
+MyApp::events(int fd) {
+    union {
+        ParameterItem  item;
+        std::uint8_t   buffer[8192];      // for the data.
+    } item;
+    
+    // Commmon header item contents:
+    
+    item.item.s_header.s_type = PARAMETER_DATA;
+    item.item.s_header.s_unused= sizeof(std::uint32_t);
+    
+    for (int i =0; i < 1000; i++) {
+        // select number of parameters:
+        
+        unsigned numParams = i % 16 + 1;   // [1-17] range.
+        
+        item.item.s_header.s_size =
+            sizeof(ParameterItem) + numParams*sizeof(ParameterValue);
+        item.item.s_triggerCount = i;
+        item.item.s_parameterCount = numParams;
+        pParameterValue pPar = item.item.s_parameters;
+        for (int p= 0; p < numParams; p++) {
+            pPar->s_number = p;
+            pPar->s_value  = p*10;
+            pPar++;
+        }
+        if (write(fd, &item, item.item.s_header.s_size) < 0)  {
+            throw std::runtime_error("Could not write event");
+        }
+    }
+}
+
+const size_t NUM_EVENTS=1000;      // Number of events to generate.
+
+
 // We need a parameter reader.  It's not going to produce anything
 
-// The input file:
+class NullParameterReader : public CParameterReader {
+public:
+    NullParameterReader(const char* pFilename) : CParameterReader(pFilename) {}
+    virtual void read() {}
+};
+
+// Create and start the app:
+
+int main (int argc, char** argv) {
+    MyApp app(argc, argv);
+    NullParameterReader reader("/dev/null");
+    
+    app(reader);
+}
 
