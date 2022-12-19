@@ -33,6 +33,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string.h>
+#include <stdlib.h>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
@@ -58,8 +59,9 @@ public:
     
     std::string getOutputFile(int argc, char** argv);
     std::string getParameterOutputFile(int argc, char**argv);
-private:
     std::string getInputFile(int argc, char** argv);
+private:
+    
     void makeDataFile(const std::string& filename);
     
     
@@ -244,7 +246,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     std::string parfile = file;
     
     runTests(outfile, parfile);
-    
+    unlink(pMyApp->getInputFile(argc, argv).c_str());
     
 }
 // Utilitie methods for MyApp:
@@ -511,6 +513,7 @@ void runTests(std::string outfile, std::string workerfile) {
     if (!wasSucessful) {
       throw std::runtime_error("Tests threw a caught exception");
     }
-
+    unlink(outputFile.c_str());
+    unlink(workerFile.c_str());
     
 }
