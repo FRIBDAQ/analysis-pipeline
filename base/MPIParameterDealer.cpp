@@ -390,7 +390,6 @@ namespace frib {
             for (int i =0; i < nWorkers; i++) {
                 sendEof();
             }
-            std::cerr << "EOFs sent\n";
         }
         /**
          * sendEof

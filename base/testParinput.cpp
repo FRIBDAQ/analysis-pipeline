@@ -72,7 +72,7 @@ MyApp::dealer(int argc, char** argv, AbstractApplication* pApp) {
     
     CMPIParameterDealer dealer(argc, argv, pApp);
     dealer();
-    std::cerr << "Dealer barrier\n";
+    
     MPI_Barrier(MPI_COMM_WORLD);
 }
 // The outputter will get any non parameter data items pushed to it
@@ -107,7 +107,7 @@ MyApp::outputter(int argc, char** argv, AbstractApplication* pApp) {
             throw std::runtime_error("Failed to write data in ouputter");
         }
     }
-    std::cerr << "Outputter barrier\n";
+    
     close(fd);
     MPI_Barrier(MPI_COMM_WORLD);
     
@@ -126,7 +126,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     if (fd < 0) {
         throw std::runtime_error("Failed to open worker output file");
     }
-    std::cerr << " Opened output file: " << file << std::endl;
+    
     
     // Get the definitions these are pushed:
     
@@ -142,7 +142,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         if (write(fd, &numItems, sizeof(numItems)) < 0) {
             throw std::runtime_error("Failed to write # param defs to file");
         }
-        std::cerr << "Got/wrote parameter def header\n";
+        
         
         std::unique_ptr<FRIB_MPI_ParameterDef> pData(new FRIB_MPI_ParameterDef[numItems]);
         stat = MPI_Recv(
@@ -154,18 +154,18 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         if (write(fd, pData.get(), numItems*sizeof(FRIB_MPI_ParameterDef)) < 0) {
             throw std::runtime_error("Unable to write parameter defs to file");
         }
-        std::cerr << "Got/worte parameter defs\n";
+        
         
     }
     // Variable defs/values:
     {
-        std::cerr << "Receiving variable defs\n";
+        
         stat = MPI_Recv(&numItems, 1, MPI_UINT32_T, 0, MPI_VARIABLES_TAG, MPI_COMM_WORLD, &status);
         pApp->throwMPIError(stat, "Unable to get number of Variable definitions");
         if (write(fd, &numItems, sizeof(numItems)) < 0) {
             throw std::runtime_error("Failed to write # variable defs to file");
         }
-        std::cerr << "Got wrote vardef header\n";
+        
         
         std::unique_ptr<FRIB_MPI_VariableDef> pData(new FRIB_MPI_VariableDef[numItems]);
         stat = MPI_Recv(
@@ -177,7 +177,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         if (write(fd, pData.get(), numItems*sizeof(FRIB_MPI_VariableDef)) < 0) {
             throw std::runtime_error("Could not write variable defs");
         }
-        std::cerr << "Got /wrote variable defs\n";
+        
     }
     
     
@@ -185,15 +185,13 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     
     while (1) {
         pApp->requestData(1024*1024);
-        std::cerr << "Request data sent\n";
         FRIB_MPI_Parameter_MessageHeader hdr;
         stat = MPI_Recv(
             &hdr, 1, pApp->parameterHeaderDataType(),
             0, MPI_HEADER_TAG, MPI_COMM_WORLD, &status
         );
         pApp->throwMPIError(stat, "Unable to get data header");
-        std::cerr << "Got data header\n";
-        std::cerr << hdr.s_numParameters << " parameters follow\n";
+        
         if (write(fd, &hdr, sizeof(hdr)) < 0) {
             throw std::runtime_error("Failed to write header");
         }
@@ -205,7 +203,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
             0, MPI_DATA_TAG, MPI_COMM_WORLD, &status
         );
         pApp->throwMPIError(stat, "Could not get data body");
-        std::cerr << "Got data body\n";
+        
         if (write(
             fd, pData.get(), hdr.s_numParameters*sizeof(FRIB_MPI_Parameter_Value
         )) < 0) {
@@ -228,8 +226,12 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     );
     pApp->throwMPIError(stat, "Unable to send eof.");
     
-    std::cerr << "worker barrier\n";
+    
     MPI_Barrier(MPI_COMM_WORLD);
+    
+    // At this point everyone is done so we can run the tests.
+    
+    
     
     
 }
