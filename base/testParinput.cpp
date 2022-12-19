@@ -34,7 +34,13 @@
 #include <iomanip>
 #include <string.h>
 
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+
 using namespace frib::analysis;
+
+void runTests(std::string out, std::string work);
 
 class MyApp : public AbstractApplication {
 public:
@@ -49,11 +55,13 @@ public:
     }
     virtual void outputter(int argc, char** argv, AbstractApplication* pApp);
     virtual void worker(int argc, char** argv, AbstractApplication* pApp);
+    
+    std::string getOutputFile(int argc, char** argv);
+    std::string getParameterOutputFile(int argc, char**argv);
 private:
     std::string getInputFile(int argc, char** argv);
     void makeDataFile(const std::string& filename);
-    std::string getOutputFile(int argc, char** argv);
-    std::string getParameterOutputFile(int argc, char**argv);
+    
     
     void writeParameterDefs(int fd);
     void writeVariableDefs(int fd);
@@ -231,7 +239,11 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     
     // At this point everyone is done so we can run the tests.
     
+    MyApp* pMyApp = dynamic_cast<MyApp*>(pApp);
+    std::string outfile = pMyApp->getOutputFile(argc, argv);
+    std::string parfile = file;
     
+    runTests(outfile, parfile);
     
     
 }
@@ -474,3 +486,31 @@ int main (int argc, char** argv) {
     app(reader);
 }
 
+
+std::string outputFile;
+std::string workerFile;
+
+void runTests(std::string outfile, std::string workerfile) {
+    bool wasSucessful;
+    outputFile = outfile;
+    workerFile = workerfile;
+    
+    CppUnit::TextUi::TestRunner
+               runner; // Control tests.
+    CppUnit::TestFactoryRegistry&
+                 registry(CppUnit::TestFactoryRegistry::getRegistry());
+  
+    runner.addTest(registry.makeTest());
+  
+    try {
+      wasSucessful = runner.run("",false);
+    }
+    catch(...) {
+      wasSucessful = false;
+    }
+    if (!wasSucessful) {
+      throw std::runtime_error("Tests threw a caught exception");
+    }
+
+    
+}
