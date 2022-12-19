@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <vector>
 #include <string.h>
+#include <iostream>
 
 static unsigned DEFAULT_BLOCKSIZE=16*1024*1024;
 
@@ -86,7 +87,7 @@ namespace frib {
             // Send the remainder of the data and then EOFS to everyone.
     
             sendData(nItems, p);
-            m_pApp->sendEofs();
+            sendEofs();
         }
         ////////////////////////////////////////////////////////////////////
         // Private methods
@@ -179,6 +180,7 @@ namespace frib {
                     item.s_parameterId = p.pDef->s_parameterNumber;
                     strncpy(item.s_name, p.pDef->s_parameterName, MAX_IDENT);
                     defs.push_back(item);
+                    p.p8 += sizeof(ParameterDefinition) + strlen(p.pDef->s_parameterName) + 1;
                 }
                 
                 sendAll(
@@ -211,7 +213,7 @@ namespace frib {
             // Send the number of variables to expect:
             
             sendAll(&(pItem->s_numVars), MPI_UINT32_T, 1, MPI_VARIABLES_TAG);
-            
+
             // Only actuallys end variables if there are some:
             
             if (pItem->s_numVars) {
@@ -229,7 +231,12 @@ namespace frib {
                     strncpy(def.s_name, pVar->s_variableName, MAX_IDENT);
                     
                     defs.push_back(def);
+                    const std::uint8_t* p8 =
+                        reinterpret_cast<const std::uint8_t*>(pVar);
+                    p8 += sizeof(Variable) + strlen(pVar->s_variableName) + 1;
+                    pVar = reinterpret_cast<const Variable*>(p8);
                 }
+                
                 sendAll(
                     defs.data(), m_pApp->variableDefType(),
                     pItem->s_numVars, MPI_VARIABLES_TAG
@@ -251,17 +258,17 @@ namespace frib {
          */
         void
         CMPIParameterDealer::sendData(size_t nItems, const void* pData) {
-            while (nItems) {
-                const ParameterItem* pItem =
+            const ParameterItem* pItem =
                     reinterpret_cast<const ParameterItem*>(pData);
-                
+            while (nItems) {
                 if (pItem->s_header.s_type == PARAMETER_DATA) {
-                    sendWorkItem(pData);
+                    sendWorkItem(pItem);
                 } else {
-                    sendPassthrough(pData);
+                    sendPassthrough(pItem);
                 }
                 
                 nItems--;
+                
                 if (nItems == 0) {
                     m_pReader->done();      // Release storage for re-use.
                     auto info = m_pReader->getBlock(m_nBlockSize);
@@ -269,9 +276,11 @@ namespace frib {
                     pData  = info.s_pData;
                     
                 } else {
+    
                     const std::uint8_t* p =
-                        reinterpret_cast<const std::uint8_t*>(pData);
+                        reinterpret_cast<const std::uint8_t*>(pItem);
                     p += pItem->s_header.s_size;
+                    pItem = reinterpret_cast<const ParameterItem*>(p);
                 }
             }
         }
@@ -294,18 +303,21 @@ namespace frib {
             header.s_numParameters = pItem->s_parameterCount;
             header.s_end           = false;
             
+            
             // Marshall the parameters:
             
             std::vector<FRIB_MPI_Parameter_Value> body;
             body.reserve(pItem->s_parameterCount);
             
-            auto p = pItem->s_parameters;
+            const ParameterValue*  p = pItem->s_parameters;
             for (int i =0; i < pItem->s_parameterCount; i++) {
                 FRIB_MPI_Parameter_Value v = {
                     .s_number = p->s_number,
                     .s_value  = p->s_value
                 };
+                
                 body.push_back(v);
+                p += 1;
             }
             
             // Now we're read to respond to a request:
@@ -357,7 +369,6 @@ namespace frib {
         ) {
             int nextWorker = 3;    // 0 - dealer 1 - farmer  2- outputter.
             unsigned nWorkers  = m_pApp->numWorkers();
-            
             for (int i =0; i < nWorkers; i++ ) {
                 int status = MPI_Send(
                     pData, numItems, type, nextWorker, tag, MPI_COMM_WORLD
@@ -366,6 +377,38 @@ namespace frib {
                 
                 nextWorker++;
             }
+        }
+        /**
+         * sendEofs
+         *    Send EOFS until all workers got sent one.
+         *    The code assumes any worker only asks once:
+         *
+         */
+        void
+        CMPIParameterDealer::sendEofs() {
+            unsigned nWorkers = m_pApp->numWorkers();
+            for (int i =0; i < nWorkers; i++) {
+                sendEof();
+            }
+            std::cerr << "EOFs sent\n";
+        }
+        /**
+         * sendEof
+         *   Respond to a client request by sending a single EOF:
+         */
+        void
+        CMPIParameterDealer::sendEof() {
+            auto worker = m_pApp->getRequest();
+            FRIB_MPI_Parameter_MessageHeader msg;
+            msg.s_triggerNumber =0;
+            msg.s_numParameters = 0;
+            msg.s_end = true;
+            
+            int stat = MPI_Send(
+                &msg, 1, m_pApp->parameterHeaderDataType(),
+                worker, MPI_HEADER_TAG, MPI_COMM_WORLD
+            );
+            m_pApp->throwMPIError(stat, "Unable to send eof.");
         }
     }    
 }

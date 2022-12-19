@@ -97,7 +97,8 @@ namespace frib {
             void sendAll(
                 const void* pData, MPI_Datatype type, size_t numItems, int tag
             );
-            
+            void sendEofs();
+            void sendEof();
         };
     }
 }

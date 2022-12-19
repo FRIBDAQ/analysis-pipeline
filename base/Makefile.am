@@ -90,4 +90,4 @@ PARTESTS: install testOutput
 	mpirun -np 5 testSort  null sorted.evt
 	mpirun -np 4 passthruTest null passed.evt
 	mpirun -np 4 testWorker1 in.evt out.evt
-	mpirun -np 4 testParinput in.par out.par
+	mpirun -np 4 testParinput in.par out.par defs.par
