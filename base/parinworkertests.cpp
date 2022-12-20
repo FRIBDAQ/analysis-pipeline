@@ -41,6 +41,7 @@ class parinworkertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(vars_1);
     CPPUNIT_TEST(events_1);
     CPPUNIT_TEST(events_2);
+    CPPUNIT_TEST(events_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -64,6 +65,7 @@ protected:
     void vars_1();
     void events_1();
     void events_2();
+    void events_3();
 private:
     const void*  skipParams();
     const void*  skipDefs();
@@ -192,6 +194,25 @@ void parinworkertest::events_2() {
     for (int i =0; i < numberEvents; i++) {
         EQ(std::uint64_t(i), pHeader->s_triggerNumber);
         EQ(std::uint32_t( i % 16 + 1), pHeader->s_numParameters);
+        
+        pHeader =
+            reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(nextEvent(pHeader));
+            
+    }
+}
+void parinworkertest::events_3() {
+     const FRIB_MPI_Parameter_MessageHeader* pHeader =
+            reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(skipDefs());
+    
+    for (int i =0; i < numberEvents; i++) {
+        const FRIB_MPI_Parameter_Value* pValue =
+            reinterpret_cast<const FRIB_MPI_Parameter_Value*>(pHeader+1);
+        for (int p =0; p < pHeader->s_numParameters; p++) {
+            EQ(std::uint32_t(p), pValue->s_number);
+            EQ(double(p*10), pValue->s_value);
+            
+            pValue++;
+        }
         
         pHeader =
             reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(nextEvent(pHeader));
