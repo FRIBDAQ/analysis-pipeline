@@ -41,7 +41,13 @@
 
 using namespace frib::analysis;
 
-void runTests(std::string out, std::string work);
+// ring item types we don't have in AnalysisRingItems.h:
+
+const std::uint32_t BEGIN_RUN(1);
+const std::uint32_t END_RUN(2);
+const std::uint32_t EVENT_COUNT(1000);    // events to create.
+
+void runTests(std::string out, std::string work, int nevents);
 
 class MyApp : public AbstractApplication {
 public:
@@ -245,7 +251,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
     std::string outfile = pMyApp->getOutputFile(argc, argv);
     std::string parfile = file;
     
-    runTests(outfile, parfile);
+    runTests(outfile, parfile, EVENT_COUNT);
     unlink(pMyApp->getInputFile(argc, argv).c_str());
     
 }
@@ -297,10 +303,7 @@ MyApp::makeDataFile(const std::string& filename) {
     events(fd);
     endRun(fd);
 }
-// ring item types we don't have in AnalysisRingItems.h:
 
-const std::uint32_t BEGIN_RUN(1);
-const std::uint32_t END_RUN(2);
 
 // We'll have parameters:
 //    "scalar"       - id 1
@@ -447,7 +450,7 @@ MyApp::events(int fd) {
     item.item.s_header.s_type = PARAMETER_DATA;
     item.item.s_header.s_unused= sizeof(std::uint32_t);
     
-    for (int i =0; i < 1000; i++) {
+    for (int i =0; i < EVENT_COUNT; i++) {
         // select number of parameters:
         
         unsigned numParams = i % 16 + 1;   // [1-17] range.
@@ -468,7 +471,7 @@ MyApp::events(int fd) {
     }
 }
 
-const size_t NUM_EVENTS=1000;      // Number of events to generate.
+
 
 
 // We need a parameter reader.  It's not going to produce anything
@@ -491,8 +494,8 @@ int main (int argc, char** argv) {
 
 std::string outputFile;
 std::string workerFile;
-
-void runTests(std::string outfile, std::string workerfile) {
+int         numberEvents;
+void runTests(std::string outfile, std::string workerfile, int EVENT_COUNT) {
     bool wasSucessful;
     outputFile = outfile;
     workerFile = workerfile;
