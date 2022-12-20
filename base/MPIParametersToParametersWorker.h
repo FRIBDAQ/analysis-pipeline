@@ -24,17 +24,15 @@
 #include <map>
 #include <cstdint>
 
-struct frib::analysis::_FRIB_MPI_Parameter_MessageHeader;
-typedef frib::analysis::_FRIB_MPI_Parameter_Value
-    frib::analysis::FRIB_MPI_Parameter_Value
-    frib::analysis::*pFRIB_MPI_Parameter_Value;
-
 namespace frib {
     namespace analysis {
         class AbstractApplication;
         class CTreeParameter;
         
-        
+        struct _FRIB_MPI_Parameter_Value;
+        typedef _FRIB_MPI_Parameter_Value
+            FRIB_MPI_Parameter_Value,
+            *pFRIB_MPI_Parameter_Value;
             
         /**
          * @class CMPIParametersToParameersWorker
@@ -77,17 +75,17 @@ namespace frib {
             char**                m_argv;
             AbstractApplication*  m_pApp;
         public:
-            CMPIParametersToParameterWorker(
+            CMPIParametersToParametersWorker(
                 int argc, char** argv, AbstractApplication* m_pApp
             );
-            virtual ~CMPIParametersToParameterWorker();
+            virtual ~CMPIParametersToParametersWorker();
             
-            virtual void operator();
+            virtual void operator()();
             virtual void process() = 0;
         protected:            
             VariableInfo* getVariable(const char* pVarName);
             void loadVariable(const char* pVarName);
-            sd::vector<std::string> getVariableNames();
+            std::vector<std::string> getVariableNames();
         private:
             bool getEvent(
                 std::uint64_t& trigger,
