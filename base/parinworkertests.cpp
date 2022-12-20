@@ -95,7 +95,7 @@ const void* parinworkertest::skipDefs()
     return pDef + numItems;
 }
 // skip an event:
-const void* parinworkertest::skipEvent(const void* pEvent) {
+const void* parinworkertest::nextEvent(const void* pEvent) {
     const FRIB_MPI_Parameter_MessageHeader* pHeader =
             reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(pEvent);
     const std::uint8_t* p = reinterpret_cast<const std::uint8_t*>(pEvent);
@@ -185,7 +185,7 @@ void parinworkertest::events_1()
 }
 // triggers count and the size of the event is a rollovery thing
 //
-void parinworkertests::events_2() {
+void parinworkertest::events_2() {
     const FRIB_MPI_Parameter_MessageHeader* pHeader =
             reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(skipDefs());
     
