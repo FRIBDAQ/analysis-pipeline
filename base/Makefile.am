@@ -12,7 +12,8 @@ include_HEADERS=TreeParameter.h TreeParameterArray.h TreeVariable.h \
 	TCLParameterReader.h AbstractApplication.h DataReader.h \
 	DataWriter.h MPIParameterOutput.h MPIRawReader.h \
 	TriggerSorter.h MPITriggerSorter.h MPIParameterFarmer.h \
-	MPIRawToParametersWorker.h MPIParameterDealer.h
+	MPIRawToParametersWorker.h MPIParameterDealer.h \
+	MPIParametersToParametersWorker.h
 
 libfribCore_la_CPPFLAGS=@TCL86_CFLAGS@ @TCLPLUS_CFLAGS@ -std=c++11
 libfribCore_la_LDFLAGS=@TCL86_LIBS@ @TCLPLUS_LIBS@ 
