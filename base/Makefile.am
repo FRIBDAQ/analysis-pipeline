@@ -76,7 +76,7 @@ testWorker1_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testWorker1_LDADD=libfribCore.la
 
 
-testParinput_SOURCES=testParinput.cpp parintest.cpp
+testParinput_SOURCES=testParinput.cpp parintest.cpp parinworkertests.cpp
 testParinput_CPPFLAGS=@CPPUNIT_CFLAGS@ @TCLPLUS_CFLAGS@ @TCL86_CFLAGS@
 testParinput_LDFLAGS=@CPPUNIT_LIBS@ @TCLPLUS_LIBS@ @TCL86_LIBS@
 testParinput_LDADD=libfribCore.la
