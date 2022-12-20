@@ -27,7 +27,7 @@
 
 extern std::string outputFile;    // From the ouputter
 extern std::string workerFile;    // From the worker.
-
+extern int         numberEvents;
 
 using namespace frib::analysis;
 
@@ -38,6 +38,8 @@ class parintest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(parintest);
     CPPUNIT_TEST(outfile_1);
     CPPUNIT_TEST(outfile_2);
+    
+    CPPUNIT_TEST(wfile_1);
     CPPUNIT_TEST_SUITE_END();
     // Set up and teardown -- well opening both output files
     // is a bit of overkill.  But opening them with a common
@@ -57,6 +59,8 @@ public:
 protected:
     void outfile_1();
     void outfile_2();
+    
+    void wfile_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(parintest);
@@ -89,4 +93,14 @@ void parintest::outfile_2()
     EQ(std::uint32_t(sizeof(RingItemHeader)), pItem->s_size);
     EQ(END_RUN, pItem->s_type);
     EQ(std::uint32_t(sizeof(std::uint32_t)), pItem->s_unused);
+}
+// The worker file should have numberEvents+2 items
+// +2 from the documentation items.
+
+void wfile_1() {
+    m_pReader = new CDataReader(workerFile.c_str(), 8*1024*1024);  // big enough I hope.
+    
+    auto info = m_pReader->getBlock(8192*8192);
+    
+    EQ(numberEvents+2, int(info.s_nItems));
 }
