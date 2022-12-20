@@ -40,6 +40,7 @@ class parinworkertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(params_1);
     CPPUNIT_TEST(vars_1);
     CPPUNIT_TEST(events_1);
+    CPPUNIT_TEST(events_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -62,9 +63,11 @@ protected:
     void params_1();
     void vars_1();
     void events_1();
+    void events_2();
 private:
     const void*  skipParams();
     const void*  skipDefs();
+    const void*  nextEvent(const void* pEvent);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(parinworkertest);
@@ -90,6 +93,15 @@ const void* parinworkertest::skipDefs()
     const FRIB_MPI_VariableDef* pDef =
         reinterpret_cast<const FRIB_MPI_VariableDef*>(pN);
     return pDef + numItems;
+}
+// skip an event:
+const void* parinworkertest::skipEvent(const void* pEvent) {
+    const FRIB_MPI_Parameter_MessageHeader* pHeader =
+            reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(pEvent);
+    const std::uint8_t* p = reinterpret_cast<const std::uint8_t*>(pEvent);
+    
+    return p + sizeof(FRIB_MPI_Parameter_MessageHeader) +
+        pHeader->s_numParameters * sizeof(FRIB_MPI_Parameter_Value);
 }
 
 // First item should define all of the parameters:
@@ -170,4 +182,19 @@ void parinworkertest::events_1()
     }
     EQ(numberEvents, numEvents);
     
+}
+// triggers count and the size of the event is a rollovery thing
+//
+void parinworkertests::events_2() {
+    const FRIB_MPI_Parameter_MessageHeader* pHeader =
+            reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(skipDefs());
+    
+    for (int i =0; i < numberEvents; i++) {
+        EQ(std::uint64_t(i), pHeader->s_triggerNumber);
+        EQ(std::uint32_t( i % 16 + 1), pHeader->s_numParameters);
+        
+        pHeader =
+            reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(nextEvent(pHeader));
+            
+    }
 }
