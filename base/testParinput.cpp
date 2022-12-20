@@ -174,6 +174,7 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         
     }
     // Variable defs/values:
+
     {
         
         stat = MPI_Recv(&numItems, 1, MPI_UINT32_T, 0, MPI_VARIABLES_TAG, MPI_COMM_WORLD, &status);
@@ -208,10 +209,12 @@ MyApp::worker(int argc, char** argv, AbstractApplication* pApp) {
         );
         pApp->throwMPIError(stat, "Unable to get data header");
         
+        if (hdr.s_end) break;
+        
         if (write(fd, &hdr, sizeof(hdr)) < 0) {
             throw std::runtime_error("Failed to write header");
         }
-        if (hdr.s_end) break;
+        
         
         std::unique_ptr<FRIB_MPI_Parameter_Value> pData(new FRIB_MPI_Parameter_Value[hdr.s_numParameters]);
         stat = MPI_Recv(
@@ -495,10 +498,11 @@ int main (int argc, char** argv) {
 std::string outputFile;
 std::string workerFile;
 int         numberEvents;
-void runTests(std::string outfile, std::string workerfile, int EVENT_COUNT) {
+void runTests(std::string outfile, std::string workerfile, int count) {
     bool wasSucessful;
     outputFile = outfile;
     workerFile = workerfile;
+    numberEvents  = count;
     
     CppUnit::TextUi::TestRunner
                runner; // Control tests.

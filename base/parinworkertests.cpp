@@ -39,6 +39,7 @@ class parinworkertest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(parinworkertest);
     CPPUNIT_TEST(params_1);
     CPPUNIT_TEST(vars_1);
+    CPPUNIT_TEST(events_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -60,8 +61,10 @@ public:
 protected:
     void params_1();
     void vars_1();
+    void events_1();
 private:
     const void*  skipParams();
+    const void*  skipDefs();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(parinworkertest);
@@ -75,6 +78,17 @@ const void* parinworkertest::skipParams()
     pN++;
     const FRIB_MPI_ParameterDef* pDef =
         reinterpret_cast<const FRIB_MPI_ParameterDef*>(pN);
+    return pDef + numItems;
+}
+// Skep parameter and variable definition records.
+
+const void* parinworkertest::skipDefs()
+{
+    const std::uint32_t* pN = reinterpret_cast<const std::uint32_t*>(skipParams());
+    std::uint32_t numItems = *pN;
+    pN++;
+    const FRIB_MPI_VariableDef* pDef =
+        reinterpret_cast<const FRIB_MPI_VariableDef*>(pN);
     return pDef + numItems;
 }
 
@@ -132,5 +146,28 @@ void parinworkertest::vars_1()
         EQ(std::string("mm"), std::string(pDef->s_variableUnits));
         EQ(double(i), pDef->s_value);
     }
+    
+}
+// should be numberEvents events:
+
+void parinworkertest::events_1()
+{
+    const std::uint8_t* pEvent = reinterpret_cast<const std::uint8_t*>(skipDefs());
+    
+    size_t bytesLeft = m_nBytes;
+    bytesLeft -= (pEvent - m_contents);        // Bytes of event data:
+    
+    int numEvents(0);
+    while (bytesLeft) {
+        numEvents++;
+        
+        const FRIB_MPI_Parameter_MessageHeader* pHeader =
+            reinterpret_cast<const FRIB_MPI_Parameter_MessageHeader*>(pEvent);
+        unsigned size = sizeof(FRIB_MPI_Parameter_MessageHeader) +
+            pHeader->s_numParameters * sizeof(FRIB_MPI_Parameter_Value);
+        pEvent += size;
+        bytesLeft -= size;
+    }
+    EQ(numberEvents, numEvents);
     
 }
