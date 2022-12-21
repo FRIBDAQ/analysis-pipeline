@@ -46,7 +46,7 @@ namespace frib {
          */
         CMPIParametersToParametersWorker::~CMPIParametersToParametersWorker() {
             for (auto& item : m_parameterMap) {
-                delete item.second;
+                delete item;
             }
         }
         
@@ -80,7 +80,7 @@ namespace frib {
             VariableInfo* result = nullptr;
             auto p = m_variableMap.find(std::string(pVarName));
             if (p != m_variableMap.end()) {
-                result =  &(p->secopnd);
+                result =  &(p->second);
             }
             return result;
         }
@@ -96,10 +96,12 @@ namespace frib {
          */
         void
         CMPIParametersToParametersWorker::loadVariable(const char* pVarName) {
-            std::string name(pVarName);
-            auto pInfo = getVariable(name);
+            
+            auto pInfo = getVariable(pVarName);
             if (pInfo) {
-                CTreeVariable newVar(name, pInfo->second, pInfo->first);
+                CTreeVariable newVar(
+                    std::string(pVarName), pInfo->second, pInfo->first
+                );
             } else {
                 std::stringstream s;
                 s << pVarName << " was not defined in the input data";
@@ -163,7 +165,7 @@ namespace frib {
             );
             m_pApp->throwMPIError(stat,"Unable to receive parameter definitions from dealer");
                         
-            loadTreeParameters(paramDefs);
+            loadTreeParameterMap(paramDefs);
         }
         /**
          * receiveVariableDefinitions
@@ -223,7 +225,7 @@ namespace frib {
                 );
                 m_pApp->throwMPIError(stat, "Unable to get event header");
                 
-                if hdr.s_end() {
+                if (hdr.s_end) {
                     break;
                 }
                 
@@ -271,7 +273,7 @@ namespace frib {
         ) {
             int maxId = -1;
             for (const auto& def : params) {
-                if (def.s_parameterId > maxId) maxId = def.parameterId;
+                if (def.s_parameterId > maxId) maxId = def.s_parameterId;
             }
             // edge case if maxId == -1 there were no definitions.
             
@@ -280,7 +282,7 @@ namespace frib {
                 m_parameterMap.resize(maxId+1);    // Filled with nulls.
                 
                 for (const auto& def : params) {
-                    def.s_parameterId = new CTreeParameter(def.s_parameterName);
+                    m_parameterMap[def.s_parameterId] = new CTreeParameter(def.s_name);
                 }
             }
         }
@@ -301,8 +303,8 @@ namespace frib {
         ) {
             for (const auto& def : vars) {
                 VariableInfo info;
-                info.first = def.s_value;
-                info.second = def.s_units;
+                info.first = def.s_variableUnits;
+                info.second = def.s_value;
                 m_variableMap[std::string(def.s_name)] = info;
             }
         }
@@ -330,14 +332,14 @@ namespace frib {
          *  @param params - the parameter value vector received from the dealer.
          */
         void
-        CMPIParametersToParametersWorker::loadTreeparameters(
+        CMPIParametersToParametersWorker::loadTreeParameters(
             const std::vector<FRIB_MPI_Parameter_Value>& params
         ) {
             for (const auto param : params) {
-                if(param.s_number < m_paramterMap.size() &&
+                if(param.s_number < m_parameterMap.size() &&
                    m_parameterMap[param.s_number]
                 ) {
-                    m_parameterMap[param.s_number] param.s_value;    
+                    *m_parameterMap[param.s_number] = param.s_value;    
                 }
             }
         }
@@ -380,18 +382,18 @@ namespace frib {
             );
             m_pApp->throwMPIError(status, "Unable to send parameter data header to farmer");
             
-            status = MP:I_Send(
+            status = MPI_Send(
                 data.data(), data.size(), m_pApp->parameterValueDataType(),
                 1, MPI_DATA_TAG, MPI_COMM_WORLD
             );
-            m_pApp->throw(status, "Unable to send parameter data to farmer");
+            m_pApp->throwMPIError(status, "Unable to send parameter data to farmer");
         }
         /**
          * sendEndToFarmer
          *   Let's the farmer know this worker won't be sending any more data.
          */
         void 
-        CMPIParametersToParametersWorker::endEndToFarmer() {
+        CMPIParametersToParametersWorker::sendEndToFarmer() {
             FRIB_MPI_Parameter_MessageHeader hdr;
             hdr.s_triggerNumber = 0;
             hdr.s_numParameters = 0;

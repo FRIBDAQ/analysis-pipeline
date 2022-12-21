@@ -29,9 +29,9 @@ namespace frib {
         class AbstractApplication;
         class CTreeParameter;
         
-        struct _FRIB_MPI_Parameter_Value;
-        typedef _FRIB_MPI_Parameter_Value
-            FRIB_MPI_Parameter_Value, *pFRIB_MPI_Parameter_Value;
+        struct _FRIB_MPI_ParameterDef;
+        typedef _FRIB_MPI_ParameterDef
+            FRIB_MPI_ParameterDef, *pFRIB_MPI_ParameterDef;
             
         struct _FRIB_MPI_VariableDef;
         typedef _FRIB_MPI_VariableDef
@@ -40,7 +40,8 @@ namespace frib {
         struct _FRIB_MPI_Parameter_Value;
         typedef _FRIB_MPI_Parameter_Value
             FRIB_MPI_Parameter_Value, *pFRIB_MPI_Parameter_Value;
-            
+
+                    
         /**
          * @class CMPIParametersToParameersWorker
          *     This the worker framework for workers that transform parameter
