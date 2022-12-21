@@ -30,6 +30,8 @@
 #include "AnalysisRingItems.h"
 #include "TreeParameter.h"
 #include "TreeParameterArray.h"
+#include "TreeVariable.h"
+#include "TreeVariableArray.h"
 
 
 #include <stdexcept>
@@ -397,6 +399,9 @@ public:
         CTreeParameter d("doubled");
         CTreeParameter sc("scalar");
         CTreeParameterArray a("array", 16, 0);
+        
+        CTreeVariable slope("slope", 2.0, "unitless");
+        CTreeVariableArray offsets("offset", 5.0, "mm", 16, 0);
     }
 };
 
