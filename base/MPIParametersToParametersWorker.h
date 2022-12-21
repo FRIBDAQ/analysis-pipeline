@@ -31,8 +31,15 @@ namespace frib {
         
         struct _FRIB_MPI_Parameter_Value;
         typedef _FRIB_MPI_Parameter_Value
-            FRIB_MPI_Parameter_Value,
-            *pFRIB_MPI_Parameter_Value;
+            FRIB_MPI_Parameter_Value, *pFRIB_MPI_Parameter_Value;
+            
+        struct _FRIB_MPI_VariableDef;
+        typedef _FRIB_MPI_VariableDef
+            FRIB_MPI_VariableDef, *pFRIB_MPI_VariableDef;
+            
+        struct _FRIB_MPI_Parameter_Value;
+        typedef _FRIB_MPI_Parameter_Value
+            FRIB_MPI_Parameter_Value, *pFRIB_MPI_Parameter_Value;
             
         /**
          * @class CMPIParametersToParameersWorker
@@ -76,7 +83,7 @@ namespace frib {
             AbstractApplication*  m_pApp;
         public:
             CMPIParametersToParametersWorker(
-                int argc, char** argv, AbstractApplication* m_pApp
+                int argc, char** argv, AbstractApplication* pApp
             );
             virtual ~CMPIParametersToParametersWorker();
             
@@ -87,12 +94,22 @@ namespace frib {
             void loadVariable(const char* pVarName);
             std::vector<std::string> getVariableNames();
         private:
-            bool getEvent(
-                std::uint64_t& trigger,
-                std::vector<FRIB_MPI_Parameter_Value>& params);
+            void receiveParameterDefinitions();
+            void receiveVariableDefinitions();
+            void receiveEvents();
+            
+            void loadTreeParameterMap(
+                const std::vector<FRIB_MPI_ParameterDef>& params
+            );
+            void loadVariableMap(
+                const std::vector<FRIB_MPI_VariableDef>& vars
+            );
             void loadTreeParameters(
                 const std::vector<FRIB_MPI_Parameter_Value>& params
             );
+            void sendEventToFarmer(std::uint64_t trigger);
+            void sendEndToFarmer();
+            
         };
     }
 }
