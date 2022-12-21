@@ -160,12 +160,20 @@ private:
  }
  // The ouputter is just the parameter outputter:
  
+ 
+ void runTests(const char* outputFile, unsigned numEvents);
+ 
  void
  MyApp::outputter(int argc, char** argv, AbstractApplication* pApp) {
     CMPIParameterOutput outputter;
     outputter(argc, argv, pApp);
     
     MPI_Barrier(MPI_COMM_WORLD);
+    
+    // Everything should have run down once this barrier is cleared so:
+    
+    runTests(argv[2], EVENT_COUNT);
+    unlink(getInputFile(argc, argv).c_str());
  }
  // Utilitie methods for MyApp:
 
@@ -399,4 +407,34 @@ int main(int argc, char** argv) {
     MyApp app(argc, argv);
     MyReader reader;
     app(reader);
+}
+
+// Fire up the unit tests for the contents of the output file:
+
+std::string outputFile;
+unsigned    numEvents;
+
+void
+runTests(const char* fname, unsigned evts) {
+    outputFile = fname;
+    numEvents = evts;
+    bool wasSucessful;
+    
+    CppUnit::TextUi::TestRunner
+               runner; // Control tests.
+    CppUnit::TestFactoryRegistry&
+                 registry(CppUnit::TestFactoryRegistry::getRegistry());
+  
+    runner.addTest(registry.makeTest());
+  
+    try {
+      wasSucessful = runner.run("",false);
+    }
+    catch(...) {
+      wasSucessful = false;
+    }
+    if (!wasSucessful) {
+      throw std::runtime_error("Tests threw a caught exception");
+    }
+    unlink(outputFile.c_str());   
 }
