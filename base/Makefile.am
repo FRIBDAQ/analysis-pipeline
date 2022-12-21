@@ -92,7 +92,8 @@ testWorker2_LDADD=libfribCore.la
 
 TESTS=treeparamtests treevartests configtests iotests sorttests
 
-PARTESTS: install testOutput
+PARTESTS: install testOutput testInput sorttests testSort \
+        passthruTest testWorker1 testParinput testWorker2
 	mpirun -np 4 testOutput /dev/null test.dat
 	mpirun -np 4 testInput raw.evt 
 	mpirun -np 5 testSort  null sorted.evt
