@@ -84,6 +84,7 @@ namespace frib {
               CTreeVariableArray();
               CTreeVariableArray(std::string baseName, double initialValue, 
                          std::string units, unsigned size, int firstIndex = 0);
+              CTreeVariableArray(std::string baseName, unsigned size, int firstIndex = 0);
               CTreeVariableArray(const CTreeVariableArray& rhs);
               ~CTreeVariableArray();
               void Initialize(std::string baseName, double initialValue, 

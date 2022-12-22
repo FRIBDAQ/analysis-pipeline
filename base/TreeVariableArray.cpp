@@ -75,7 +75,36 @@ namespace frib {
               
             
             }
-            
+            /**
+             * constructor
+             *    Construct just with size and offset
+             */
+            CTreeVariableArray::CTreeVariableArray(
+                string basename, unsigned size, int firstindex
+            ) : m_nFirstIndex(firstindex)
+            {
+              double highindex = size + m_nFirstIndex;
+              double highdigits  =  log10(fabs((double)highindex)) + 1.0;
+              
+              double lowdigits   =  log10(fabs((double)m_nFirstIndex)) + 1.0;
+              int digits         =  (int)max(highdigits, lowdigits);
+              
+              char format[100];
+              snprintf(format, sizeof(format), "%s.%%%d.%dd", basename.c_str(), digits, digits);
+              
+              // Now loop through creating the tree paramters:
+              
+              for (int i =0; i < size; i++)  {
+                int index = i + m_nFirstIndex;
+                char elementName[100];
+                snprintf(elementName, sizeof(elementName), format, index);
+                CTreeVariable*  pVariable = new CTreeVariable(elementName);
+                m_TreeVariables.push_back(pVariable);
+                
+              }
+              
+              
+            }
             
             /**
              * Copy constructor.  The array of variables is deep copied to produce a duplicate
