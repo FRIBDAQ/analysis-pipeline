@@ -50,6 +50,8 @@ class worker2test : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(state_1);
     CPPUNIT_TEST(state_2);
+    
+    CPPUNIT_TEST(data_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -73,6 +75,8 @@ protected:
     
     void state_1();
     void state_2();
+    
+    void data_1();
 private:
     const void* nextItem(CDataReader::Result& info);            // info is modified.
 };
@@ -303,4 +307,18 @@ void worker2test::state_2() {
         pItem = reinterpret_cast<const RingItemHeader*>(nextItem(info));
     }
     EQ(unsigned(1), count);
+}
+// should be numEvents items of type PARAMETER_DATA
+
+void worker2test::data_1() {
+    auto info = m_pReader->getBlock(32768);
+    const RingItemHeader* pItem =
+        reinterpret_cast<const RingItemHeader*>(info.s_pData);
+    unsigned count(0);
+    
+    while (pItem) {
+        if (pItem->s_type == PARAMETER_DATA) count++;
+        pItem = reinterpret_cast<const RingItemHeader*>(nextItem(info));
+    }
+    EQ(numEvents, count);
 }
