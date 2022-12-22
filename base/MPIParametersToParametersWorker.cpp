@@ -28,6 +28,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <mpi.h>
+#include <iostream>
 
 namespace frib {
     namespace analysis {
@@ -339,8 +340,9 @@ namespace frib {
                 if(param.s_number < m_parameterMap.size() &&
                    m_parameterMap[param.s_number]
                 ) {
+                    
                     *m_parameterMap[param.s_number] = param.s_value;    
-                }
+                } 
             }
         }
         /**

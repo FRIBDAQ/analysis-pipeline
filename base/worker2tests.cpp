@@ -24,6 +24,7 @@
 #include "AnalysisRingItems.h"
 #include "DataReader.h"
 #include "TreeParameter.h"
+#include "TreeParameterArray.h"
 #include "TreeVariable.h"
 #include <set>
 #include <map>
@@ -52,6 +53,7 @@ class worker2test : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_2);
     
     CPPUNIT_TEST(data_1);
+    CPPUNIT_TEST(data_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +79,7 @@ protected:
     void state_2();
     
     void data_1();
+    void data_2();
 private:
     const void* nextItem(CDataReader::Result& info);            // info is modified.
 };
@@ -321,4 +324,71 @@ void worker2test::data_1() {
         pItem = reinterpret_cast<const RingItemHeader*>(nextItem(info));
     }
     EQ(numEvents, count);
+}
+// contenst of the raw and computed data:
+
+void worker2test::data_2() {
+    //we'll assume the array is given sequential ids.  Remember the input
+    // data gets mapped to _our_ parameter ids.
+    
+    // Input data:
+    
+    CTreeParameter scalar("scalar");
+    CTreeParameterArray array("array", 16, 0);
+    
+    // Computed data -always present.
+    //
+    CTreeParameter scalar2("doubled");
+    CTreeParameter asum("sum");
+    
+    // As we process input data, we'll load it into the tree parameters
+    // using the indices and then check based on what we know the event has.
+    // For us performance is not critical so we'll just have an id -> parameter map.
+    // Yes the map will leak but not much and its a test program.
+    std::map<unsigned, CTreeParameter*> paramMap;
+    for (auto& def : CTreeParameter::getDefinitions()) {
+        unsigned id = def.second.s_parameterNumber;
+        std::string name = def.first;
+        paramMap[id] = new CTreeParameter(name);
+    }
+    
+    
+    auto info = m_pReader->getBlock(32768);
+    const ParameterItem* pItem =
+        reinterpret_cast<const ParameterItem*>(info.s_pData);
+    int event(0);
+    while (pItem) {
+        if (pItem->s_header.s_type == PARAMETER_DATA) {
+            
+            // Load the parameters:
+            
+            CTreeParameter::nextEvent();
+            for (int i = 0; i < pItem->s_parameterCount; i++) {
+                const ParameterValue& param = pItem->s_parameters[i];
+                *paramMap[param.s_number] = param.s_value;
+            }
+            int evnum = pItem->s_triggerCount;
+            EQ(event, evnum);
+            event++;
+            EQ(int(evnum % 17 + 3), int(pItem->s_parameterCount));   // Correct parameter count.
+            
+            // scalar is always there and is 0:
+            
+            ASSERT(scalar.isValid());
+            EQ(double(0), double(scalar));
+            ASSERT(scalar.isValid());
+            EQ(double(0), double(scalar2));
+            
+          
+            double mysum(0.0);
+            for (int i =0; i < pItem->s_parameterCount - 3; i++) {
+                ASSERT(array[i].isValid());
+                mysum += array[i];  
+            }
+            EQ(double(mysum), double(asum));
+        }
+        pItem = reinterpret_cast<const ParameterItem*>(nextItem(info));
+    }
+    
+    
 }

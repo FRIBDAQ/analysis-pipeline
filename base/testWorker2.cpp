@@ -86,7 +86,9 @@ MyWorker::~MyWorker() {}
 
 void
 MyWorker::process() {
-    if (scalar.isValid()) doubled = scalar*2.0;
+    if (scalar.isValid()) {
+        doubled = scalar*2.0;
+    }
     
     sum = 0.0;
     for (int i =0; i < 16; i++) {
@@ -369,15 +371,15 @@ MyApp::events(int fd) {
     for (int i =0; i < EVENT_COUNT; i++) {
         // select number of parameters:
         
-        unsigned numParams = i % 16 + 1;   // [1-17] range.
-        
+        unsigned numParams = i % 17 + 1;   // [1-17] range.
+
         item.item.s_header.s_size =
             sizeof(ParameterItem) + numParams*sizeof(ParameterValue);
         item.item.s_triggerCount = i;
         item.item.s_parameterCount = numParams;
         pParameterValue pPar = item.item.s_parameters;
         for (int p= 0; p < numParams; p++) {
-            pPar->s_number = p;
+            pPar->s_number = p+1;
             pPar->s_value  = p*10;
             pPar++;
         }
@@ -385,6 +387,7 @@ MyApp::events(int fd) {
             throw std::runtime_error("Could not write event");
         }
     }
+    
 }
 // A reader will define the scalar, array, doubled and sum params in a way that
 // forces mapping:
