@@ -81,5 +81,10 @@ between the input, compute, and output stages (re-ordering is trivial).
     *    \ref rawtoparamapp
     *    \ref paramfileformat 
     *    \ref spectclworker 
-    *    \ref compileandrunrawtoparams 
+    *    \ref compileandrunrawtoparams
+*   \ref paramstoparams
+    *    \ref parametermapping 
+    *    \ref paramparamworker T
+    *    \ref paramparamapp The parameter to parameter application.
+    *    \ref paramparamcompileandrun compiling and running parameter to  parameter stages of the pipeline.
     
