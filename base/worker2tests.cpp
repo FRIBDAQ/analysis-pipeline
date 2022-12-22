@@ -24,6 +24,7 @@
 #include "AnalysisRingItems.h"
 #include "DataReader.h"
 #include "TreeParameter.h"
+#include "TreeVariable.h"
 #include <set>
 #include <map>
 #include <string.h>
@@ -41,6 +42,8 @@ class worker2test : public CppUnit::TestFixture {
     CPPUNIT_TEST(params_3);
     
     CPPUNIT_TEST(vars_1);
+    CPPUNIT_TEST(vars_2);
+    CPPUNIT_TEST(vars_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -59,6 +62,8 @@ protected:
     void params_3();
     
     void vars_1();
+    void vars_2();
+    void vars_3();
 private:
     const void* nextItem(CDataReader::Result& info);            // info is modified.
 };
@@ -149,6 +154,7 @@ void worker2test::params_2() {
         p8 += sizeof(ParameterDefinition) + aname.size() + 1;
         p = reinterpret_cast<const ParameterDefinition*>(p8);
     }
+    ASSERT(names.empty());
     
 }
 // We established there are the right params and number of them.
@@ -195,4 +201,66 @@ void worker2test::vars_1() {
     ASSERT(pItem);                 // There _must_ be a variables item.
     EQ(VARIABLE_VALUES, pItem->s_header.s_type);
     EQ(std::uint32_t(17), pItem->s_numVars);
+}
+// Ensure all var names are there with no dups.
+
+void worker2test::vars_2() {
+    auto info = m_pReader->getBlock(32768);
+    const VariableItem* pItem = reinterpret_cast<const VariableItem*>(nextItem(info));
+    auto defs = CTreeVariable::getDefinitions();
+    
+    // Throw the names up into a set:
+    
+    std::set<std::string> varnames;
+    for(auto& d : defs) {
+        varnames.insert(d.first);
+    }
+    // iterate over vars in the def ensure each name can be found and after
+    // deleting the found ones, the set is empty.
+    
+    const Variable* pV = pItem->s_variables;
+    for (int i =0; i < pItem->s_numVars; i++) {
+        std::string name = pV->s_variableName;
+        auto iter = varnames.find(name);
+        ASSERT(iter != varnames.end());
+        varnames.erase(iter);
+        
+        const std::uint8_t* p8 = reinterpret_cast<const std::uint8_t*>(pV);
+        p8 += sizeof(Variable) + name.size() + 1;
+        pV = reinterpret_cast<const Variable*>(p8);
+    }
+    
+    ASSERT(varnames.empty());
+}
+// make sure the defs/values are reflected properly:
+
+void worker2test::vars_3() {
+    auto info = m_pReader->getBlock(32768);
+    const VariableItem* pItem = reinterpret_cast<const VariableItem*>(nextItem(info));
+    auto defs = CTreeVariable::getDefinitions();
+    
+    // Throw the defs up into a map indexed by name:
+    
+    std::map<std::string, const CTreeVariable::Definition*> defmap;
+    for (auto& item : defs) {
+        defmap[item.first] = item.second;
+    }
+    // Now iterate over the parameters from file and check:
+    
+    const Variable* pV = pItem->s_variables;
+    for (int i = 0; i < pItem->s_numVars; i++) {
+        
+        
+        std::string name = pV->s_variableName;
+        std::string units= pV->s_variableUnits;
+        double      v    = pV->s_value;
+        
+        auto iter = defmap.find(name);              // From vars2 we know this works.
+        EQ(units, iter->second->s_units);
+        EQ(v, iter->second->s_value);
+        
+        const std::uint8_t* p8 = reinterpret_cast<const std::uint8_t*>(pV);
+        p8 += sizeof(Variable) + name.size() + 1;
+        pV = reinterpret_cast<const Variable*>(p8);
+    }
 }
