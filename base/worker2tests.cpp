@@ -34,6 +34,9 @@ using namespace frib::analysis;
 extern std::string outputFile;
 extern unsigned numEvents;
 
+const std::uint32_t BEGIN_RUN = 1;
+const std::uint32_t END_RUN   = 2;
+
 class worker2test : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(worker2test);
     CPPUNIT_TEST(count_1);
@@ -44,6 +47,9 @@ class worker2test : public CppUnit::TestFixture {
     CPPUNIT_TEST(vars_1);
     CPPUNIT_TEST(vars_2);
     CPPUNIT_TEST(vars_3);
+    
+    CPPUNIT_TEST(state_1);
+    CPPUNIT_TEST(state_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -64,6 +70,9 @@ protected:
     void vars_1();
     void vars_2();
     void vars_3();
+    
+    void state_1();
+    void state_2();
 private:
     const void* nextItem(CDataReader::Result& info);            // info is modified.
 };
@@ -83,7 +92,7 @@ worker2test::nextItem(CDataReader::Result& info) {
         ASSERT(info.s_nbytes >= p.ph->s_size);    // There must be that many bytes at least.
         info.s_nbytes -= p.ph->s_size;
         p.p8 += p.ph->s_size;
-        
+        info.s_pData = p.p8;
         return p.p8;
         
     } else {                       // must read:
@@ -263,4 +272,35 @@ void worker2test::vars_3() {
         p8 += sizeof(Variable) + name.size() + 1;
         pV = reinterpret_cast<const Variable*>(p8);
     }
+}
+// Because of when stuff is sent the begin should be right after the
+// vars -- no assurance the end is at the end of the file, however.
+
+void worker2test::state_1() {
+    auto info = m_pReader->getBlock(32768);
+    nextItem(info);
+    const RingItemHeader* pItem =
+        reinterpret_cast<const RingItemHeader*>(nextItem(info));
+    // Minimal begin run _Must_ follow the def records.
+    EQ(BEGIN_RUN, pItem->s_type);
+    EQ(sizeof(RingItemHeader), size_t(pItem->s_size));
+    EQ(sizeof(std::uint32_t), size_t(pItem->s_unused));
+}
+// Somewhere before the end there is a minimal end run as well - only one:
+
+void worker2test::state_2() {
+    auto info = m_pReader->getBlock(32768);
+    const RingItemHeader* pItem =
+        reinterpret_cast<const RingItemHeader*>(info.s_pData);
+    unsigned count(0);
+    
+    while (pItem) {
+        if (pItem->s_type == END_RUN) {
+            count++;
+            EQ(sizeof(RingItemHeader), size_t(pItem->s_size));
+            EQ(sizeof(std::uint32_t), size_t(pItem->s_unused));
+        }
+        pItem = reinterpret_cast<const RingItemHeader*>(nextItem(info));
+    }
+    EQ(unsigned(1), count);
 }
