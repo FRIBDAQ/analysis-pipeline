@@ -62,7 +62,7 @@ class MyWorker : public CMPIParametersToParametersWorker {
     CTreeVariableArray  offsets;
 public:
     MyWorker(int argc, char** argv, AbstractApplication* pApp) :
-    AbstractApplication(argc, argv, pApp),   // 4
+    CMPIParametersToParametersWorker(argc, argv, pApp),   // 4
     raw("raw, 16),
     calibrated("energy", 16),     // 5      
     slopes("slopes", 16),
@@ -81,4 +81,29 @@ public:
 }
 
 ```
-
+1.    This set of headers bring in definitions of neede classes:
+    *    MPIParametersToParameters.h contains the defintion of the base class
+for workers.
+    *    TreePaarameter.h TreeParameterArray.h and TreeVariableArray.h bring in
+definitions for the tree parameter and tree variable subsystems we will use.
+2.    This is a forward definition of the abstract base class for applications:
+frib::analysis::AbstractApplication it is needed because a pointer to it is
+passed as a parameter to methods of our worker class.  Where possible, to avoid
+circular includes it is stylistically preferable to use forward defintions rather than
+including the definitions themselves.
+3.    These tree parameter and tree variable definitions will be constructed
+to allow access to the definitions made in the definition file.  Furthermore,
+the worker base class will map parameter data in events into the tree paramters
+we've declared giving us access to the input data.
+4.     The contructor constructs the base class object.
+5.     Construction also constructs the tree parameters and tree variables
+needed for the computations.   The input file is assumed to have the
+`raw` parameters while we will copute the `energy` parameters into the
+calibrated parameters.  The values of the `slopes` and `offset` tree variables
+will be read from the definition file and, for this example, are linear energy
+calibration parameters to apply to the raw parameters.
+6.     The `process` method is called after parameters have been loaded from
+an input event into the worker's tree parameters.   Processing is simply a
+loop over all raw parameters, and if a parameter is valid, producing
+calibrated parameters using the appropriate calibration coefficients read from
+the definition file.

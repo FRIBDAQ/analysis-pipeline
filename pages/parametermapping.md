@@ -112,9 +112,7 @@ followed by a frib::analysis::VariableItem ring item to the output file allowing
 the next stage to understand how to map parameters and documenting the steering
 parameters used to create the events in the parameter file.
 
-
-
-The bottom lines from all of this;
+The points to take away from all of this are:
 
 *    If the worker defines parameters with the same name as those in the
 inputfile, those parameters will be loaded for each event in which they appear.
@@ -122,6 +120,14 @@ inputfile, those parameters will be loaded for each event in which they appear.
 by the outputter and used to construct a frib::analysis::ParameterDefinitions and
 frib::analysis::VariableItem  ring item which will be written to the ouptput file
 prior to any other ring items.
+*    While workers can change the tree parameter and tree variable definitions,
+those changes will *not* be propagated to the parameter and variable definitions
+written by the outputter.
+*    Definitions for parameters in the *input* file are used to create a mapping
+between parameter ids in the file and actual parameters in the worker.
+*    Tree variable defintions in the input file *are* available to the worker but,
+again, if loaded into the worker's tree variables, those tree variable values
+are *not* described in the output file.
 
 
 
