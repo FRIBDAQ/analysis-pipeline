@@ -14,4 +14,6 @@ install-exec-local: doc
 
 doc:
 	rm -rf docs
-	doxygen
+	doxygen @top_builddir@/Doxyfile
+
+EXTRA_DIST=pages libtclplus Doxyfile.in

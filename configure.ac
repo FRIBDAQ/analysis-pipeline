@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.61)
 
-AC_INIT(fribanalysis, 0.1, [scientificsoftware@nscl.msu.edu],[], [http://gitlab.msu.edu/foxr/fribanalysis])
+AC_INIT(fribanalysis, 1.0-001, [scientificsoftware@nscl.msu.edu],[], [http://gitlab.msu.edu/foxr/fribanalysis])
 
 AM_INIT_AUTOMAKE
 
@@ -52,6 +52,7 @@ AC_SUBST(TCLPLUS_LIBS)
 AC_CONFIG_FILES([Makefile
         base/Makefile
 	spectcl/Makefile
+	Doxyfile
     ])
     
 
