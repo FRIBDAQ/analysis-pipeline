@@ -79,6 +79,7 @@ between the input, compute, and output stages (re-ordering is trivial).
 *  \ref rawtoparams
     *    \ref rawtoparamworker 
     *    \ref rawtoparamapp
+    *    \ref rawtoparammain
     *    \ref paramfileformat 
     *    \ref spectclworker 
     *    \ref compileandrunrawtoparams

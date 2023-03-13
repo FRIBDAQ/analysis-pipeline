@@ -11,6 +11,7 @@ In order to write an application you'll need to accomplish the tasks in this che
 
 - [ ]    Write the worker code for your application.
 - [ ]    Derive a concrete application from the frib::analysis::AbstractApplication abstract base class.
+- [ ]    Write a main program to create the application and start it up.
 - [ ]    Compile/link your program specifying the correct flags to find the
 library headers and shared objects that make up the framework.
 - [ ]    Use **mpirun** to run your application specifying the desired number of
@@ -62,7 +63,7 @@ private:
     CTreeParameterArray*  m_pParams;
 public:
     MyWorker(AbstractApplication& app) :
-        AbstractApplication(app),
+        CMPIRawToParameterWorker(app),
         m_pParams(new CTreeParameterArray("parameters", 16, 0)) {} // 3
     ~MyWorker() {
         delete m_pParams;
@@ -242,3 +243,77 @@ called by the framework in the correct (world rank #2) MPI process.
 with world rank > 2.  Thus when mpirun is used to start the program, -np must be at least 4
 to ensure there's at least one worker.   The actual number of workers will be three less
 than the value of the mpirun's -np option.
+
+\subsection rawtoparammain Writing the main program.
+
+The main program must create the application and run it.  The frib::analysis::AbstractApplication::operator() method
+expects an object derive from an frib::analysis::CParameterReader.
+The read method of this object is invoked in all processes to define a common set
+of paramter and variable definitions.  This is especially important in the
+worker and output processes so that the output process writes the correct
+parameter and variable definition records and the worker threads bind their
+parameters to the same parameter ids that are written by the output thread.
+
+Therefore the main program must:
+
+1.     Ensure the correct number of command line parameters are present
+after mpirun has stripped the ones it recognizes from the command line.
+2.     Instantiate the application.
+3.     Instantiate a concrete parameter reader.
+4.     Invoke the operator() method of the concrete application.
+4.     Exit with a success indication.
+
+Here's a main program that runs our the application that was written above:
+
+````
+#include <MyApp.h>                  // 1
+#include <TCLParameterReader.h>     // 2
+#include <stdlib.h>
+#include <iostream>
+
+using namespace frib::analysis
+
+int main(int argc, char** argv) {
+    if (argc <   4) {               // 3
+        std::cerr <<
+            "Usage: mpirun <mpirun-parameters> program-name infile outfile paramdef-file\n";
+        exit(EXIT_FAILURE);
+    }
+    MyApp app(argc, argv);         // 4
+    CTCLParameterReader reader(argv[3]);   // 5
+    app(reader);                   // 6
+    
+    exit(EXIT_SUCCESS);         // 7
+}
+
+````
+
+The numbered comments in the code above are described below:
+
+1.    Include the header file for our application.  Normally the definition of the
+class and the implementation will be separated into a header (.h) and
+implmenetation (.cpp) file.
+2.    We chose to use the Tcl parameter reader.  This is described in \ref treereader
+and accepts an external parameter defintion file in a format described in
+\ref tcldeffile   This line includes the header that defines the
+frib::analysis::CTCLParameterReader parameter reader class.
+3.    Since we've let the parameter positions default in our dealer and outputter,
+and since we'll need a parameter file, we must ensure there are at least 4
+command line words and output an error message and exit with a failure
+status if this is not the case.  Note that since MPI has not yet been initialized
+(that's done in the application), we cannot restrict this output to only the
+rank 0 process (e.g.).   The command line words are in order:
+    *    The program name.
+    *    The input raw event file.
+    *    The output parameter file.
+    *    The Tcl parameter definition file.
+4.    Creates an instance of our application.
+5.    Creates an parameter reader (a Tcl parameter file reader to be precise).
+6.    Starts the application.  From this point on, the dealer will deal
+event data to the workers which will funnel them back into the farmer.  The farmer
+will re-sort the data in event number order and pass it to the outputter which will
+write the parameter output file.
+
+Note that all of the processes will use their instance of a CTCLParameterReader object
+to read the Tcl parameter definition file and, therefore, have a common idea of
+the parameters defined by the program.
